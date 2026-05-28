@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact Us — Broadline Living</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .page-hero{text-align:center;padding:90px 0 50px}
+  .page-hero h1{font-family:var(--display);font-size:clamp(42px,6vw,72px);font-weight:500;margin-top:14px}
+  .page-hero p{max-width:52ch;margin:20px auto 0;color:var(--ink-soft);font-size:17px}
+  .contact{padding:40px 0 96px}
+  .c-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:54px;align-items:start}
+  .info-card{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:36px 32px;margin-bottom:18px}
+  .info-card .lab{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px}
+  .info-card .val{font-size:17px;color:var(--ink)}
+  .socials{display:flex;gap:14px;margin-top:6px}
+  .socials a{width:42px;height:42px;border:1px solid var(--line);border-radius:2px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:13px;letter-spacing:.04em;transition:all .2s}
+  .socials a:hover{border-color:var(--cyan);color:var(--cyan)}
+  .form-body{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:44px 40px}
+  .form-body h3{font-family:var(--display);font-size:28px;font-weight:500;margin-bottom:24px}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .field{display:flex;flex-direction:column;margin-bottom:16px}
+  .field.full{grid-column:1/-1}
+  .field label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px;color:var(--ink-soft)}
+  .field input,.field textarea{padding:13px 15px;border:1px solid var(--line);border-radius:2px;font-family:inherit;font-size:15px;background:var(--bg);color:var(--ink);transition:border-color .2s}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--cyan)}
+  .field textarea{resize:vertical;min-height:120px}
+  .map .ph{min-height:300px;margin-top:18px}
+  @media(max-width:860px){.c-grid{grid-template-columns:1fr}.fgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav"><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bg)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bg)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bg)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><nav><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html">View Availability</a></li><li><a href="landlords.html">For Landlords</a></li><li><a href="contact.html" class="active">Contact Us</a></li></ul></nav><a href="availability.html" class="nav-cta">View Availability</a><button class="burger" aria-label="Menu">&#9776;</button></div></header>
+<section class="page-hero wrap">
+  <p class="eyebrow">Get In Touch</p>
+  <h1>Contact Us</h1>
+  <p>Questions about a property, a lease, or listing with us? Send a message and our team will get back to you shortly.</p>
+</section>
+<section class="contact wrap">
+  <div class="c-grid">
+    <div>
+      <div class="info-card"><div class="lab">Email</div><div class="val">hello@broadlineliving.com</div></div>
+      <div class="info-card"><div class="lab">Phone</div><div class="val">(000) 000-0000</div></div>
+      <div class="info-card"><div class="lab">Office</div><div class="val">Your mailing address,<br>City, State ZIP</div></div>
+      <div class="info-card"><div class="lab">Follow Us</div><div class="socials"><a href="#">Fb</a><a href="#">Ig</a><a href="#">Tk</a></div></div>
+      <div class="map"><div class="ph">Map embed</div></div>
+    </div>
+    <div class="form-body">
+      <h3>Send us a message</h3>
+      <div class="fgrid">
+        <div class="field"><label>First name</label><input type="text" placeholder="First name"></div>
+        <div class="field"><label>Last name</label><input type="text" placeholder="Last name"></div>
+        <div class="field"><label>Email</label><input type="email" placeholder="you@email.com"></div>
+        <div class="field"><label>Phone</label><input type="tel" placeholder="(000) 000-0000"></div>
+        <div class="field full"><label>Subject</label><input type="text" placeholder="How can we help?"></div>
+        <div class="field full"><label>Message</label><textarea placeholder="Your message"></textarea></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:8px" type="button" onclick="alert('Thanks! This is a demo form. Connect it to your email or a form service to receive messages.')">Send Message</button>
+    </div>
+  </div>
+</section>
+<footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods — move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="contact.html">Mailing address</a></li><li><a href="contact.html">Phone number</a></li><li><a href="contact.html">Email address</a></li></ul></div><div><h4>Legal</h4><ul><li><a href="#">Terms &amp; Conditions</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved.</div></div></footer>
+</body>
+</html>

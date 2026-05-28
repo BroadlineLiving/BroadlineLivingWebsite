@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Broadline Living</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .page-hero{text-align:center;padding:90px 0 60px}
+  .page-hero h1{font-family:var(--display);font-size:clamp(42px,6vw,72px);font-weight:500;letter-spacing:.01em;margin-top:14px}
+  .page-hero p{max-width:56ch;margin:20px auto 0;color:var(--ink-soft);font-size:17px}
+  .story{padding:40px 0 90px}
+  .story-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+  .story .ph{min-height:440px}
+  .story h2{font-family:var(--display);font-size:clamp(30px,4vw,44px);font-weight:500;margin-bottom:18px}
+  .story p{color:var(--ink-soft);margin-bottom:16px;font-size:16px}
+  .values{background:var(--bg-2);padding:96px 0}
+  .vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+  .vcard{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:36px 30px;transition:border-color .25s,transform .25s}
+  .vcard:hover{border-color:var(--cyan);transform:translateY(-6px)}
+  .vcard .n{font-family:var(--display);font-size:40px;font-weight:500;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:12px}
+  .vcard h3{font-family:var(--display);font-size:24px;font-weight:500;margin-bottom:10px}
+  .vcard p{color:var(--ink-soft);font-size:15px}
+  .stats{padding:90px 0}
+  .sgrid{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;gap:30px}
+  .sitem .num{font-family:var(--display);font-size:60px;font-weight:500;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
+  .sitem .lbl{margin-top:8px;color:var(--ink-soft);letter-spacing:.06em;font-size:15px}
+  .cta-band{background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:70px 0;text-align:center}
+  .cta-band h2{font-family:var(--display);font-size:clamp(30px,4vw,46px);font-weight:500;margin-bottom:24px}
+  @media(max-width:860px){.story-grid{grid-template-columns:1fr}.vgrid,.sgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav"><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bg)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bg)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bg)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><nav><ul><li><a href="index.html">Home</a></li><li><a href="about.html" class="active">About</a></li><li><a href="availability.html">View Availability</a></li><li><a href="landlords.html">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul></nav><a href="availability.html" class="nav-cta">View Availability</a><button class="burger" aria-label="Menu">&#9776;</button></div></header>
+<section class="page-hero wrap">
+  <p class="eyebrow">About Us</p>
+  <h1>About Broadline Living</h1>
+  <p>We make furnished city living effortless — connecting people with beautiful, move-in-ready homes and the personal service to match.</p>
+</section>
+<section class="story wrap">
+  <div class="story-grid">
+    <div class="ph">Team / building photo</div>
+    <div>
+      <h2>Our Story</h2>
+      <p>Broadline Living was built around a simple idea: finding a furnished home in the city shouldn't be complicated. Too often, renters face endless listings, unclear terms, and properties that don't match their photos.</p>
+      <p>We curate every apartment ourselves, partner directly with trusted landlords, and handle the details from first inquiry to move-in day. The result is a smoother experience for residents and a reliable, well-managed portfolio for owners.</p>
+      <p>Today we manage furnished homes across the city's most sought-after neighborhoods, with a focus on quality, transparency, and genuine service.</p>
+    </div>
+  </div>
+</section>
+<section class="values">
+  <div class="wrap">
+    <div class="section-head"><p class="eyebrow">What Drives Us</p><h2>Our Values</h2></div>
+    <div class="vgrid">
+      <div class="vcard"><div class="n">01</div><h3>Quality First</h3><p>Every property is personally vetted for design, comfort, and location before it joins our portfolio.</p></div>
+      <div class="vcard"><div class="n">02</div><h3>Total Transparency</h3><p>Clear terms, honest listings, and no surprises — what you see is what you get.</p></div>
+      <div class="vcard"><div class="n">03</div><h3>Real Service</h3><p>A dedicated team that responds quickly and treats every resident and owner like a partner.</p></div>
+    </div>
+  </div>
+</section>
+<section class="stats">
+  <div class="wrap sgrid">
+    <div class="sitem"><div class="num">250+</div><div class="lbl">Properties Managed</div></div>
+    <div class="sitem"><div class="num">120+</div><div class="lbl">Trusted Landlords</div></div>
+    <div class="sitem"><div class="num">98%</div><div class="lbl">Resident Satisfaction</div></div>
+  </div>
+</section>
+<section class="cta-band">
+  <div class="wrap">
+    <h2>Ready to find your next home?</h2>
+    <a href="availability.html" class="btn btn-primary">View Availability</a>
+  </div>
+</section>
+<footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods — move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="contact.html">Mailing address</a></li><li><a href="contact.html">Phone number</a></li><li><a href="contact.html">Email address</a></li></ul></div><div><h4>Legal</h4><ul><li><a href="#">Terms &amp; Conditions</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved.</div></div></footer>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Broadline Living — Furnished living for modern city life</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .hero{display:grid;grid-template-columns:1.05fr 1fr;gap:50px;align-items:center;padding:80px 0 70px}
+  .hero h1{font-family:var(--display);font-size:clamp(44px,6vw,76px);line-height:1.04;font-weight:500;letter-spacing:.01em}
+  .hero h1 em{font-style:italic;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{max-width:50ch;margin:24px 0 32px;color:var(--ink-soft);font-size:17px}
+  .hero .ph{min-height:460px}
+  .hero-city{position:relative;min-height:460px;border-radius:3px;overflow:hidden;border:1px solid var(--line);background:#0a1628}
+  .hero-city .sky{position:absolute;inset:0;background:linear-gradient(180deg,#0a1628 0%,#16324d 45%,#2a5a72 75%,#3f8597 100%)}
+  .hero-city .skyline{position:absolute;bottom:0;left:0;height:62%;width:200%;background-repeat:repeat-x;background-size:50% 100%}
+  .hero-city .skyline.back{height:50%;opacity:.55;background-image:repeating-linear-gradient(90deg,transparent 0 14px,#0e2236 14px 30px,transparent 30px 40px,#142c44 40px 70px,transparent 70px 82px,#0e2236 82px 104px,transparent 104px 120px,#193250 120px 150px);animation:pan 60s linear infinite}
+  .hero-city .skyline.front{height:62%;background-image:repeating-linear-gradient(90deg,#0a1c2e 0 22px,transparent 22px 34px,#102740 34px 78px,transparent 78px 92px,#0a1c2e 92px 130px,transparent 130px 146px,#13304d 146px 196px,transparent 196px 212px);animation:pan 38s linear infinite}
+  .hero-city .skyline.front::after,.hero-city .skyline.back::after{content:"";position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 20% 30%,rgba(63,224,208,.5) 50%,transparent),radial-gradient(1.5px 1.5px at 40% 50%,rgba(255,220,140,.6) 50%,transparent),radial-gradient(1.5px 1.5px at 62% 25%,rgba(255,220,140,.5) 50%,transparent),radial-gradient(1.5px 1.5px at 80% 60%,rgba(63,224,208,.4) 50%,transparent),radial-gradient(1.5px 1.5px at 90% 40%,rgba(255,220,140,.5) 50%,transparent);background-size:50% 100%;animation:twinkle 4s ease-in-out infinite alternate}
+  .hero-city .cap{position:absolute;top:18px;right:18px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#cfe9ee;background:rgba(10,22,40,.5);border:1px solid rgba(255,255,255,.18);padding:6px 12px;border-radius:2px;backdrop-filter:blur(4px)}
+  @keyframes pan{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes twinkle{from{opacity:.4}to{opacity:1}}
+  @media(prefers-reduced-motion:reduce){.hero-city .skyline,.hero-city .skyline::after{animation:none}}
+  .feat{padding:30px 0 80px}
+  .feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .fcard{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:30px 24px;transition:border-color .25s,transform .25s}
+  .fcard:hover{transform:translateY(-6px);border-color:var(--cyan)}
+  .fcard .ic{width:46px;height:46px;border:1px solid var(--cyan);border-radius:2px;color:var(--cyan);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:18px}
+  .fcard h3{font-family:var(--display);font-size:23px;font-weight:500;margin-bottom:8px}
+  .fcard p{font-size:14px;color:var(--ink-soft)}
+  .what{background:var(--bg-2);padding:96px 0}
+  .what-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+  .what .ph{min-height:400px}
+  .what-list{display:grid;gap:24px}
+  .what-item h3{font-family:var(--display);font-size:25px;font-weight:500;margin-bottom:6px}
+  .what-item p{color:var(--ink-soft);font-size:15px}
+  .listings{padding:96px 0}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+  .pcard{background:var(--surface);border:1px solid var(--line);border-radius:3px;overflow:hidden;transition:transform .25s,border-color .25s}
+  .pcard:hover{transform:translateY(-6px);border-color:var(--cyan)}
+  .pcard .ph{border-radius:0;border:none;border-bottom:1px solid var(--line);min-height:210px}
+  .pcard .body{padding:24px}
+  .pcard h3{font-family:var(--display);font-size:24px;font-weight:500;margin-bottom:6px}
+  .pcard .desc{font-size:14px;color:var(--ink-soft);margin-bottom:16px}
+  .pcard .meta{display:flex;gap:18px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);border-top:1px solid var(--line);padding-top:15px}
+  .landlord-cta{padding:90px 0;position:relative;overflow:hidden}
+  .landlord-cta::before{content:"";position:absolute;inset:0;background:var(--grad);opacity:.07}
+  .lc-grid{display:grid;grid-template-columns:1fr 1fr;gap:54px;align-items:center;position:relative}
+  .lc-grid .ph{min-height:320px}
+  .landlord-cta h2{font-family:var(--display);font-size:clamp(32px,4.5vw,48px);font-weight:500;margin-bottom:18px}
+  .landlord-cta p{color:var(--ink-soft);margin-bottom:28px;max-width:46ch}
+  .landlord-cta .actions{display:flex;gap:14px;flex-wrap:wrap}
+  @media(max-width:860px){.hero,.what-grid,.lc-grid{grid-template-columns:1fr}.feat-grid{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav"><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bg)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bg)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bg)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><nav><ul><li><a href="index.html" class="active">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html">View Availability</a></li><li><a href="landlords.html">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul></nav><a href="availability.html" class="nav-cta">View Availability</a><button class="burger" aria-label="Menu">&#9776;</button></div></header>
+<section class="hero wrap">
+  <div>
+    <p class="eyebrow">Furnished Rentals</p>
+    <h1>Furnished living for <em>modern</em> city life.</h1>
+    <p>Hand-picked, move-in-ready apartments in the city's best neighborhoods. Flexible leases, premium finishes, and a team that handles the details.</p>
+    <a href="availability.html" class="btn btn-primary">View Availability</a>
+  </div>
+  <div class="hero-city" aria-label="Animated view of the New York skyline">
+    <div class="sky"></div>
+    <div class="skyline back"></div>
+    <div class="skyline front"></div>
+    <div class="cap">New York, NY</div>
+  </div>
+</section>
+<section class="feat wrap">
+  <div class="feat-grid">
+    <div class="fcard"><div class="ic">&#9670;</div><h3>Fully Furnished</h3><p>Every home arrives styled and fully equipped.</p></div>
+    <div class="fcard"><div class="ic">&#10003;</div><h3>Move-In Ready</h3><p>Cleaned, stocked, and ready from day one. No setup, no waiting.</p></div>
+    <div class="fcard"><div class="ic">&#8635;</div><h3>Flexible Leases</h3><p>Short or long term. Lease terms that fit your life.</p></div>
+    <div class="fcard"><div class="ic">&#9733;</div><h3>Premium Locations</h3><p>Curated buildings in the most desirable neighborhoods.</p></div>
+  </div>
+</section>
+<section class="what">
+  <div class="wrap">
+    <div class="section-head"><p class="eyebrow">What We Do</p><h2>Live Smart. Live Styled.</h2></div>
+    <div class="what-grid">
+      <div class="ph">Apartment photo</div>
+      <div class="what-list">
+        <div class="what-item"><h3>Hand-picked Apartments</h3><p>We personally select every property for quality, location, and design.</p></div>
+        <div class="what-item"><h3>Move-in Ready</h3><p>Furnished, stocked, and cleaned so you can settle in immediately.</p></div>
+        <div class="what-item"><h3>Personalized Service</h3><p>A dedicated team to help you find and settle into the right home.</p></div>
+        <div class="what-item"><h3>Tailored Leases</h3><p>Lease terms built around your timeline and needs.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="listings">
+  <div class="wrap">
+    <div class="section-head"><p class="eyebrow">Featured Homes</p><h2>Across leading city neighborhoods</h2></div>
+    <div class="grid3">
+      <div class="pcard"><div class="ph">Property photo</div><div class="body"><h3>30 Waterside Plaza</h3><p class="desc">Fully furnished 3-bedroom residence in one of Kips Bay's most iconic addresses.</p><div class="meta"><span>3 Beds</span><span>2 Baths</span><span>1600 sqft</span></div></div></div>
+      <div class="pcard"><div class="ph">Property photo</div><div class="body"><h3>30 Morningside Drive</h3><p class="desc">Furnished duplex in a restored landmark building with premium finishes.</p><div class="meta"><span>3 Beds</span><span>2.5 Baths</span><span>1600 sqft</span></div></div></div>
+      <div class="pcard"><div class="ph">Property photo</div><div class="body"><h3>The Axel #27B</h3><p class="desc">Elevated Brooklyn living in a stunning one-bedroom high above the city.</p><div class="meta"><span>1 Bed</span><span>1 Bath</span><span>1600 sqft</span></div></div></div>
+    </div>
+    <div style="text-align:center;margin-top:46px"><a href="availability.html" class="btn btn-ghost">View All Availability</a></div>
+  </div>
+</section>
+<section class="landlord-cta">
+  <div class="wrap lc-grid">
+    <div class="ph">Lifestyle photo</div>
+    <div>
+      <p class="eyebrow">For Landlords</p>
+      <h2>Are You a Landlord?</h2>
+      <p>List your property with us and we'll pay you a fixed monthly rent — guaranteed, whether the unit is occupied or not. You get reliable income and full management; we handle marketing, tenants, and maintenance.</p>
+      <div class="actions">
+        <a href="landlords.html" class="btn btn-primary">List Your Property</a>
+        <a href="landlords.html" class="btn btn-ghost">View Process</a>
+      </div>
+    </div>
+  </div>
+</section>
+<footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods — move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="contact.html">Mailing address</a></li><li><a href="contact.html">Phone number</a></li><li><a href="contact.html">Email address</a></li></ul></div><div><h4>Legal</h4><ul><li><a href="#">Terms &amp; Conditions</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved.</div></div></footer>
+</body>
+</html>
