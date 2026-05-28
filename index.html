@@ -15,15 +15,9 @@
   .hero p{max-width:50ch;margin:24px 0 32px;color:var(--ink-soft);font-size:17px}
   .hero .ph{min-height:460px}
   .hero-city{position:relative;min-height:460px;border-radius:3px;overflow:hidden;border:1px solid var(--line);background:#0a1628}
-  .hero-city .sky{position:absolute;inset:0;background:linear-gradient(180deg,#0a1628 0%,#16324d 45%,#2a5a72 75%,#3f8597 100%)}
-  .hero-city .skyline{position:absolute;bottom:0;left:0;height:62%;width:200%;background-repeat:repeat-x;background-size:50% 100%}
-  .hero-city .skyline.back{height:50%;opacity:.55;background-image:repeating-linear-gradient(90deg,transparent 0 14px,#0e2236 14px 30px,transparent 30px 40px,#142c44 40px 70px,transparent 70px 82px,#0e2236 82px 104px,transparent 104px 120px,#193250 120px 150px);animation:pan 60s linear infinite}
-  .hero-city .skyline.front{height:62%;background-image:repeating-linear-gradient(90deg,#0a1c2e 0 22px,transparent 22px 34px,#102740 34px 78px,transparent 78px 92px,#0a1c2e 92px 130px,transparent 130px 146px,#13304d 146px 196px,transparent 196px 212px);animation:pan 38s linear infinite}
-  .hero-city .skyline.front::after,.hero-city .skyline.back::after{content:"";position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 20% 30%,rgba(63,224,208,.5) 50%,transparent),radial-gradient(1.5px 1.5px at 40% 50%,rgba(255,220,140,.6) 50%,transparent),radial-gradient(1.5px 1.5px at 62% 25%,rgba(255,220,140,.5) 50%,transparent),radial-gradient(1.5px 1.5px at 80% 60%,rgba(63,224,208,.4) 50%,transparent),radial-gradient(1.5px 1.5px at 90% 40%,rgba(255,220,140,.5) 50%,transparent);background-size:50% 100%;animation:twinkle 4s ease-in-out infinite alternate}
-  .hero-city .cap{position:absolute;top:18px;right:18px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#cfe9ee;background:rgba(10,22,40,.5);border:1px solid rgba(255,255,255,.18);padding:6px 12px;border-radius:2px;backdrop-filter:blur(4px)}
-  @keyframes pan{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-  @keyframes twinkle{from{opacity:.4}to{opacity:1}}
-  @media(prefers-reduced-motion:reduce){.hero-city .skyline,.hero-city .skyline::after{animation:none}}
+  .hero-city video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.85}
+  .hero-city .overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,18,30,.35) 0%,rgba(10,18,30,.15) 100%)}
+  .hero-city .cap{position:absolute;top:18px;right:18px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#fff;background:rgba(10,22,40,.45);border:1px solid rgba(255,255,255,.22);padding:6px 12px;border-radius:2px;backdrop-filter:blur(4px)}
   .feat{padding:30px 0 80px}
   .feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
   .fcard{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:30px 24px;transition:border-color .25s,transform .25s}
@@ -65,10 +59,9 @@
     <p>Hand-picked, move-in-ready apartments in the city's best neighborhoods. Flexible leases, premium finishes, and a team that handles the details.</p>
     <a href="availability.html" class="btn btn-primary">View Availability</a>
   </div>
-  <div class="hero-city" aria-label="Animated view of the New York skyline">
-    <div class="sky"></div>
-    <div class="skyline back"></div>
-    <div class="skyline front"></div>
+  <div class="hero-city" aria-label="New York City skyline">
+    <video autoplay muted loop playsinline src="nyc.mp4"></video>
+    <div class="overlay"></div>
     <div class="cap">New York, NY</div>
   </div>
 </section>
