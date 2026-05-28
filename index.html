@@ -9,15 +9,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <style>
-  .hero{display:grid;grid-template-columns:1.05fr 1fr;gap:50px;align-items:center;padding:80px 0 70px}
-  .hero h1{font-family:var(--display);font-size:clamp(44px,6vw,76px);line-height:1.04;font-weight:500;letter-spacing:.01em}
-  .hero h1 em{font-style:italic;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .hero p{max-width:50ch;margin:24px 0 32px;color:var(--ink-soft);font-size:17px}
-  .hero .ph{min-height:460px}
-  .hero-city{position:relative;min-height:460px;border-radius:3px;overflow:hidden;border:1px solid var(--line);background:#0a1628}
-  .hero-city video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.85}
-  .hero-city .overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,18,30,.35) 0%,rgba(10,18,30,.15) 100%)}
-  .hero-city .cap{position:absolute;top:18px;right:18px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#fff;background:rgba(10,22,40,.45);border:1px solid rgba(255,255,255,.22);padding:6px 12px;border-radius:2px;backdrop-filter:blur(4px)}
+  .hero{position:relative;min-height:88vh;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;margin-top:-1px}
+  .hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  .hero .hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,18,30,.35) 0%,rgba(10,18,30,.55) 60%,rgba(10,18,30,.75) 100%);z-index:1}
+  .hero .hero-inner{position:relative;z-index:2;padding:0 28px;max-width:980px}
+  .hero .eyebrow{color:#fff;background:none;-webkit-text-fill-color:#fff}
+  .hero h1{font-family:var(--display);font-size:clamp(48px,7vw,92px);line-height:1.02;font-weight:500;letter-spacing:.005em;color:#fff;margin-top:20px}
+  .hero h1 em{font-style:italic;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+  .hero p{max-width:58ch;margin:26px auto 36px;color:rgba(255,255,255,.85);font-size:18px}
+  .hero .cap-tag{position:absolute;bottom:24px;right:24px;z-index:2;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#fff;background:rgba(10,22,40,.4);border:1px solid rgba(255,255,255,.25);padding:7px 14px;border-radius:2px;backdrop-filter:blur(6px)}
   .feat{padding:30px 0 80px}
   .feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
   .fcard{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:30px 24px;transition:border-color .25s,transform .25s}
@@ -47,23 +47,21 @@
   .landlord-cta h2{font-family:var(--display);font-size:clamp(32px,4.5vw,48px);font-weight:500;margin-bottom:18px}
   .landlord-cta p{color:var(--ink-soft);margin-bottom:28px;max-width:46ch}
   .landlord-cta .actions{display:flex;gap:14px;flex-wrap:wrap}
-  @media(max-width:860px){.hero,.what-grid,.lc-grid{grid-template-columns:1fr}.feat-grid{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr}}
+  @media(max-width:860px){.what-grid,.lc-grid{grid-template-columns:1fr}.feat-grid{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr}.hero{min-height:75vh}.hero h1{font-size:clamp(42px,9vw,60px)}}
 </style>
 </head>
 <body>
 <header><div class="wrap nav"><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bg)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bg)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bg)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><nav><ul><li><a href="index.html" class="active">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html">View Availability</a></li><li><a href="landlords.html">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul></nav><a href="availability.html" class="nav-cta">View Availability</a><button class="burger" aria-label="Menu">&#9776;</button></div></header>
-<section class="hero wrap">
-  <div>
-    <p class="eyebrow">Furnished Rentals</p>
+<section class="hero">
+  <video autoplay muted loop playsinline src="nyc.mp4"></video>
+  <div class="hero-overlay"></div>
+  <div class="hero-inner">
+    <p class="eyebrow">Furnished Rentals in New York</p>
     <h1>Furnished living for <em>modern</em> city life.</h1>
-    <p>Hand-picked, move-in-ready apartments in the city's best neighborhoods. Flexible leases, premium finishes, and a team that handles the details.</p>
+    <p>Hand-picked, move-in-ready apartments in New York's best neighborhoods. Flexible leases, premium finishes, and a team that handles the details.</p>
     <a href="availability.html" class="btn btn-primary">View Availability</a>
   </div>
-  <div class="hero-city" aria-label="New York City skyline">
-    <video autoplay muted loop playsinline src="nyc.mp4"></video>
-    <div class="overlay"></div>
-    <div class="cap">New York, NY</div>
-  </div>
+  <div class="cap-tag">New York, NY</div>
 </section>
 <section class="feat wrap">
   <div class="feat-grid">
