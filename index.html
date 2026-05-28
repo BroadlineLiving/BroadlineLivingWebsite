@@ -20,14 +20,17 @@
   .hero .cap-tag{position:absolute;bottom:24px;right:24px;z-index:2;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#fff;background:rgba(10,22,40,.4);border:1px solid rgba(255,255,255,.25);padding:7px 14px;border-radius:2px;backdrop-filter:blur(6px)}
   .feat{padding:30px 0 80px}
   .feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-  .fcard{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:30px 24px;transition:border-color .25s,transform .25s}
-  .fcard:hover{transform:translateY(-6px);border-color:var(--cyan)}
-  .fcard .ic{width:46px;height:46px;border:1px solid var(--cyan);border-radius:2px;color:var(--cyan);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:18px}
+  .fcard{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:34px 26px;transition:border-color .25s,transform .25s,box-shadow .25s}
+  .fcard:hover{transform:translateY(-6px);border-color:var(--cyan);box-shadow:0 18px 40px rgba(16,32,46,.08)}
+  .fcard .ic{width:56px;height:56px;border-radius:3px;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:22px;box-shadow:0 8px 22px rgba(31,184,173,.25)}
+  .fcard .ic svg{width:26px;height:26px}
   .fcard h3{font-family:var(--display);font-size:23px;font-weight:500;margin-bottom:8px}
   .fcard p{font-size:14px;color:var(--ink-soft)}
   .what{background:var(--bg-2);padding:96px 0}
   .what-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
   .what .ph{min-height:400px}
+  .what-photo{border-radius:3px;overflow:hidden;border:1px solid var(--line);aspect-ratio:4/5;background:var(--bg-2)}
+  .what-photo img{width:100%;height:100%;object-fit:cover;display:block}
   .what-list{display:grid;gap:24px}
   .what-item h3{font-family:var(--display);font-size:25px;font-weight:500;margin-bottom:6px}
   .what-item p{color:var(--ink-soft);font-size:15px}
@@ -44,6 +47,8 @@
   .landlord-cta::before{content:"";position:absolute;inset:0;background:var(--grad);opacity:.07}
   .lc-grid{display:grid;grid-template-columns:1fr 1fr;gap:54px;align-items:center;position:relative}
   .lc-grid .ph{min-height:320px}
+  .lc-photo{border-radius:3px;overflow:hidden;border:1px solid var(--line);aspect-ratio:5/4;background:var(--bg-2)}
+  .lc-photo img{width:100%;height:100%;object-fit:cover;display:block}
   .landlord-cta h2{font-family:var(--display);font-size:clamp(32px,4.5vw,48px);font-weight:500;margin-bottom:18px}
   .landlord-cta p{color:var(--ink-soft);margin-bottom:28px;max-width:46ch}
   .landlord-cta .actions{display:flex;gap:14px;flex-wrap:wrap}
@@ -56,26 +61,37 @@
   <video autoplay muted loop playsinline src="nyc.mp4"></video>
   <div class="hero-overlay"></div>
   <div class="hero-inner">
-    <p class="eyebrow">Furnished Rentals in New York</p>
-    <h1>Furnished living for <em>modern</em> city life.</h1>
+    <p class="eyebrow">Furnished apartments in New York City</p>
+    <h1>Live Smart, Live <em>Styled</em>.</h1>
     <p>Hand-picked, move-in-ready apartments in New York's best neighborhoods. Flexible leases, premium finishes, and a team that handles the details.</p>
     <a href="availability.html" class="btn btn-primary">View Availability</a>
   </div>
-  <div class="cap-tag">New York, NY</div>
 </section>
 <section class="feat wrap">
   <div class="feat-grid">
-    <div class="fcard"><div class="ic">&#9670;</div><h3>Fully Furnished</h3><p>Every home arrives styled and fully equipped.</p></div>
-    <div class="fcard"><div class="ic">&#10003;</div><h3>Move-In Ready</h3><p>Cleaned, stocked, and ready from day one. No setup, no waiting.</p></div>
-    <div class="fcard"><div class="ic">&#8635;</div><h3>Flexible Leases</h3><p>Short or long term. Lease terms that fit your life.</p></div>
-    <div class="fcard"><div class="ic">&#9733;</div><h3>Premium Locations</h3><p>Curated buildings in the most desirable neighborhoods.</p></div>
+    <div class="fcard">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-7l9-6 9 6v7"/><path d="M3 18h18"/><path d="M9 18v-5h6v5"/></svg></div>
+      <h3>Fully Furnished</h3><p>Every home arrives styled and fully equipped.</p>
+    </div>
+    <div class="fcard">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/><circle cx="12" cy="12" r="10"/></svg></div>
+      <h3>Move-In Ready</h3><p>Cleaned, stocked, and ready from day one. No setup, no waiting.</p>
+    </div>
+    <div class="fcard">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></div>
+      <h3>Flexible Leases</h3><p>Short or long term. Lease terms that fit your life.</p>
+    </div>
+    <div class="fcard">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></div>
+      <h3>Premium Locations</h3><p>Curated buildings in the most desirable neighborhoods.</p>
+    </div>
   </div>
 </section>
 <section class="what">
   <div class="wrap">
-    <div class="section-head"><p class="eyebrow">What We Do</p><h2>Live Smart. Live Styled.</h2></div>
+    <div class="section-head"><p class="eyebrow">What We Do</p><h2>Move in. Settle in. Live.</h2></div>
     <div class="what-grid">
-      <div class="ph">Apartment photo</div>
+      <div class="what-photo"><img src="home-move.png" alt="Family moving into a furnished Broadline apartment"></div>
       <div class="what-list">
         <div class="what-item"><h3>Hand-picked Apartments</h3><p>We personally select every property for quality, location, and design.</p></div>
         <div class="what-item"><h3>Move-in Ready</h3><p>Furnished, stocked, and cleaned so you can settle in immediately.</p></div>
@@ -98,7 +114,7 @@
 </section>
 <section class="landlord-cta">
   <div class="wrap lc-grid">
-    <div class="ph">Lifestyle photo</div>
+    <div class="lc-photo"><img src="landlord-home.jpg" alt="New York City residential buildings"></div>
     <div>
       <p class="eyebrow">For Landlords</p>
       <h2>Are You a Landlord?</h2>
