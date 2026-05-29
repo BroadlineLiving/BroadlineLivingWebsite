@@ -89,7 +89,7 @@
 
 <section class="wrap results">
   <div class="listings" id="listings">
-    <a class="pcard" href="waterside-30-22f.html" data-id="p1" data-bld="b-waterside-30" data-hood="Kips Bay" data-beds="3"><div class="img" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div><div class="body"><div><div class="name">30 Waterside Plaza</div><div class="unit">Unit 22F</div><div class="hood">Kips Bay, Manhattan</div></div><div><div class="meta"><span>3 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+    <a class="pcard" href="waterside-30-22f.html" data-id="p1" data-bld="b-waterside" data-hood="Kips Bay" data-beds="3"><div class="img" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div><div class="body"><div><div class="name">30 Waterside Plaza</div><div class="unit">Unit 22F</div><div class="hood">Kips Bay, Manhattan</div></div><div><div class="meta"><span>3 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
 
     <a class="pcard" href="morningside-607.html" data-id="p2" data-bld="b-morningside" data-hood="Morningside Heights" data-beds="4"><div class="img" style="background-image:url('30-morningside-drive-607-git/30m-607-1.png')"></div><div class="body"><div><div class="name">30 Morningside Drive</div><div class="unit">Unit 607</div><div class="hood">Morningside Heights, Manhattan</div></div><div><div class="meta"><span>4 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
 
@@ -111,7 +111,7 @@
 
     <a class="pcard" href="william-3b.html" data-id="p12" data-bld="b-william" data-hood="Financial District" data-beds="4"><div class="img" style="background-image:url('136-william-street-git/136w-b-1.png')"></div><div class="body"><div><div class="name">136 William Street</div><div class="unit">Unit 3B</div><div class="hood">Financial District, Manhattan</div></div><div><div class="meta"><span>4 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
 
-    <a class="pcard" href="waterside-10-31f.html" data-id="p8" data-bld="b-waterside-10" data-hood="Kips Bay" data-beds="3"><div class="img" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div><div class="body"><div><div class="name">10 Waterside Plaza</div><div class="unit">Unit 31F</div><div class="hood">Kips Bay, Manhattan</div></div><div><div class="meta"><span>3 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+    <a class="pcard" href="waterside-10-31f.html" data-id="p8" data-bld="b-waterside" data-hood="Kips Bay" data-beds="3"><div class="img" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div><div class="body"><div><div class="name">10 Waterside Plaza</div><div class="unit">Unit 31F</div><div class="hood">Kips Bay, Manhattan</div></div><div><div class="meta"><span>3 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
   </div>
 
   <div class="map-col"><div id="map"></div></div>
@@ -124,17 +124,11 @@
   // Buildings: one pin per building, count badge shows number of units
   const buildings = [
     {
-      id:'b-waterside-30', name:'30 Waterside Plaza', sub:'Kips Bay, Manhattan',
-      lat:40.7392, lng:-73.9750,
+      id:'b-waterside', name:'Waterside Plaza', sub:'Kips Bay, Manhattan',
+      lat:40.7395, lng:-73.9752,
       units:[
-        {unit:'22F', meta:'3 Beds, 2 Baths', url:'waterside-30-22f.html', img:'waterisde-plaza-git/30w-22f-1.jpg'}
-      ]
-    },
-    {
-      id:'b-waterside-10', name:'10 Waterside Plaza', sub:'Kips Bay, Manhattan',
-      lat:40.7398, lng:-73.9755,
-      units:[
-        {unit:'31F', meta:'3 Beds, 2 Baths', url:'waterside-10-31f.html', img:'waterisde-plaza-git/30w-22f-1.jpg'}
+        {unit:'30 · Unit 22F', meta:'3 Beds, 2 Baths', url:'waterside-30-22f.html', img:'waterisde-plaza-git/30w-22f-1.jpg'},
+        {unit:'10 · Unit 31F', meta:'3 Beds, 2 Baths', url:'waterside-10-31f.html', img:'waterisde-plaza-git/30w-22f-1.jpg'}
       ]
     },
     {
