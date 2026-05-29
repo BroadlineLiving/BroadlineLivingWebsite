@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Axel, Unit 27B — Broadline Living</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .crumb{padding:24px 0 8px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+  .crumb a{color:var(--ink-soft);transition:color .2s}
+  .crumb a:hover{color:var(--cyan)}
+  .ptop{padding:14px 0 30px}
+  .ptop h1{font-family:var(--display);font-size:clamp(38px,5vw,58px);font-weight:500;line-height:1.05;margin-bottom:8px}
+  .ptop .unit{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);font-weight:500;margin-bottom:14px}
+  .ptop .hood{color:var(--ink-soft);font-size:16px;margin-bottom:18px}
+  .ptop .meta{display:flex;gap:24px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
+  .ptop .meta span{padding:6px 14px;border:1px solid var(--line);border-radius:2px}
+  .gallery{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:240px 240px;gap:8px;margin:30px 0 60px;border-radius:3px;overflow:hidden}
+  .gimg{background-size:cover;background-position:center;cursor:pointer;transition:transform .25s;background-color:var(--bg-2)}
+  .gimg:hover{transform:scale(1.02)}
+  .gimg.big{grid-row:span 2}
+  .gallery .gimg:nth-child(n+6){display:none}
+  .gallery-cta{text-align:center;margin:-40px 0 60px}
+  .gallery-cta button{background:var(--surface);border:1px solid var(--line);padding:12px 28px;font-family:inherit;font-size:13px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s}
+  .gallery-cta button:hover{border-color:var(--cyan);color:var(--cyan)}
+  .pmain{display:grid;grid-template-columns:1.4fr 1fr;gap:60px;padding:0 0 80px;align-items:start}
+  .pdesc h2{font-family:var(--display);font-size:32px;font-weight:500;margin-bottom:16px}
+  .pdesc p{color:var(--ink-soft);font-size:16px;line-height:1.7;margin-bottom:30px}
+  .amen-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:30px}
+  .amen-block h3{font-family:var(--display);font-size:22px;font-weight:500;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  .amen-block ul{list-style:none;display:grid;gap:9px}
+  .amen-block li{font-size:15px;color:var(--ink);display:flex;align-items:center;gap:10px}
+  .amen-block li::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--grad);flex:none}
+  .inquiry-card{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:32px 30px;position:sticky;top:100px}
+  .inquiry-card .ic-eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:500;margin-bottom:8px}
+  .inquiry-card h3{font-family:var(--display);font-size:26px;font-weight:500;margin-bottom:8px}
+  .inquiry-card .sub{color:var(--ink-soft);font-size:14px;margin-bottom:22px}
+  .field{display:flex;flex-direction:column;margin-bottom:14px}
+  .field label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:var(--ink-soft)}
+  .field input,.field textarea{padding:11px 13px;border:1px solid var(--line);border-radius:2px;font-family:inherit;font-size:14px;background:#fff;color:var(--ink);transition:border-color .2s}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--cyan)}
+  .field textarea{resize:vertical;min-height:80px}
+  .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .submit-btn{width:100%;padding:14px;background:var(--grad);color:#fff;border:none;border-radius:2px;font-family:inherit;font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:filter .2s}
+  .submit-btn:hover{filter:brightness(1.08)}
+  .ploc{padding:60px 0 80px;border-top:1px solid var(--line)}
+  .ploc h2{font-family:var(--display);font-size:32px;font-weight:500;margin-bottom:8px}
+  .ploc .ladr{color:var(--ink-soft);margin-bottom:24px;font-size:15px}
+  .pmap{width:100%;height:380px;border-radius:3px;border:1px solid var(--line);overflow:hidden}
+  .leaflet-container{font-family:var(--body)}
+  .pin{background:var(--grad);width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 4px 12px rgba(16,32,46,.3)}
+  .lightbox{position:fixed;inset:0;background:rgba(10,14,22,.92);z-index:999;display:none;align-items:center;justify-content:center}
+  .lightbox.open{display:flex}
+  .lightbox img{max-width:92vw;max-height:88vh;object-fit:contain;display:block}
+  .lb-close,.lb-prev,.lb-next{position:absolute;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:24px;width:46px;height:46px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+  .lb-close:hover,.lb-prev:hover,.lb-next:hover{background:rgba(255,255,255,.2)}
+  .lb-close{top:24px;right:24px}
+  .lb-prev{left:24px;top:50%;transform:translateY(-50%)}
+  .lb-next{right:24px;top:50%;transform:translateY(-50%)}
+  @media(max-width:860px){
+    .gallery{grid-template-columns:1fr 1fr;grid-template-rows:200px 200px 200px;gap:6px}
+    .gimg.big{grid-column:span 2;grid-row:span 1}
+    .pmain{grid-template-columns:1fr;gap:30px}
+    .inquiry-card{position:relative;top:0}
+    .amen-grid{grid-template-columns:1fr;gap:20px}
+    .ptop .meta{flex-wrap:wrap;gap:10px}
+  }
+</style>
+</head>
+<body>
+<header><div class="wrap nav"><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bg)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bg)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bg)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><nav><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html" class="active">View Availability</a></li><li><a href="landlords.html">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul></nav><a href="availability.html" class="nav-cta">View Availability</a><button class="burger" aria-label="Menu">&#9776;</button></div></header>
+
+<div class="wrap">
+  <div class="crumb"><a href="availability.html">&larr; View All Availability</a></div>
+
+  <section class="ptop">
+    <h1>The Axel</h1>
+    <div class="unit">Unit 27B</div>
+    <div class="hood">Clinton Hill, Brooklyn</div>
+    <div class="meta"><span>1 Bed</span><span>1 Bath</span><span>Fully Furnished</span></div>
+  </section>
+
+  <section class="gallery">
+    <div class="gimg big" style="background-image:url('the-axel-27B-git/Axel-27B-1.png')" onclick="openLightbox(0)"></div>
+      <div class="gimg" style="background-image:url('the-axel-27B-git/Axel-27B-2.png')" onclick="openLightbox(1)"></div>
+      <div class="gimg" style="background-image:url('the-axel-27B-git/Axel-27B-3.png')" onclick="openLightbox(2)"></div>
+      <div class="gimg" style="background-image:url('the-axel-27B-git/Axel-27B-4.png')" onclick="openLightbox(3)"></div>
+      <div class="gimg" style="background-image:url('the-axel-27B-git/Axel-27B-5.png')" onclick="openLightbox(4)"></div>
+      <div class="gimg" style="background-image:url('the-axel-27B-git/axel-27B-6.JPG')" onclick="openLightbox(5)"></div>
+      <div class="gimg" style="background-image:url('the-axel-27B-git/axel-27B-7.jpg')" onclick="openLightbox(6)"></div>
+      <div class="gimg" style="background-image:url('the-axel-27B-git/axel-27B-8.jpg')" onclick="openLightbox(7)"></div>
+      <div class="gimg" style="background-image:url('the-axel-27B-git/axel-27B-9.png')" onclick="openLightbox(8)"></div>
+      <div class="gimg" style="background-image:url('the-axel-27B-git/axel-27B-10.jpg')" onclick="openLightbox(9)"></div>
+      
+  </section>
+
+  <div class="gallery-cta"><button onclick="openLightbox(0)">View All 10 Photos</button></div>
+
+  <section class="pmain">
+    <div class="pdesc">
+      <h2>About this home</h2>
+      <p>Experience elevated Brooklyn living in this stunning one-bedroom apartment at The Axel. Perched on a high floor in Clinton Hill, this property offers breathtaking city views and a designer-furnished interior. Enjoy a fully-equipped kitchen, in-unit laundry, and a plush queen bed. Building perks include a doorman, pool, and lounge. It's the perfect blend of historic charm and modern luxury.</p>
+      <div class="amen-grid">
+        <div class="amen-block"><h3>Unit Amenities</h3><ul><li>Central Air</li><li>W/D in unit</li><li>Dishwasher</li></ul></div>
+        <div class="amen-block"><h3>Building Amenities</h3><ul><li>Outdoor Space</li><li>Gym</li><li>Pool</li><li>Lounge</li><li>Conference Rooms</li><li>Elevator</li><li>Doorman</li></ul></div>
+      </div>
+    </div>
+
+    <aside>
+      <div class="inquiry-card">
+        <div class="ic-eyebrow">Inquire</div>
+        <h3>Request More Information</h3>
+        <p class="sub">Tell us your dates and we'll be in touch with pricing and availability.</p>
+        <form action="https://formspree.io/f/mjgzzger" method="POST">
+          <input type="hidden" name="_subject" value="Inquiry: The Axel Unit 27B">
+          <input type="hidden" name="property" value="The Axel — Unit 27B (Axel-27B)">
+          <div class="frow">
+            <div class="field"><label>Move-in</label><input type="date" name="move_in" required></div>
+            <div class="field"><label>Move-out</label><input type="date" name="move_out" required></div>
+          </div>
+          <div class="field"><label>Name</label><input type="text" name="name" required></div>
+          <div class="field"><label>Email</label><input type="email" name="email" required></div>
+          <div class="field"><label>Phone</label><input type="tel" name="phone"></div>
+          <div class="field"><label>Message (optional)</label><textarea name="message" placeholder="Anything else we should know?"></textarea></div>
+          <button type="submit" class="submit-btn">Send Inquiry</button>
+        </form>
+      </div>
+    </aside>
+  </section>
+
+  <section class="ploc">
+    <h2>Location</h2>
+    <div class="ladr">545 Vanderbilt Avenue, Brooklyn, NY 11238</div>
+    <div id="pmap" class="pmap"></div>
+  </section>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="if(event.target.id==='lightbox')closeLightbox()">
+  <button class="lb-close" onclick="closeLightbox()">&times;</button>
+  <button class="lb-prev" onclick="prevPhoto()">&#8249;</button>
+  <img id="lb-img" src="" alt="">
+  <button class="lb-next" onclick="nextPhoto()">&#8250;</button>
+</div>
+
+<footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods — move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="mailto:info@broadlineliving.com">info@broadlineliving.com</a></li><li><a href="contact.html">Phone number</a></li><li><a href="contact.html">Mailing address</a></li></ul></div><div><h4>Legal</h4><ul><li><a href="#">Terms &amp; Conditions</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved.</div></div></footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const photos = ['the-axel-27B-git/Axel-27B-1.png','the-axel-27B-git/Axel-27B-2.png','the-axel-27B-git/Axel-27B-3.png','the-axel-27B-git/Axel-27B-4.png','the-axel-27B-git/Axel-27B-5.png','the-axel-27B-git/axel-27B-6.JPG','the-axel-27B-git/axel-27B-7.jpg','the-axel-27B-git/axel-27B-8.jpg','the-axel-27B-git/axel-27B-9.png','the-axel-27B-git/axel-27B-10.jpg'];
+  let currentPhoto = 0;
+  function openLightbox(i) {
+    currentPhoto = i;
+    document.getElementById('lb-img').src = photos[i];
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function nextPhoto() { currentPhoto = (currentPhoto + 1) % photos.length; document.getElementById('lb-img').src = photos[currentPhoto]; }
+  function prevPhoto() { currentPhoto = (currentPhoto - 1 + photos.length) % photos.length; document.getElementById('lb-img').src = photos[currentPhoto]; }
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowRight') nextPhoto();
+    if (e.key === 'ArrowLeft') prevPhoto();
+  });
+
+  // Property map
+  const pmap = L.map('pmap', { scrollWheelZoom:false }).setView([40.6855, -73.9695], 15);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution:'&copy; OpenStreetMap, &copy; CARTO', maxZoom:19
+  }).addTo(pmap);
+  const icon = L.divIcon({className:'', html:'<div class="pin"></div>', iconSize:[20,20]});
+  L.marker([40.6855, -73.9695], {icon}).addTo(pmap);
+</script>
+
+</body>
+</html>
