@@ -22,8 +22,8 @@
 
   .pcard{background:var(--surface);border:1px solid var(--line);border-radius:4px;overflow:hidden;transition:transform .25s,border-color .25s,box-shadow .25s;cursor:pointer;display:flex;flex-direction:column;text-decoration:none;color:inherit;position:relative}
   .pcard::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);opacity:0;transition:opacity .25s;z-index:4}
-  .pcard:hover::before,.pcard.active::before{opacity:1}
-  .pcard:hover,.pcard.active{transform:translateY(-3px);border-color:transparent;box-shadow:0 14px 32px rgba(16,32,46,.10)}
+  .pcard:hover::before{opacity:1}
+  .pcard:hover{transform:translateY(-3px);border-color:transparent;box-shadow:0 14px 32px rgba(16,32,46,.10)}
   .pcard .img{aspect-ratio:5/3;background-size:cover;background-position:center;background-repeat:no-repeat;background-color:var(--bg-2)}
   .pcard .body{padding:18px 20px 22px;display:flex;flex-direction:column;flex:1;justify-content:space-between}
   .pcard .name{font-family:var(--display);font-size:22px;font-weight:500;line-height:1.15}
@@ -35,11 +35,11 @@
 
   .map-col{position:sticky;top:100px;height:calc(100vh - 120px);min-height:600px}
   #map{width:100%;height:100%;border-radius:4px;border:1px solid var(--line)}
-  .leaflet-container{font-family:var(--body);background:#cfe6f2}
+  .leaflet-container{font-family:var(--body);background:#f0f2f5}
 
-  /* Custom pin: shows building unit count */
-  .pin-num{background:#fff;color:var(--ink);min-width:36px;height:36px;padding:0 8px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-family:var(--body);font-size:14px;font-weight:600;box-shadow:0 3px 12px rgba(16,32,46,.25);border:2px solid #fff;cursor:pointer;transition:all .2s;line-height:1;white-space:nowrap}
-  .pin-num:hover,.pin-num.active{background:var(--ink);color:#fff;transform:scale(1.15);box-shadow:0 6px 18px rgba(16,32,46,.4)}
+  /* Custom pin: count badge per building */
+  .pin-num{background:#fff;color:var(--ink);min-width:36px;height:36px;padding:0 10px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-family:var(--body);font-size:14px;font-weight:600;box-shadow:0 3px 12px rgba(16,32,46,.25);border:2px solid #fff;cursor:pointer;transition:all .2s;line-height:1;white-space:nowrap}
+  .pin-num:hover,.pin-num.active{background:var(--cyan);color:#fff;border-color:#fff;transform:scale(1.18);box-shadow:0 6px 20px rgba(63,224,208,.5),0 0 0 4px rgba(63,224,208,.2)}
   .leaflet-marker-icon{outline:none}
 
   /* Popup */
@@ -59,10 +59,6 @@
   .pop-unit .pu-arrow{font-size:14px;color:var(--ink-soft);transition:transform .2s}
   .pop-unit:hover .pu-arrow{transform:translateX(2px);color:var(--ink)}
   .leaflet-popup-close-button{color:var(--ink-soft)!important;padding:8px 8px 0 0!important;font-size:18px!important}
-
-  /* Map colored layers — water + parks via Leaflet panes for layering control */
-  .leaflet-pane.parks-pane{z-index:200}
-  .leaflet-pane.water-pane{z-index:201}
 
   @media(max-width:1100px){
     .results{grid-template-columns:1fr;gap:30px}
@@ -85,7 +81,7 @@
 
 <div class="wrap">
   <div class="filters">
-    <select id="filter-hood"><option value="">All Neighborhoods</option><option>Kips Bay</option><option>Morningside Heights</option><option>Clinton Hill</option><option>Lower East Side</option></select>
+    <select id="filter-hood"><option value="">All Neighborhoods</option><option>Kips Bay</option><option>Morningside Heights</option><option>Clinton Hill</option><option>Lower East Side</option><option>Financial District</option></select>
     <select id="filter-beds"><option value="">All Bedrooms</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
     <input id="filter-search" type="text" placeholder="Search by address...">
   </div>
@@ -107,178 +103,97 @@
 
     <a class="pcard" href="rivington-10.html" data-id="p7" data-bld="b-rivington" data-hood="Lower East Side" data-beds="2"><div class="img" style="background-image:url('7-rivington-street-10-git/7-rivington-1.jpeg')"></div><div class="body"><div><div class="name">7 Rivington Street</div><div class="unit">Unit 10</div><div class="hood">Lower East Side, Manhattan</div></div><div><div class="meta"><span>2 Beds</span><span>1 Bath</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
 
+    <a class="pcard" href="william-6a.html" data-id="p9" data-bld="b-william" data-hood="Financial District" data-beds="4"><div class="img" style="background-image:url('136-william-street-git/136w-a-1.png')"></div><div class="body"><div><div class="name">136 William Street</div><div class="unit">Unit 6A</div><div class="hood">Financial District, Manhattan</div></div><div><div class="meta"><span>4 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+
+    <a class="pcard" href="william-4a.html" data-id="p10" data-bld="b-william" data-hood="Financial District" data-beds="4"><div class="img" style="background-image:url('136-william-street-git/136w-a-1.png')"></div><div class="body"><div><div class="name">136 William Street</div><div class="unit">Unit 4A</div><div class="hood">Financial District, Manhattan</div></div><div><div class="meta"><span>4 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+
+    <a class="pcard" href="william-5b.html" data-id="p11" data-bld="b-william" data-hood="Financial District" data-beds="4"><div class="img" style="background-image:url('136-william-street-git/136w-b-1.png')"></div><div class="body"><div><div class="name">136 William Street</div><div class="unit">Unit 5B</div><div class="hood">Financial District, Manhattan</div></div><div><div class="meta"><span>4 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+
+    <a class="pcard" href="william-3b.html" data-id="p12" data-bld="b-william" data-hood="Financial District" data-beds="4"><div class="img" style="background-image:url('136-william-street-git/136w-b-1.png')"></div><div class="body"><div><div class="name">136 William Street</div><div class="unit">Unit 3B</div><div class="hood">Financial District, Manhattan</div></div><div><div class="meta"><span>4 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+
     <a class="pcard" href="waterside-10-31f.html" data-id="p8" data-bld="b-waterside-10" data-hood="Kips Bay" data-beds="3"><div class="img" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div><div class="body"><div><div class="name">10 Waterside Plaza</div><div class="unit">Unit 31F</div><div class="hood">Kips Bay, Manhattan</div></div><div><div class="meta"><span>3 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
   </div>
 
   <div class="map-col"><div id="map"></div></div>
 </section>
 
-<footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods. Move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="mailto:info@broadlineliving.com">info@broadlineliving.com</a></li><li><a href="contact.html">Phone number</a></li><li><a href="contact.html">Mailing address</a></li></ul></div><div><h4>Legal</h4><ul><li><a href="#">Terms &amp; Conditions</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved.</div></div></footer>
+<footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods. Move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="mailto:Info@broadlineliving.com">Info@broadlineliving.com</a></li><li><a href="tel:+19297372160">+1 (929) 737-2160</a></li><li>134 W 29th St, NY 10001</li></ul></div><div><h4>Legal</h4><ul><li><a href="#">Terms &amp; Conditions</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved.</div></div></footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  // Buildings grouped — each pin represents a building, count = how many units
+  // Buildings: one pin per building, count badge shows number of units
   const buildings = [
     {
-      id:'b-waterside-30',
-      name:'30 Waterside Plaza',
-      sub:'Kips Bay, Manhattan',
+      id:'b-waterside-30', name:'30 Waterside Plaza', sub:'Kips Bay, Manhattan',
       lat:40.7392, lng:-73.9750,
       units:[
-        {id:'p1', unit:'22F', meta:'3 Beds, 2 Baths', url:'waterside-30-22f.html', img:'waterisde-plaza-git/30w-22f-1.jpg'}
+        {unit:'22F', meta:'3 Beds, 2 Baths', url:'waterside-30-22f.html', img:'waterisde-plaza-git/30w-22f-1.jpg'}
       ]
     },
     {
-      id:'b-waterside-10',
-      name:'10 Waterside Plaza',
-      sub:'Kips Bay, Manhattan',
+      id:'b-waterside-10', name:'10 Waterside Plaza', sub:'Kips Bay, Manhattan',
       lat:40.7398, lng:-73.9755,
       units:[
-        {id:'p8', unit:'31F', meta:'3 Beds, 2 Baths', url:'waterside-10-31f.html', img:'waterisde-plaza-git/30w-22f-1.jpg'}
+        {unit:'31F', meta:'3 Beds, 2 Baths', url:'waterside-10-31f.html', img:'waterisde-plaza-git/30w-22f-1.jpg'}
       ]
     },
     {
-      id:'b-morningside',
-      name:'30 Morningside Drive',
-      sub:'Morningside Heights, Manhattan',
+      id:'b-morningside', name:'30 Morningside Drive', sub:'Morningside Heights, Manhattan',
       lat:40.8060, lng:-73.9605,
       units:[
-        {id:'p2', unit:'607', meta:'4 Beds, 2 Baths', url:'morningside-607.html', img:'30-morningside-drive-607-git/30m-607-1.png'},
-        {id:'p3', unit:'108 Duplex', meta:'3 Beds, 2.5 Baths', url:'morningside-108.html', img:'30-morningside-drive-108-git/30morn-108-1.png'}
+        {unit:'607', meta:'4 Beds, 2 Baths', url:'morningside-607.html', img:'30-morningside-drive-607-git/30m-607-1.png'},
+        {unit:'108 Duplex', meta:'3 Beds, 2.5 Baths', url:'morningside-108.html', img:'30-morningside-drive-108-git/30morn-108-1.png'}
       ]
     },
     {
-      id:'b-axel',
-      name:'The Axel',
-      sub:'Clinton Hill, Brooklyn',
+      id:'b-axel', name:'The Axel', sub:'Clinton Hill, Brooklyn',
       lat:40.6855, lng:-73.9695,
       units:[
-        {id:'p4', unit:'27B', meta:'1 Bed, 1 Bath', url:'axel-27b.html', img:'the-axel-27B-git/Axel-27B-1.png'},
-        {id:'p5', unit:'21B', meta:'1 Bed, 1 Bath', url:'axel-21b.html', img:'the-axel-21B-git/axel-21B-1.jpg'},
-        {id:'p6', unit:'24G', meta:'1 Bed, 1 Bath', url:'axel-24g.html', img:'the-axel-24G-git/axel-24G-1.jpg'}
+        {unit:'27B', meta:'1 Bed, 1 Bath', url:'axel-27b.html', img:'the-axel-27B-git/Axel-27B-1.png'},
+        {unit:'21B', meta:'1 Bed, 1 Bath', url:'axel-21b.html', img:'the-axel-21B-git/axel-21B-1.jpg'},
+        {unit:'24G', meta:'1 Bed, 1 Bath', url:'axel-24g.html', img:'the-axel-24G-git/axel-24G-1.jpg'}
       ]
     },
     {
-      id:'b-rivington',
-      name:'7 Rivington Street',
-      sub:'Lower East Side, Manhattan',
+      id:'b-rivington', name:'7 Rivington Street', sub:'Lower East Side, Manhattan',
       lat:40.7218, lng:-73.9925,
       units:[
-        {id:'p7', unit:'10', meta:'2 Beds, 1 Bath', url:'rivington-10.html', img:'7-rivington-street-10-git/7-rivington-1.jpeg'}
+        {unit:'10', meta:'2 Beds, 1 Bath', url:'rivington-10.html', img:'7-rivington-street-10-git/7-rivington-1.jpeg'}
+      ]
+    },
+    {
+      id:'b-william', name:'136 William Street', sub:'Financial District, Manhattan',
+      lat:40.7088, lng:-74.0064,
+      units:[
+        {unit:'6A', meta:'4 Beds, 2 Baths', url:'william-6a.html', img:'136-william-street-git/136w-a-1.png'},
+        {unit:'4A', meta:'4 Beds, 2 Baths', url:'william-4a.html', img:'136-william-street-git/136w-a-1.png'},
+        {unit:'5B', meta:'4 Beds, 2 Baths', url:'william-5b.html', img:'136-william-street-git/136w-b-1.png'},
+        {unit:'3B', meta:'4 Beds, 2 Baths', url:'william-3b.html', img:'136-william-street-git/136w-b-1.png'}
       ]
     }
   ];
 
   const map = L.map('map', {zoomControl:true, scrollWheelZoom:true, zoomSnap:0.5}).setView([40.748, -73.97], 12);
 
-  // Custom panes for layering colored overlays beneath labels
-  map.createPane('parksPane');
-  map.getPane('parksPane').style.zIndex = 350;
-  map.createPane('waterPane');
-  map.getPane('waterPane').style.zIndex = 351;
-  map.createPane('labelPane');
-  map.getPane('labelPane').style.zIndex = 450;
-
-  // Light Positron base
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
-    attribution:'&copy; OpenStreetMap, &copy; CARTO',
-    maxZoom:19,
-    subdomains:'abcd'
+  // Clean default Positron - no colored overlays, no borough outlines
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution:'&copy; OpenStreetMap, &copy; CARTO', maxZoom:19, subdomains:'abcd'
   }).addTo(map);
 
-  // Labels layer on top
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
-    maxZoom:19,
-    subdomains:'abcd',
-    pane:'labelPane'
-  }).addTo(map);
-
-  // Auto-fit to NYC only
   const bounds = L.latLngBounds(buildings.map(b => [b.lat, b.lng]));
   map.fitBounds(bounds, {padding:[60, 60], maxZoom:13});
 
-  // PARKS — green tint using OpenStreetMap park polygons via Overpass-style query (fallback to known major NYC parks)
-  // Inline known NYC park polygons (approximate bounding rectangles, gives the green effect without external API)
-  const parks = [
-    // Central Park
-    [[40.7681,-73.9819],[40.7681,-73.9495],[40.8005,-73.9495],[40.8005,-73.9819]],
-    // Morningside Park
-    [[40.8013,-73.9610],[40.8013,-73.9580],[40.8113,-73.9580],[40.8113,-73.9610]],
-    // Riverside Park (segment)
-    [[40.7770,-73.9870],[40.7770,-73.9820],[40.8500,-73.9820],[40.8500,-73.9870]],
-    // Prospect Park
-    [[40.6602,-73.9700],[40.6602,-73.9620],[40.6720,-73.9620],[40.6720,-73.9700]],
-    // Fort Greene Park
-    [[40.6896,-73.9778],[40.6896,-73.9728],[40.6932,-73.9728],[40.6932,-73.9778]],
-    // McCarren Park
-    [[40.7195,-73.9525],[40.7195,-73.9495],[40.7235,-73.9495],[40.7235,-73.9525]],
-    // Bryant Park
-    [[40.7536,-73.9851],[40.7536,-73.9826],[40.7546,-73.9826],[40.7546,-73.9851]],
-    // Tompkins Square
-    [[40.7258,-73.9826],[40.7258,-73.9800],[40.7273,-73.9800],[40.7273,-73.9826]],
-    // Washington Square
-    [[40.7305,-73.9990],[40.7305,-73.9962],[40.7320,-73.9962],[40.7320,-73.9990]],
-    // Madison Square Park
-    [[40.7406,-73.9893],[40.7406,-73.9874],[40.7424,-73.9874],[40.7424,-73.9893]],
-    // Union Square
-    [[40.7355,-73.9923],[40.7355,-73.9905],[40.7367,-73.9905],[40.7367,-73.9923]],
-    // Inwood Hill Park
-    [[40.8665,-73.9290],[40.8665,-73.9180],[40.8745,-73.9180],[40.8745,-73.9290]],
-    // Fort Tryon Park
-    [[40.8585,-73.9354],[40.8585,-73.9305],[40.8650,-73.9305],[40.8650,-73.9354]],
-    // Battery Park
-    [[40.7022,-74.0184],[40.7022,-74.0140],[40.7060,-74.0140],[40.7060,-74.0184]],
-    // Brooklyn Bridge Park (rough)
-    [[40.6995,-73.9985],[40.6995,-73.9930],[40.7045,-73.9930],[40.7045,-73.9985]],
-    // East River Park
-    [[40.7155,-73.9760],[40.7155,-73.9700],[40.7250,-73.9700],[40.7250,-73.9760]]
-  ];
-  parks.forEach(coords => {
-    L.polygon(coords, {
-      color:'#7FB069',
-      weight:0,
-      fillColor:'#B7DDA0',
-      fillOpacity:0.6,
-      pane:'parksPane',
-      interactive:false
-    }).addTo(map);
-  });
-
-  // WATER — blue tint over rivers + harbor
-  const water = [
-    // Hudson River — west of Manhattan
-    [[40.6800,-74.0500],[40.6800,-74.0100],[40.8800,-74.0100],[40.8800,-74.0500]],
-    // East River — east of Manhattan (between Manhattan & Brooklyn/Queens)
-    [[40.6900,-73.9950],[40.6900,-73.9650],[40.7050,-73.9650],[40.7050,-73.9750],[40.7600,-73.9750],[40.7600,-73.9450],[40.8000,-73.9450],[40.8000,-73.9300],[40.7800,-73.9300],[40.7800,-73.9400],[40.7000,-73.9400],[40.6900,-73.9650]],
-    // NY Harbor (rough)
-    [[40.6300,-74.0700],[40.6300,-74.0000],[40.7000,-74.0000],[40.7000,-74.0700]],
-    // Newtown Creek
-    [[40.7280,-73.9550],[40.7280,-73.9400],[40.7400,-73.9400],[40.7400,-73.9550]]
-  ];
-  water.forEach(coords => {
-    L.polygon(coords, {
-      color:'#5BA4D1',
-      weight:0,
-      fillColor:'#A8D0E6',
-      fillOpacity:0.55,
-      pane:'waterPane',
-      interactive:false
-    }).addTo(map);
-  });
-
-  // Pins — one per building, badge shows unit count
+  // One pin per building, count = unit count
   const markers = {};
   buildings.forEach(b => {
     const count = b.units.length;
     const icon = L.divIcon({
       className:'',
       html:'<div class="pin-num" data-pin="'+b.id+'">'+count+'</div>',
-      iconSize:[40,36],
-      iconAnchor:[20,18]
+      iconSize:[40,36], iconAnchor:[20,18]
     });
     const m = L.marker([b.lat, b.lng], {icon}).addTo(map);
 
-    // Build popup with all units at this building
     let unitsHtml = '';
     b.units.forEach(u => {
       unitsHtml += '<a class="pop-unit" href="'+u.url+'"><div class="pu-img" style="background-image:url(\''+u.img+'\')"></div><div class="pu-body"><div class="pu-unit">Unit '+u.unit+'</div><div class="pu-meta">'+u.meta+'</div></div><span class="pu-arrow">&rarr;</span></a>';
@@ -288,28 +203,17 @@
     markers[b.id] = m;
   });
 
-  // Card <-> pin sync (by building id)
-  function setActiveBuilding(bldId, on) {
+  // Hover card → light up ONLY that card's building pin in cyan
+  // No cross-card highlighting (other cards from same building stay normal)
+  function setPinActive(bldId, on) {
     const pin = document.querySelector('[data-pin="'+bldId+'"]');
     if (pin) pin.classList.toggle('active', on);
-    document.querySelectorAll('.pcard[data-bld="'+bldId+'"]').forEach(card => {
-      card.classList.toggle('active', on);
-    });
   }
 
   document.querySelectorAll('.pcard').forEach(card => {
     const bld = card.dataset.bld;
-    card.addEventListener('mouseenter', () => setActiveBuilding(bld, true));
-    card.addEventListener('mouseleave', () => setActiveBuilding(bld, false));
-  });
-
-  document.addEventListener('mouseover', e => {
-    const pin = e.target.closest('[data-pin]');
-    if (pin) setActiveBuilding(pin.getAttribute('data-pin'), true);
-  });
-  document.addEventListener('mouseout', e => {
-    const pin = e.target.closest('[data-pin]');
-    if (pin) setActiveBuilding(pin.getAttribute('data-pin'), false);
+    card.addEventListener('mouseenter', () => setPinActive(bld, true));
+    card.addEventListener('mouseleave', () => setPinActive(bld, false));
   });
 
   function applyFilters() {

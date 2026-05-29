@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>7 Rivington Street, Unit 10 — Broadline Living</title>
+<title>7 Rivington Street, Unit 10 | Broadline Living</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
@@ -32,9 +32,10 @@
   .pdesc p{color:var(--ink-soft);font-size:16px;line-height:1.7;margin-bottom:30px}
   .amen-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:30px}
   .amen-block h3{font-family:var(--display);font-size:22px;font-weight:500;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
-  .amen-block ul{list-style:none;display:grid;gap:9px}
-  .amen-block li{font-size:15px;color:var(--ink);display:flex;align-items:center;gap:10px}
-  .amen-block li::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--grad);flex:none}
+  .amen-block ul{list-style:none;display:grid;gap:12px}
+  .amen-block li{font-size:15px;color:var(--ink);display:flex;align-items:center;gap:12px}
+  .amen-ic{width:22px;height:22px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--cyan);opacity:.85}
+  .amen-ic svg{width:22px;height:22px}
   .inquiry-card{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:32px 30px;position:sticky;top:100px}
   .inquiry-card .ic-eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:500;margin-bottom:8px}
   .inquiry-card h3{font-family:var(--display);font-size:26px;font-weight:500;margin-bottom:8px}
@@ -98,9 +99,9 @@
   <section class="pmain">
     <div class="pdesc">
       <h2>About this home</h2>
-      <p>Furnished 2-bedroom on the Lower East Side, fully outfitted and move-in ready. The unit features in-unit washer/dryer, central air, heated bathroom floors, and a heated towel rack — details that make a difference on an extended stay. Everything you need is already here.</p>
+      <p>Furnished 2-bedroom on the Lower East Side, fully outfitted and move-in ready. The unit features in-unit washer/dryer, central air, heated bathroom floors, and a heated towel rack, details that make a difference on an extended stay. Everything you need is already here.</p>
       <div class="amen-grid">
-        <div class="amen-block"><h3>Unit Amenities</h3><ul><li>Central Air</li><li>W/D in unit</li><li>Dishwasher</li><li>Heated Bathroom Floors</li><li>Heated Towel Rack</li></ul></div>
+        <div class="amen-block"><h3>Unit Amenities</h3><ul><li><span class="amen-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg></span><span>Central Air</span></li><li><span class="amen-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1.5"/><circle cx="12" cy="13" r="4.5"/><circle cx="12" cy="13" r="1.5"/><circle cx="7" cy="6.5" r="0.5" fill="currentColor"/><circle cx="9.5" cy="6.5" r="0.5" fill="currentColor"/></svg></span><span>W/D in unit</span></li><li><span class="amen-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M4 8h16"/><path d="M7 5.5h.01M9.5 5.5h.01M12 5.5h.01"/><path d="M8 12c1.5 1 2.5 1 4 0s2.5-1 4 0"/><path d="M8 15c1.5 1 2.5 1 4 0s2.5-1 4 0"/></svg></span><span>Dishwasher</span></li><li><span class="amen-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="0.5"/><path d="M7 14V8a2 2 0 014 0M13 14V8a2 2 0 014 0"/><path d="M6 4c1 1 1 2 0 3M10 4c1 1 1 2 0 3M14 4c1 1 1 2 0 3M18 4c1 1 1 2 0 3"/></svg></span><span>Heated Bathroom Floors</span></li><li><span class="amen-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="6" width="14" height="12" rx="1"/><path d="M5 10h14M5 14h14"/><path d="M9 2c1 1 1 2 0 3M15 2c1 1 1 2 0 3"/></svg></span><span>Heated Towel Rack</span></li></ul></div>
         
       </div>
     </div>
@@ -112,7 +113,7 @@
         <p class="sub">Tell us your dates and we'll be in touch with pricing and availability.</p>
         <form action="https://formspree.io/f/mjgzzger" method="POST">
           <input type="hidden" name="_subject" value="Inquiry: 7 Rivington Street Unit 10">
-          <input type="hidden" name="property" value="7 Rivington Street — Unit 10 (Rivington-10)">
+          <input type="hidden" name="property" value="7 Rivington Street Unit 10 (Rivington-10)">
           <div class="frow">
             <div class="field"><label>Move-in</label><input type="date" name="move_in" required></div>
             <div class="field"><label>Move-out</label><input type="date" name="move_out" required></div>
@@ -141,7 +142,7 @@
   <button class="lb-next" onclick="nextPhoto()">&#8250;</button>
 </div>
 
-<footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods — move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="mailto:info@broadlineliving.com">info@broadlineliving.com</a></li><li><a href="contact.html">Phone number</a></li><li><a href="contact.html">Mailing address</a></li></ul></div><div><h4>Legal</h4><ul><li><a href="#">Terms &amp; Conditions</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved.</div></div></footer>
+<footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods. Move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="mailto:Info@broadlineliving.com">Info@broadlineliving.com</a></li><li><a href="tel:+19297372160">+1 (929) 737-2160</a></li><li>134 W 29th St, NY 10001</li></ul></div><div><h4>Legal</h4><ul><li><a href="#">Terms &amp; Conditions</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved.</div></div></footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -166,13 +167,10 @@
     if (e.key === 'ArrowLeft') prevPhoto();
   });
 
-  // Property map
+  // Property location map — clean Positron, no overlays
   const pmap = L.map('pmap', { scrollWheelZoom:false }).setView([40.7218, -73.9925], 15);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution:'&copy; OpenStreetMap, &copy; CARTO', maxZoom:19, subdomains:'abcd'
-  }).addTo(pmap);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
-    maxZoom:19, subdomains:'abcd', pane:'shadowPane'
   }).addTo(pmap);
   const icon = L.divIcon({className:'', html:'<div class="pin"></div>', iconSize:[20,20]});
   L.marker([40.7218, -73.9925], {icon}).addTo(pmap);
