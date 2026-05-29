@@ -20,63 +20,65 @@
   .av-filters select,.av-filters input{background:transparent;border:1px solid var(--line);color:var(--ink);padding:10px 16px;border-radius:30px;font-family:inherit;font-size:13px;min-width:150px;cursor:pointer;transition:border-color .2s}
   .av-filters select:hover,.av-filters input:hover{border-color:var(--ink)}
   .av-filters select:focus,.av-filters input:focus{outline:none;border-color:var(--cyan)}
-  .av-filters input{min-width:220px}
+  .av-filters input{min-width:240px}
   .av-filters .reset{margin-left:auto;background:none;border:none;color:var(--ink-soft);font-size:13px;cursor:pointer;padding:10px 8px;font-family:inherit}
   .av-filters .reset:hover{color:var(--ink)}
 
   /* Main split */
-  .av-split{display:grid;grid-template-columns:1.4fr 1fr;gap:0;align-items:start;min-height:calc(100vh - 80px)}
-  .av-list-col{padding:30px 30px 80px 0}
+  .av-split{display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:start;min-height:calc(100vh - 80px)}
+  .av-list-col{padding:30px 36px 80px 0}
   .av-map-col{position:sticky;top:80px;height:calc(100vh - 80px);background:#fff;border-left:1px solid var(--line)}
   #map{width:100%;height:100%}
-  .leaflet-container{font-family:var(--body);background:#fafbfc}
+  .leaflet-container{font-family:var(--body);background:#f7fafc}
 
-  /* Card grid */
-  .av-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-  .pcard{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;cursor:pointer;text-decoration:none;color:inherit;transition:all .25s ease;display:block}
-  .pcard:hover,.pcard.focused{transform:translateY(-3px);border-color:var(--ink);box-shadow:0 14px 32px rgba(16,32,46,.10)}
-  .pcard .num{position:absolute;top:12px;left:12px;z-index:3;width:28px;height:28px;border-radius:50%;background:#fff;color:var(--ink);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(16,32,46,.15);font-family:var(--display);transition:all .25s}
-  .pcard:hover .num,.pcard.focused .num{background:var(--ink);color:#fff}
-  .pcard .img{width:100%;aspect-ratio:4/3;background-size:cover;background-position:center;background-color:var(--bg-2);position:relative;overflow:hidden}
-  .pcard .img::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(0,0,0,.08));pointer-events:none}
-  .pcard .body{padding:18px 18px 20px}
-  .pcard .name{font-family:var(--display);font-size:22px;font-weight:500;line-height:1.15;color:var(--ink)}
-  .pcard .unit{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-top:4px}
-  .pcard .hood{font-size:13px;color:var(--ink-soft);margin-top:10px}
-  .pcard .meta{display:flex;gap:12px;font-size:12px;letter-spacing:.04em;color:var(--ink);margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
-  .pcard .meta span{display:inline-flex;align-items:center;gap:5px}
-  .pcard .arrow{position:absolute;bottom:16px;right:16px;font-size:18px;color:var(--ink-soft);opacity:0;transition:all .25s;background:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--line)}
-  .pcard:hover .arrow,.pcard.focused .arrow{opacity:1;color:var(--ink);border-color:var(--ink);transform:translateX(2px)}
+  /* Single column larger cards — 3 visible at once */
+  .av-list{display:flex;flex-direction:column;gap:18px}
+  .pcard{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;text-decoration:none;color:inherit;transition:all .25s ease;display:grid;grid-template-columns:46% 1fr;min-height:240px}
+  .pcard:hover,.pcard.focused{transform:translateY(-2px);border-color:var(--ink);box-shadow:0 18px 38px rgba(16,32,46,.10)}
+  .pcard .num{position:absolute;top:14px;left:14px;z-index:3;width:32px;height:32px;border-radius:50%;background:#fff;color:var(--ink);font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(16,32,46,.18);font-family:var(--display);transition:all .25s}
+  .pcard:hover .num,.pcard.focused .num{background:var(--ink);color:#fff;transform:scale(1.06)}
+  .pcard .img{width:100%;height:100%;background-size:cover;background-position:center;background-color:var(--bg-2);position:relative}
+  .pcard .img::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 65%,rgba(0,0,0,.06));pointer-events:none}
+  .pcard .body{padding:26px 28px;display:flex;flex-direction:column;justify-content:space-between}
+  .pcard .name{font-family:var(--display);font-size:28px;font-weight:500;line-height:1.1;color:var(--ink)}
+  .pcard .unit{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);margin-top:6px}
+  .pcard .hood{font-size:14px;color:var(--ink-soft);margin-top:14px}
+  .pcard .footer-row{display:flex;align-items:center;justify-content:space-between;margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+  .pcard .meta{display:flex;gap:12px;font-size:13px;color:var(--ink)}
+  .pcard .meta span{display:inline-flex;align-items:center}
+  .pcard .meta .dot{color:var(--ink-soft);padding:0 2px}
+  .pcard .cta{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:gap .2s}
+  .pcard:hover .cta{gap:10px}
 
-  /* Map pins */
-  .pin-num{background:#fff;color:var(--ink);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:14px;font-weight:600;box-shadow:0 3px 12px rgba(16,32,46,.2);border:2px solid #fff;cursor:pointer;transition:all .2s;line-height:1}
-  .pin-num:hover,.pin-num.active{background:var(--ink);color:#fff;transform:scale(1.18);box-shadow:0 6px 18px rgba(16,32,46,.35)}
+  /* Map pins — clean numbered */
+  .pin-num{background:#fff;color:var(--ink);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:15px;font-weight:600;box-shadow:0 4px 14px rgba(16,32,46,.18);border:2px solid #fff;cursor:pointer;transition:all .2s;line-height:1}
+  .pin-num:hover,.pin-num.active{background:var(--ink);color:#fff;transform:scale(1.2);box-shadow:0 8px 22px rgba(16,32,46,.4)}
   .leaflet-marker-icon{outline:none}
 
   /* Popup */
-  .leaflet-popup-content-wrapper{border-radius:6px;box-shadow:0 8px 24px rgba(16,32,46,.18);padding:0}
-  .leaflet-popup-content{margin:0;width:220px!important;font-family:var(--body)}
+  .leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 12px 32px rgba(16,32,46,.18);padding:0;overflow:hidden}
+  .leaflet-popup-content{margin:0;width:240px!important;font-family:var(--body)}
   .pop{padding:0}
   .pop .pimg{width:100%;aspect-ratio:5/3;background-size:cover;background-position:center;background-color:var(--bg-2)}
-  .pop .pbody{padding:12px 14px}
-  .pop b{font-family:var(--display);font-size:16px;font-weight:500;display:block;color:var(--ink)}
-  .pop .punit{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-top:2px}
-  .pop .pmeta{font-size:12px;color:var(--ink);margin-top:6px}
-  .pop .plink{display:block;margin-top:10px;padding:8px 0;text-align:center;background:var(--ink);color:#fff;font-size:11px;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;border-radius:3px;transition:opacity .2s}
+  .pop .pbody{padding:14px 16px}
+  .pop b{font-family:var(--display);font-size:17px;font-weight:500;display:block;color:var(--ink)}
+  .pop .punit{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px}
+  .pop .pmeta{font-size:12px;color:var(--ink);margin-top:8px}
+  .pop .plink{display:block;margin-top:12px;padding:9px 0;text-align:center;background:var(--ink);color:#fff;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;border-radius:4px;transition:opacity .2s}
   .pop .plink:hover{opacity:.85}
   .leaflet-popup-tip{box-shadow:0 8px 24px rgba(16,32,46,.18)}
   .leaflet-popup-close-button{color:var(--ink-soft)!important;padding:8px 8px 0 0!important;font-size:18px!important}
 
   /* Empty state */
-  .av-empty{grid-column:1/-1;padding:60px 20px;text-align:center;color:var(--ink-soft)}
+  .av-empty{padding:60px 20px;text-align:center;color:var(--ink-soft);border:1px dashed var(--line);border-radius:10px}
   .av-empty h3{font-family:var(--display);font-size:24px;color:var(--ink);margin-bottom:8px}
 
-  @media(max-width:1100px){.av-split{grid-template-columns:1fr 1fr}}
-  @media(max-width:860px){
+  @media(max-width:980px){
     .av-split{grid-template-columns:1fr}
     .av-map-col{position:relative;top:0;height:380px;order:-1;border-left:none;border-bottom:1px solid var(--line)}
     .av-list-col{padding:24px 0 60px}
-    .av-grid{grid-template-columns:1fr}
+    .pcard{grid-template-columns:1fr;min-height:0}
+    .pcard .img{aspect-ratio:5/3}
     .av-filters input{min-width:0;flex:1}
     .av-filters .reset{margin-left:0}
   }
@@ -115,23 +117,23 @@
 </section>
 
 <div class="av-split">
-  <div class="av-list-col wrap" style="padding-right:30px">
-    <div class="av-grid" id="listings">
-      <a class="pcard" href="waterside-30-22f.html" data-id="p1" data-hood="Kips Bay" data-beds="3"><div class="num">1</div><div class="img" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div><div class="body"><div class="name">30 Waterside Plaza</div><div class="unit">Unit 22F</div><div class="hood">Kips Bay, Manhattan</div><div class="meta"><span>3 Beds</span><span>&middot;</span><span>2 Baths</span></div></div><div class="arrow">&rarr;</div></a>
+  <div class="av-list-col wrap" style="padding-right:36px">
+    <div class="av-list" id="listings">
+      <a class="pcard" href="waterside-30-22f.html" data-id="p1" data-hood="Kips Bay" data-beds="3"><div class="num">1</div><div class="img" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div><div class="body"><div><div class="name">30 Waterside Plaza</div><div class="unit">Unit 22F</div><div class="hood">Kips Bay, Manhattan</div></div><div class="footer-row"><div class="meta"><span>3 Beds</span><span class="dot">&middot;</span><span>2 Baths</span></div><span class="cta">View Home &rarr;</span></div></div></a>
 
-      <a class="pcard" href="morningside-607.html" data-id="p2" data-hood="Morningside Heights" data-beds="4"><div class="num">2</div><div class="img" style="background-image:url('30-morningside-drive-607-git/30m-607-1.png')"></div><div class="body"><div class="name">30 Morningside Drive</div><div class="unit">Unit 607</div><div class="hood">Morningside Heights, Manhattan</div><div class="meta"><span>4 Beds</span><span>&middot;</span><span>2 Baths</span></div></div><div class="arrow">&rarr;</div></a>
+      <a class="pcard" href="morningside-607.html" data-id="p2" data-hood="Morningside Heights" data-beds="4"><div class="num">2</div><div class="img" style="background-image:url('30-morningside-drive-607-git/30m-607-1.png')"></div><div class="body"><div><div class="name">30 Morningside Drive</div><div class="unit">Unit 607</div><div class="hood">Morningside Heights, Manhattan</div></div><div class="footer-row"><div class="meta"><span>4 Beds</span><span class="dot">&middot;</span><span>2 Baths</span></div><span class="cta">View Home &rarr;</span></div></div></a>
 
-      <a class="pcard" href="morningside-108.html" data-id="p3" data-hood="Morningside Heights" data-beds="3"><div class="num">3</div><div class="img" style="background-image:url('30-morningside-drive-108-git/30morn-108-1.png')"></div><div class="body"><div class="name">30 Morningside Drive</div><div class="unit">Unit 108 &middot; Duplex</div><div class="hood">Morningside Heights, Manhattan</div><div class="meta"><span>3 Beds</span><span>&middot;</span><span>2.5 Baths</span></div></div><div class="arrow">&rarr;</div></a>
+      <a class="pcard" href="morningside-108.html" data-id="p3" data-hood="Morningside Heights" data-beds="3"><div class="num">3</div><div class="img" style="background-image:url('30-morningside-drive-108-git/30morn-108-1.png')"></div><div class="body"><div><div class="name">30 Morningside Drive</div><div class="unit">Unit 108 &middot; Duplex</div><div class="hood">Morningside Heights, Manhattan</div></div><div class="footer-row"><div class="meta"><span>3 Beds</span><span class="dot">&middot;</span><span>2.5 Baths</span></div><span class="cta">View Home &rarr;</span></div></div></a>
 
-      <a class="pcard" href="axel-27b.html" data-id="p4" data-hood="Clinton Hill" data-beds="1"><div class="num">4</div><div class="img" style="background-image:url('the-axel-27B-git/Axel-27B-1.png')"></div><div class="body"><div class="name">The Axel</div><div class="unit">Unit 27B</div><div class="hood">Clinton Hill, Brooklyn</div><div class="meta"><span>1 Bed</span><span>&middot;</span><span>1 Bath</span></div></div><div class="arrow">&rarr;</div></a>
+      <a class="pcard" href="axel-27b.html" data-id="p4" data-hood="Clinton Hill" data-beds="1"><div class="num">4</div><div class="img" style="background-image:url('the-axel-27B-git/Axel-27B-1.png')"></div><div class="body"><div><div class="name">The Axel</div><div class="unit">Unit 27B</div><div class="hood">Clinton Hill, Brooklyn</div></div><div class="footer-row"><div class="meta"><span>1 Bed</span><span class="dot">&middot;</span><span>1 Bath</span></div><span class="cta">View Home &rarr;</span></div></div></a>
 
-      <a class="pcard" href="axel-21b.html" data-id="p5" data-hood="Clinton Hill" data-beds="1"><div class="num">5</div><div class="img" style="background-image:url('the-axel-21B-git/axel-21B-1.jpg')"></div><div class="body"><div class="name">The Axel</div><div class="unit">Unit 21B</div><div class="hood">Clinton Hill, Brooklyn</div><div class="meta"><span>1 Bed</span><span>&middot;</span><span>1 Bath</span></div></div><div class="arrow">&rarr;</div></a>
+      <a class="pcard" href="axel-21b.html" data-id="p5" data-hood="Clinton Hill" data-beds="1"><div class="num">5</div><div class="img" style="background-image:url('the-axel-21B-git/axel-21B-1.jpg')"></div><div class="body"><div><div class="name">The Axel</div><div class="unit">Unit 21B</div><div class="hood">Clinton Hill, Brooklyn</div></div><div class="footer-row"><div class="meta"><span>1 Bed</span><span class="dot">&middot;</span><span>1 Bath</span></div><span class="cta">View Home &rarr;</span></div></div></a>
 
-      <a class="pcard" href="axel-24g.html" data-id="p6" data-hood="Clinton Hill" data-beds="1"><div class="num">6</div><div class="img" style="background-image:url('the-axel-24G-git/axel-24G-1.jpg')"></div><div class="body"><div class="name">The Axel</div><div class="unit">Unit 24G</div><div class="hood">Clinton Hill, Brooklyn</div><div class="meta"><span>1 Bed</span><span>&middot;</span><span>1 Bath</span></div></div><div class="arrow">&rarr;</div></a>
+      <a class="pcard" href="axel-24g.html" data-id="p6" data-hood="Clinton Hill" data-beds="1"><div class="num">6</div><div class="img" style="background-image:url('the-axel-24G-git/axel-24G-1.jpg')"></div><div class="body"><div><div class="name">The Axel</div><div class="unit">Unit 24G</div><div class="hood">Clinton Hill, Brooklyn</div></div><div class="footer-row"><div class="meta"><span>1 Bed</span><span class="dot">&middot;</span><span>1 Bath</span></div><span class="cta">View Home &rarr;</span></div></div></a>
 
-      <a class="pcard" href="rivington-10.html" data-id="p7" data-hood="Lower East Side" data-beds="2"><div class="num">7</div><div class="img" style="background-image:url('7-rivington-street-10-git/7-rivington-1.jpeg')"></div><div class="body"><div class="name">7 Rivington Street</div><div class="unit">Unit 10</div><div class="hood">Lower East Side, Manhattan</div><div class="meta"><span>2 Beds</span><span>&middot;</span><span>1 Bath</span></div></div><div class="arrow">&rarr;</div></a>
+      <a class="pcard" href="rivington-10.html" data-id="p7" data-hood="Lower East Side" data-beds="2"><div class="num">7</div><div class="img" style="background-image:url('7-rivington-street-10-git/7-rivington-1.jpeg')"></div><div class="body"><div><div class="name">7 Rivington Street</div><div class="unit">Unit 10</div><div class="hood">Lower East Side, Manhattan</div></div><div class="footer-row"><div class="meta"><span>2 Beds</span><span class="dot">&middot;</span><span>1 Bath</span></div><span class="cta">View Home &rarr;</span></div></div></a>
 
-      <a class="pcard" href="waterside-10-31f.html" data-id="p8" data-hood="Kips Bay" data-beds="3"><div class="num">8</div><div class="img" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div><div class="body"><div class="name">10 Waterside Plaza</div><div class="unit">Unit 31F</div><div class="hood">Kips Bay, Manhattan</div><div class="meta"><span>3 Beds</span><span>&middot;</span><span>2 Baths</span></div></div><div class="arrow">&rarr;</div></a>
+      <a class="pcard" href="waterside-10-31f.html" data-id="p8" data-hood="Kips Bay" data-beds="3"><div class="num">8</div><div class="img" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div><div class="body"><div><div class="name">10 Waterside Plaza</div><div class="unit">Unit 31F</div><div class="hood">Kips Bay, Manhattan</div></div><div class="footer-row"><div class="meta"><span>3 Beds</span><span class="dot">&middot;</span><span>2 Baths</span></div><span class="cta">View Home &rarr;</span></div></div></a>
     </div>
   </div>
 
@@ -156,15 +158,10 @@
   ];
 
   const map = L.map('map', {zoomControl:true, scrollWheelZoom:true, zoomSnap:0.5}).setView([40.745, -73.97], 11);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution:'&copy; OpenStreetMap, &copy; CARTO',
     maxZoom:19,
     subdomains:'abcd'
-  }).addTo(map);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
-    maxZoom:19,
-    subdomains:'abcd',
-    pane:'shadowPane'
   }).addTo(map);
 
   const markers = {};
@@ -172,12 +169,12 @@
     const icon = L.divIcon({
       className:'',
       html:'<div class="pin-num" data-pin="'+p.id+'">'+p.num+'</div>',
-      iconSize:[32,32],
-      iconAnchor:[16,16]
+      iconSize:[34,34],
+      iconAnchor:[17,17]
     });
     const m = L.marker([p.lat, p.lng], {icon}).addTo(map);
     const popupHtml = '<div class="pop"><div class="pimg" style="background-image:url(\''+p.img+'\')"></div><div class="pbody"><b>'+p.name+'</b><div class="punit">Unit '+p.unit+'</div><div class="pmeta">'+p.beds+'</div><a class="plink" href="'+p.url+'">View Details &rarr;</a></div></div>';
-    m.bindPopup(popupHtml, {closeButton:true, autoPan:true, maxWidth:240, minWidth:220});
+    m.bindPopup(popupHtml, {closeButton:true, autoPan:true, maxWidth:260, minWidth:240});
     markers[p.id] = m;
   });
 
@@ -188,14 +185,12 @@
     if (card) card.classList.toggle('focused', on);
   }
 
-  // Card hover/click bindings
   document.querySelectorAll('.pcard').forEach(card => {
     const id = card.dataset.id;
     card.addEventListener('mouseenter', () => setActive(id, true));
     card.addEventListener('mouseleave', () => setActive(id, false));
   });
 
-  // Pin hover delegated
   document.addEventListener('mouseover', e => {
     const pin = e.target.closest('[data-pin]');
     if (pin) setActive(pin.getAttribute('data-pin'), true);
@@ -205,7 +200,6 @@
     if (pin) setActive(pin.getAttribute('data-pin'), false);
   });
 
-  // Filters
   function applyFilters() {
     const h = document.getElementById('filter-hood').value.toLowerCase();
     const b = document.getElementById('filter-beds').value;
@@ -223,7 +217,7 @@
       if (show) visibleCount++;
     });
     document.getElementById('count').textContent = visibleCount;
-    const empty = document.getElementById('empty-state');
+    let empty = document.getElementById('empty-state');
     if (visibleCount === 0 && !empty) {
       const div = document.createElement('div');
       div.id = 'empty-state';
