@@ -65,10 +65,36 @@
   .submit{width:100%;margin-top:8px}
   @media(max-width:860px){.intro-grid,.why-grid,.form-card{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}.sgrid{grid-template-columns:1fr}.sitem+.sitem{border-left:none;border-top:1px solid var(--line);padding-top:30px;margin-top:30px}.fgrid{grid-template-columns:1fr}}
   @media(max-width:520px){.steps{grid-template-columns:1fr}}
+
+  /* ── MOBILE INJECT ── */
+@media(max-width:900px){
+  .intro-grid{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr 1fr}
+  .form-card{grid-template-columns:1fr}
+  .why-centered{text-align:left}
+}
+@media(max-width:600px){
+  .page-hero{padding:60px 0 30px}
+  .page-hero h1{font-size:clamp(34px,9vw,52px)}
+  .intro{padding:20px 0 50px}
+  .intro h2{font-size:clamp(24px,7vw,36px)}
+  .why{padding:60px 0}
+  .why h2{font-size:clamp(24px,7vw,36px)}
+  .process{padding:60px 0}
+  .steps{grid-template-columns:1fr}
+  .form-sec{padding:60px 0}
+  .form-side{padding:36px 24px}
+  .form-body{padding:32px 20px}
+  .fgrid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
-<header><div class="wrap nav"><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bg)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bg)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bg)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><nav><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html">View Availability</a></li><li><a href="landlords.html" class="active">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul></nav><a href="#listing" class="nav-cta">List Property</a><button class="burger" aria-label="Menu">&#9776;</button></div></header>
+<header><div class="wrap nav"><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bg)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bg)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bg)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><nav><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html">View Availability</a></li><li><a href="landlords.html" class="active">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul></nav><a href="#listing" class="nav-cta">List Property</a><button class="burger" id="burger" aria-label="Menu" onclick="toggleMenu()"><svg id="burger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div></header>
+<div class="mobile-menu" id="mobile-menu">
+  <ul><li><a href="index.html">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html">View Availability</a></li><li><a href="landlords.html" class="active">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul>
+  <a href="availability.html" class="m-cta">View Availability</a>
+</div>
 <section class="page-hero wrap">
   <p class="eyebrow">Landlords</p>
   <h1>Your Property Starts Here</h1>
@@ -144,5 +170,24 @@
   </div>
 </section>
 <footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods. Move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="contact.html">Mailing address</a></li><li><a href="contact.html">Phone number</a></li><li><a href="contact.html">Email address</a></li></ul></div><div><h4>Legal</h4><ul><li><a href="#">Terms &amp; Conditions</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved.</div></div></footer>
+<script>
+function toggleMenu(){
+  var m=document.getElementById('mobile-menu');
+  var b=document.getElementById('burger-icon');
+  var open=m.classList.contains('open');
+  m.classList.toggle('open',!open);
+  document.body.style.overflow=open?'':'hidden';
+  b.innerHTML=open
+    ?'<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>'
+    :'<line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/>';
+}
+// Close menu on nav link tap
+document.querySelectorAll('.mobile-menu a').forEach(function(a){
+  a.addEventListener('click',function(){
+    document.getElementById('mobile-menu').classList.remove('open');
+    document.body.style.overflow='';
+  });
+});
+</script>
 </body>
 </html>

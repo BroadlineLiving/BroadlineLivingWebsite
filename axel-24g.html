@@ -70,10 +70,38 @@
     .amen-grid{grid-template-columns:1fr;gap:20px}
     .ptop .meta{flex-wrap:wrap;gap:10px}
   }
+
+  /* ── MOBILE INJECT ── */
+@media(max-width:900px){
+  .gallery{grid-template-columns:1fr 1fr;grid-template-rows:200px 200px 200px;gap:6px}
+  .gimg.big{grid-column:span 2;grid-row:span 1}
+  .pmain{grid-template-columns:1fr;gap:30px}
+  .inquiry-card{position:relative;top:0}
+  .amen-grid{grid-template-columns:1fr;gap:20px}
+  .ptop .meta{flex-wrap:wrap;gap:10px}
+}
+@media(max-width:600px){
+  .ptop{padding:10px 0 20px}
+  .ptop h1{font-size:clamp(28px,8vw,42px)}
+  .ptop .meta span{font-size:12px;padding:5px 12px}
+  .gallery{grid-template-columns:1fr 1fr;grid-template-rows:160px 160px 160px;gap:5px;margin:20px 0 36px}
+  .gallery-cta{margin:-24px 0 36px}
+  .pdesc h2{font-size:clamp(22px,6vw,30px)}
+  .pdesc p{font-size:15px}
+  .ploc{padding:40px 0 50px}
+  .ploc h2{font-size:clamp(22px,6vw,30px)}
+  #pmap{height:280px}
+  .inquiry-card{padding:24px 18px}
+  .frow{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
-<header><div class="wrap nav"><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bg)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bg)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bg)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><nav><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html" class="active">View Availability</a></li><li><a href="landlords.html">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul></nav><a href="availability.html" class="nav-cta">View Availability</a><button class="burger" aria-label="Menu">&#9776;</button></div></header>
+<header><div class="wrap nav"><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bg)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bg)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bg)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><nav><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html" class="active">View Availability</a></li><li><a href="landlords.html">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul></nav><a href="availability.html" class="nav-cta">View Availability</a><button class="burger" id="burger" aria-label="Menu" onclick="toggleMenu()"><svg id="burger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div></header>
+<div class="mobile-menu" id="mobile-menu">
+  <ul><li><a href="index.html">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html" class="active">View Availability</a></li><li><a href="landlords.html">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul>
+  <a href="availability.html" class="m-cta">View Availability</a>
+</div>
 
 <div class="wrap">
   <div class="crumb"><a href="availability.html">&larr; View All Availability</a></div>
@@ -182,5 +210,24 @@
   L.marker([40.6855, -73.9695], {icon}).addTo(pmap);
 </script>
 
+<script>
+function toggleMenu(){
+  var m=document.getElementById('mobile-menu');
+  var b=document.getElementById('burger-icon');
+  var open=m.classList.contains('open');
+  m.classList.toggle('open',!open);
+  document.body.style.overflow=open?'':'hidden';
+  b.innerHTML=open
+    ?'<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>'
+    :'<line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/>';
+}
+// Close menu on nav link tap
+document.querySelectorAll('.mobile-menu a').forEach(function(a){
+  a.addEventListener('click',function(){
+    document.getElementById('mobile-menu').classList.remove('open');
+    document.body.style.overflow='';
+  });
+});
+</script>
 </body>
 </html>

@@ -51,10 +51,39 @@
   .landlord-cta p{color:var(--ink-soft);margin-bottom:28px;max-width:46ch}
   .landlord-cta .actions{display:flex;gap:14px;flex-wrap:wrap}
   @media(max-width:860px){.what-grid,.lc-grid{grid-template-columns:1fr}.feat-grid{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr}.hero{min-height:75vh}.hero h1{font-size:clamp(42px,9vw,60px)}}
+
+  /* ── MOBILE INJECT ── */
+@media(max-width:900px){
+  .feat-grid{grid-template-columns:1fr 1fr}
+  .what-grid,.lc-grid{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr 1fr}
+  .lc-grid .lc-photo{order:-1}
+}
+@media(max-width:600px){
+  .hero{min-height:85svh}
+  .hero h1{font-size:clamp(38px,10vw,56px)}
+  .hero p{font-size:16px;margin:20px auto 28px}
+  .feat{padding:24px 0 40px}
+  .feat-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .fcard{padding:18px 14px}
+  .fcard .stat{font-size:26px}
+  .fcard h3{font-size:10px;letter-spacing:.12em}
+  .what{padding:60px 0}
+  .listings{padding:60px 0}
+  .grid3{grid-template-columns:1fr}
+  .landlord-cta{padding:60px 0}
+  .landlord-cta h2{font-size:clamp(26px,7vw,36px)}
+  .landlord-cta .actions{flex-direction:column;gap:12px}
+  .landlord-cta .actions .btn{text-align:center;width:100%}
+}
 </style>
 </head>
 <body>
-<header><div class="wrap nav"><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bg)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bg)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bg)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><nav><ul><li><a href="index.html" class="active">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html">View Availability</a></li><li><a href="landlords.html">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul></nav><a href="availability.html" class="nav-cta">View Availability</a><button class="burger" aria-label="Menu">&#9776;</button></div></header>
+<header><div class="wrap nav"><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bg)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bg)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bg)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><nav><ul><li><a href="index.html" class="active">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html">View Availability</a></li><li><a href="landlords.html">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul></nav><a href="availability.html" class="nav-cta">View Availability</a><button class="burger" id="burger" aria-label="Menu" onclick="toggleMenu()"><svg id="burger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div></header>
+<div class="mobile-menu" id="mobile-menu">
+  <ul><li><a href="index.html" class="active">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html">View Availability</a></li><li><a href="landlords.html">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul>
+  <a href="availability.html" class="m-cta">View Availability</a>
+</div>
 <section class="hero">
   <video autoplay muted loop playsinline src="219131.mp4"></video>
   <div class="hero-overlay"></div>
@@ -125,5 +154,24 @@
   </div>
 </section>
 <footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods. Move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="contact.html">Mailing address</a></li><li><a href="contact.html">Phone number</a></li><li><a href="contact.html">Email address</a></li></ul></div><div><h4>Legal</h4><ul><li><a href="#">Terms &amp; Conditions</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved.</div></div></footer>
+<script>
+function toggleMenu(){
+  var m=document.getElementById('mobile-menu');
+  var b=document.getElementById('burger-icon');
+  var open=m.classList.contains('open');
+  m.classList.toggle('open',!open);
+  document.body.style.overflow=open?'':'hidden';
+  b.innerHTML=open
+    ?'<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>'
+    :'<line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/>';
+}
+// Close menu on nav link tap
+document.querySelectorAll('.mobile-menu a').forEach(function(a){
+  a.addEventListener('click',function(){
+    document.getElementById('mobile-menu').classList.remove('open');
+    document.body.style.overflow='';
+  });
+});
+</script>
 </body>
 </html>
