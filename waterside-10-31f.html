@@ -85,16 +85,16 @@
   </section>
 
   <section class="gallery">
-    <div class="gimg big" style="background-image:url('waterside-plaza-git/30w-22f-1.jpg')" onclick="openLightbox(0)"></div>
-      <div class="gimg" style="background-image:url('waterside-plaza-git/30w-22f_2.jpg')" onclick="openLightbox(1)"></div>
-      <div class="gimg" style="background-image:url('waterside-plaza-git/30w-22f-3.jpg')" onclick="openLightbox(2)"></div>
-      <div class="gimg" style="background-image:url('waterside-plaza-git/30w-22f-4.jpg')" onclick="openLightbox(3)"></div>
-      <div class="gimg" style="background-image:url('waterside-plaza-git/30w-22f-5.jpg')" onclick="openLightbox(4)"></div>
-      <div class="gimg" style="background-image:url('waterside-plaza-git/30w-22f-6.jpg')" onclick="openLightbox(5)"></div>
-      <div class="gimg" style="background-image:url('waterside-plaza-git/30w-22f-7.jpg')" onclick="openLightbox(6)"></div>
-      <div class="gimg" style="background-image:url('waterside-plaza-git/30w-22f-8.jpg')" onclick="openLightbox(7)"></div>
-      <div class="gimg" style="background-image:url('waterside-plaza-git/30w-22f-9.jpg')" onclick="openLightbox(8)"></div>
-      <div class="gimg" style="background-image:url('waterside-plaza-git/30w-22f-10.jpg')" onclick="openLightbox(9)"></div>
+    <div class="gimg big" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')" onclick="openLightbox(0)"></div>
+      <div class="gimg" style="background-image:url('waterisde-plaza-git/30w-22f_2.jpg')" onclick="openLightbox(1)"></div>
+      <div class="gimg" style="background-image:url('waterisde-plaza-git/30w-22f-3.jpg')" onclick="openLightbox(2)"></div>
+      <div class="gimg" style="background-image:url('waterisde-plaza-git/30w-22f-4.jpg')" onclick="openLightbox(3)"></div>
+      <div class="gimg" style="background-image:url('waterisde-plaza-git/30w-22f-5.jpg')" onclick="openLightbox(4)"></div>
+      <div class="gimg" style="background-image:url('waterisde-plaza-git/30w-22f-6.jpg')" onclick="openLightbox(5)"></div>
+      <div class="gimg" style="background-image:url('waterisde-plaza-git/30w-22f-7.jpg')" onclick="openLightbox(6)"></div>
+      <div class="gimg" style="background-image:url('waterisde-plaza-git/30w-22f-8.jpg')" onclick="openLightbox(7)"></div>
+      <div class="gimg" style="background-image:url('waterisde-plaza-git/30w-22f-9.jpg')" onclick="openLightbox(8)"></div>
+      <div class="gimg" style="background-image:url('waterisde-plaza-git/30w-22f-10.jpg')" onclick="openLightbox(9)"></div>
       
   </section>
 
@@ -150,7 +150,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  const photos = ['waterside-plaza-git/30w-22f-1.jpg','waterside-plaza-git/30w-22f_2.jpg','waterside-plaza-git/30w-22f-3.jpg','waterside-plaza-git/30w-22f-4.jpg','waterside-plaza-git/30w-22f-5.jpg','waterside-plaza-git/30w-22f-6.jpg','waterside-plaza-git/30w-22f-7.jpg','waterside-plaza-git/30w-22f-8.jpg','waterside-plaza-git/30w-22f-9.jpg','waterside-plaza-git/30w-22f-10.jpg'];
+  const photos = ['waterisde-plaza-git/30w-22f-1.jpg','waterisde-plaza-git/30w-22f_2.jpg','waterisde-plaza-git/30w-22f-3.jpg','waterisde-plaza-git/30w-22f-4.jpg','waterisde-plaza-git/30w-22f-5.jpg','waterisde-plaza-git/30w-22f-6.jpg','waterisde-plaza-git/30w-22f-7.jpg','waterisde-plaza-git/30w-22f-8.jpg','waterisde-plaza-git/30w-22f-9.jpg','waterisde-plaza-git/30w-22f-10.jpg'];
   let currentPhoto = 0;
   function openLightbox(i) {
     currentPhoto = i;
@@ -173,8 +173,11 @@
 
   // Property map
   const pmap = L.map('pmap', { scrollWheelZoom:false }).setView([40.7398, -73.9755], 15);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution:'&copy; OpenStreetMap, &copy; CARTO', maxZoom:19
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+    attribution:'&copy; OpenStreetMap, &copy; CARTO', maxZoom:19, subdomains:'abcd'
+  }).addTo(pmap);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
+    maxZoom:19, subdomains:'abcd', pane:'shadowPane'
   }).addTo(pmap);
   const icon = L.divIcon({className:'', html:'<div class="pin"></div>', iconSize:[20,20]});
   L.marker([40.7398, -73.9755], {icon}).addTo(pmap);

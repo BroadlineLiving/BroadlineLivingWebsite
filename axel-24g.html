@@ -174,8 +174,11 @@
 
   // Property map
   const pmap = L.map('pmap', { scrollWheelZoom:false }).setView([40.6855, -73.9695], 15);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution:'&copy; OpenStreetMap, &copy; CARTO', maxZoom:19
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+    attribution:'&copy; OpenStreetMap, &copy; CARTO', maxZoom:19, subdomains:'abcd'
+  }).addTo(pmap);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
+    maxZoom:19, subdomains:'abcd', pane:'shadowPane'
   }).addTo(pmap);
   const icon = L.divIcon({className:'', html:'<div class="pin"></div>', iconSize:[20,20]});
   L.marker([40.6855, -73.9695], {icon}).addTo(pmap);
