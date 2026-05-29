@@ -10,63 +10,39 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="styles.css">
 <style>
-  .av-hero{padding:50px 0 24px}
-  .av-hero .row{display:flex;align-items:end;justify-content:space-between;gap:30px;flex-wrap:wrap}
-  .av-hero h1{font-family:var(--display);font-size:clamp(38px,5vw,58px);font-weight:500;line-height:1.05;margin-top:8px}
-  .av-hero .sub{color:var(--ink-soft);font-size:16px;max-width:50ch;margin-top:8px}
-  .av-hero .count{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);padding-bottom:6px}
-  .av-hero .count b{color:var(--ink);font-weight:500}
-  .av-filters{display:flex;gap:10px;flex-wrap:wrap;padding:22px 0 36px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:42px}
-  .av-filters select,.av-filters input{background:transparent;border:1px solid var(--line);color:var(--ink);padding:10px 16px;border-radius:30px;font-family:inherit;font-size:13px;min-width:150px;cursor:pointer;transition:border-color .2s}
-  .av-filters select:hover,.av-filters input:hover{border-color:var(--ink)}
-  .av-filters select:focus,.av-filters input:focus{outline:none;border-color:var(--cyan)}
-  .av-filters input{min-width:240px}
-  .av-filters .reset{margin-left:auto;background:none;border:none;color:var(--ink-soft);font-size:13px;cursor:pointer;padding:10px 8px;font-family:inherit}
-  .av-filters .reset:hover{color:var(--ink)}
+  .page-hero{text-align:center;padding:70px 0 30px}
+  .page-hero h1{font-family:var(--display);font-size:clamp(42px,6vw,72px);font-weight:500;margin-top:14px}
+  .page-hero p{max-width:54ch;margin:20px auto 0;color:var(--ink-soft);font-size:17px}
+  .filters{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;padding:24px 0 40px;border-bottom:1px solid var(--line)}
+  .filters select,.filters input{background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:13px 18px;border-radius:2px;font-family:inherit;font-size:14px;min-width:180px}
+  .filters select:focus,.filters input:focus{outline:none;border-color:var(--cyan)}
 
-  /* Mosaic grid — 4 columns, varied row spans */
-  .mosaic{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;grid-auto-rows:210px;padding-bottom:96px}
-  /* Tile sizes — varied to feel editorial */
-  .tile{position:relative;border-radius:8px;overflow:hidden;cursor:pointer;text-decoration:none;color:inherit;background:var(--bg-2);transition:transform .3s ease,box-shadow .3s ease}
-  .tile:hover,.tile.focused{transform:translateY(-3px);box-shadow:0 20px 44px rgba(16,32,46,.18);z-index:2}
-  .tile .bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .6s ease}
-  .tile:hover .bg{transform:scale(1.06)}
-  .tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 35%,rgba(0,0,0,.15) 65%,rgba(0,0,0,.7) 100%);pointer-events:none}
-  .tile .num{position:absolute;top:14px;left:14px;z-index:3;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.95);color:var(--ink);font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;font-family:var(--display);backdrop-filter:blur(8px);transition:all .25s;box-shadow:0 2px 10px rgba(0,0,0,.15)}
-  .tile:hover .num,.tile.focused .num{background:var(--ink);color:#fff;transform:scale(1.08)}
-  .tile .info{position:absolute;bottom:0;left:0;right:0;padding:18px 20px 18px;color:#fff;z-index:2}
-  .tile .name{font-family:var(--display);font-size:24px;font-weight:500;line-height:1.1;text-shadow:0 1px 4px rgba(0,0,0,.5)}
-  .tile .sub{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.85);margin-top:4px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
-  .tile .meta{font-size:12px;color:rgba(255,255,255,.95);margin-top:8px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+  .results{padding:40px 0 96px;display:grid;grid-template-columns:1.15fr 1fr;gap:40px;align-items:start}
+  .listings{display:grid;gap:22px}
 
-  /* Map tile — center anchor */
-  .map-tile{grid-column:2/4;grid-row:2/4;background:#fff;border-radius:8px;overflow:hidden;border:1px solid var(--line);position:relative;box-shadow:0 4px 24px rgba(16,32,46,.06)}
-  #map{width:100%;height:100%}
-  .leaflet-container{font-family:var(--body);background:#f7fafc;border-radius:8px}
+  .pcard{background:var(--surface);border:1px solid var(--line);border-radius:3px;overflow:hidden;transition:transform .25s,border-color .25s,box-shadow .25s;cursor:pointer;display:grid;grid-template-columns:42% 1fr;text-decoration:none;color:inherit;position:relative}
+  .pcard:hover,.pcard.active{transform:translateY(-3px);border-color:var(--cyan);box-shadow:0 12px 28px rgba(16,32,46,.08)}
+  .pcard .img{min-height:230px;background-size:cover;background-position:center;background-repeat:no-repeat;background-color:var(--bg-2)}
+  .pcard .num{position:absolute;top:12px;left:12px;z-index:3;width:28px;height:28px;border-radius:50%;background:#fff;color:var(--ink);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(16,32,46,.15);font-family:var(--display);transition:all .25s}
+  .pcard:hover .num,.pcard.active .num{background:var(--ink);color:#fff}
+  .pcard .body{padding:22px;display:flex;flex-direction:column;justify-content:space-between}
+  .pcard .name{font-family:var(--display);font-size:23px;font-weight:500;line-height:1.15}
+  .pcard .unit{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-top:4px}
+  .pcard .hood{font-size:13px;color:var(--ink-soft);margin-top:8px}
+  .pcard .meta{display:flex;gap:14px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .pcard .row{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+  .pcard .lnk{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);font-weight:500}
 
-  /* Tile placements — 4-col grid, 5 rows, map in center 2x2 */
-  /* Row 1 */
-  .tile-1{grid-column:1/2;grid-row:1/2}
-  .tile-2{grid-column:2/4;grid-row:1/2}  /* wide */
-  .tile-3{grid-column:4/5;grid-row:1/3}  /* tall */
-  /* Row 2-3 — map sits center, left + right slots */
-  .tile-4{grid-column:1/2;grid-row:2/4}  /* tall */
-  /* MAP: grid-column:2/4; grid-row:2/4 */
-  /* Row 4-5 */
-  .tile-5{grid-column:4/5;grid-row:3/5}  /* tall */
-  .tile-6{grid-column:1/2;grid-row:4/5}
-  .tile-7{grid-column:2/3;grid-row:4/5}
-  .tile-8{grid-column:3/4;grid-row:4/5}
+  .map-col{position:sticky;top:100px;height:calc(100vh - 120px);min-height:600px}
+  #map{width:100%;height:100%;border-radius:3px;border:1px solid var(--line)}
+  .leaflet-container{font-family:var(--body);background:#f7fafc}
 
-  /* Map pins */
-  .pin-num{background:#fff;color:var(--ink);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:14px;font-weight:600;box-shadow:0 3px 12px rgba(16,32,46,.18);border:2px solid #fff;cursor:pointer;transition:all .2s;line-height:1}
-  .pin-num:hover,.pin-num.active{background:var(--ink);color:#fff;transform:scale(1.2);box-shadow:0 6px 18px rgba(16,32,46,.4)}
+  .pin-num{background:#fff;color:var(--ink);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:14px;font-weight:600;box-shadow:0 3px 12px rgba(16,32,46,.2);border:2px solid #fff;cursor:pointer;transition:all .2s;line-height:1}
+  .pin-num:hover,.pin-num.active{background:var(--ink);color:#fff;transform:scale(1.18);box-shadow:0 6px 18px rgba(16,32,46,.35)}
   .leaflet-marker-icon{outline:none}
 
-  /* Popup */
-  .leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 12px 32px rgba(16,32,46,.18);padding:0;overflow:hidden}
+  .leaflet-popup-content-wrapper{border-radius:6px;box-shadow:0 8px 24px rgba(16,32,46,.18);padding:0}
   .leaflet-popup-content{margin:0;width:220px!important;font-family:var(--body)}
-  .pop{padding:0}
   .pop .pimg{width:100%;aspect-ratio:5/3;background-size:cover;background-position:center;background-color:var(--bg-2)}
   .pop .pbody{padding:12px 14px}
   .pop b{font-family:var(--display);font-size:16px;font-weight:500;display:block;color:var(--ink)}
@@ -76,115 +52,51 @@
   .pop .plink:hover{opacity:.85}
   .leaflet-popup-close-button{color:var(--ink-soft)!important;padding:8px 8px 0 0!important;font-size:18px!important}
 
-  /* Empty state */
-  .av-empty{grid-column:1/-1;padding:80px 20px;text-align:center;color:var(--ink-soft);border:1px dashed var(--line);border-radius:10px}
-  .av-empty h3{font-family:var(--display);font-size:24px;color:var(--ink);margin-bottom:8px}
-
-  @media(max-width:1100px){
-    .mosaic{grid-template-columns:repeat(3,1fr);grid-auto-rows:200px}
-    .tile-1{grid-column:1/2;grid-row:1/2}
-    .tile-2{grid-column:2/3;grid-row:1/2}
-    .tile-3{grid-column:3/4;grid-row:1/3}
-    .map-tile{grid-column:1/3;grid-row:2/4}
-    .tile-4{grid-column:3/4;grid-row:3/5}
-    .tile-5{grid-column:1/2;grid-row:4/5}
-    .tile-6{grid-column:2/3;grid-row:4/5}
-    .tile-7{grid-column:1/3;grid-row:5/6}
-    .tile-8{grid-column:3/4;grid-row:5/6}
-  }
-  @media(max-width:760px){
-    .mosaic{grid-template-columns:1fr 1fr;grid-auto-rows:200px;gap:10px}
-    .tile,.map-tile{grid-column:auto!important;grid-row:auto!important}
-    .map-tile{grid-column:1/-1!important;grid-row:span 2!important;height:380px}
-    .av-filters input{min-width:0;flex:1}
-    .av-filters .reset{margin-left:0}
+  @media(max-width:980px){
+    .results{grid-template-columns:1fr}
+    .map-col{position:relative;top:0;height:400px;min-height:0;order:-1}
+    .pcard{grid-template-columns:1fr}
+    .pcard .img{min-height:220px}
   }
 </style>
 </head>
 <body>
 <header><div class="wrap nav"><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bg)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bg)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bg)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><nav><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html" class="active">View Availability</a></li><li><a href="landlords.html">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul></nav><a href="availability.html" class="nav-cta">View Availability</a><button class="burger" aria-label="Menu">&#9776;</button></div></header>
 
-<section class="av-hero wrap">
-  <div class="row">
-    <div>
-      <p class="eyebrow">Our Homes</p>
-      <h1>View Availability</h1>
-      <p class="sub">Furnished, move-in-ready apartments across New York City's leading neighborhoods.</p>
-    </div>
-    <div class="count"><b id="count">8</b> homes available</div>
-  </div>
-  <div class="av-filters">
-    <select id="filter-hood">
-      <option value="">All Neighborhoods</option>
-      <option>Kips Bay</option>
-      <option>Morningside Heights</option>
-      <option>Clinton Hill</option>
-      <option>Lower East Side</option>
-    </select>
-    <select id="filter-beds">
-      <option value="">All Bedrooms</option>
-      <option value="1">1 Bedroom</option>
-      <option value="2">2 Bedrooms</option>
-      <option value="3">3 Bedrooms</option>
-      <option value="4">4 Bedrooms</option>
-    </select>
-    <input id="filter-search" type="text" placeholder="Search by building or street...">
-    <button class="reset" id="filter-reset">Clear filters</button>
-  </div>
+<section class="page-hero wrap">
+  <p class="eyebrow">Our Homes</p>
+  <h1>View Availability</h1>
+  <p>Browse our furnished, move-in-ready apartments across New York City's leading neighborhoods.</p>
 </section>
 
-<section class="wrap">
-  <div class="mosaic" id="mosaic">
-    <a class="tile tile-1" href="waterside-30-22f.html" data-id="p1" data-hood="Kips Bay" data-beds="3">
-      <div class="bg" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div>
-      <div class="num">1</div>
-      <div class="info"><div class="name">30 Waterside Plaza</div><div class="sub">Unit 22F &middot; Kips Bay</div><div class="meta">3 Beds &middot; 2 Baths</div></div>
-    </a>
-
-    <a class="tile tile-2" href="morningside-607.html" data-id="p2" data-hood="Morningside Heights" data-beds="4">
-      <div class="bg" style="background-image:url('30-morningside-drive-607-git/30m-607-1.png')"></div>
-      <div class="num">2</div>
-      <div class="info"><div class="name">30 Morningside Drive</div><div class="sub">Unit 607 &middot; Morningside Heights</div><div class="meta">4 Beds &middot; 2 Baths</div></div>
-    </a>
-
-    <a class="tile tile-3" href="morningside-108.html" data-id="p3" data-hood="Morningside Heights" data-beds="3">
-      <div class="bg" style="background-image:url('30-morningside-drive-108-git/30morn-108-1.png')"></div>
-      <div class="num">3</div>
-      <div class="info"><div class="name">30 Morningside Drive</div><div class="sub">Unit 108 &middot; Duplex</div><div class="meta">3 Beds &middot; 2.5 Baths</div></div>
-    </a>
-
-    <a class="tile tile-4" href="axel-27b.html" data-id="p4" data-hood="Clinton Hill" data-beds="1">
-      <div class="bg" style="background-image:url('the-axel-27B-git/Axel-27B-1.png')"></div>
-      <div class="num">4</div>
-      <div class="info"><div class="name">The Axel</div><div class="sub">Unit 27B &middot; Clinton Hill</div><div class="meta">1 Bed &middot; 1 Bath</div></div>
-    </a>
-
-    <div class="map-tile"><div id="map"></div></div>
-
-    <a class="tile tile-5" href="axel-21b.html" data-id="p5" data-hood="Clinton Hill" data-beds="1">
-      <div class="bg" style="background-image:url('the-axel-21B-git/axel-21B-1.jpg')"></div>
-      <div class="num">5</div>
-      <div class="info"><div class="name">The Axel</div><div class="sub">Unit 21B &middot; Clinton Hill</div><div class="meta">1 Bed &middot; 1 Bath</div></div>
-    </a>
-
-    <a class="tile tile-6" href="axel-24g.html" data-id="p6" data-hood="Clinton Hill" data-beds="1">
-      <div class="bg" style="background-image:url('the-axel-24G-git/axel-24G-1.jpg')"></div>
-      <div class="num">6</div>
-      <div class="info"><div class="name">The Axel</div><div class="sub">Unit 24G &middot; Clinton Hill</div><div class="meta">1 Bed &middot; 1 Bath</div></div>
-    </a>
-
-    <a class="tile tile-7" href="rivington-10.html" data-id="p7" data-hood="Lower East Side" data-beds="2">
-      <div class="bg" style="background-image:url('7-rivington-street-10-git/7-rivington-1.jpeg')"></div>
-      <div class="num">7</div>
-      <div class="info"><div class="name">7 Rivington Street</div><div class="sub">Unit 10 &middot; Lower East Side</div><div class="meta">2 Beds &middot; 1 Bath</div></div>
-    </a>
-
-    <a class="tile tile-8" href="waterside-10-31f.html" data-id="p8" data-hood="Kips Bay" data-beds="3">
-      <div class="bg" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div>
-      <div class="num">8</div>
-      <div class="info"><div class="name">10 Waterside Plaza</div><div class="sub">Unit 31F &middot; Kips Bay</div><div class="meta">3 Beds &middot; 2 Baths</div></div>
-    </a>
+<div class="wrap">
+  <div class="filters">
+    <select id="filter-hood"><option value="">All Neighborhoods</option><option>Kips Bay</option><option>Morningside Heights</option><option>Clinton Hill</option><option>Lower East Side</option></select>
+    <select id="filter-beds"><option value="">All Bedrooms</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+    <input id="filter-search" type="text" placeholder="Search by address...">
   </div>
+</div>
+
+<section class="wrap results">
+  <div class="listings" id="listings">
+    <a class="pcard" href="waterside-30-22f.html" data-id="p1" data-hood="Kips Bay" data-beds="3"><div class="num">1</div><div class="img" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div><div class="body"><div><div class="name">30 Waterside Plaza</div><div class="unit">Unit 22F</div><div class="hood">Kips Bay, Manhattan</div></div><div><div class="meta"><span>3 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+
+    <a class="pcard" href="morningside-607.html" data-id="p2" data-hood="Morningside Heights" data-beds="4"><div class="num">2</div><div class="img" style="background-image:url('30-morningside-drive-607-git/30m-607-1.png')"></div><div class="body"><div><div class="name">30 Morningside Drive</div><div class="unit">Unit 607</div><div class="hood">Morningside Heights, Manhattan</div></div><div><div class="meta"><span>4 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+
+    <a class="pcard" href="morningside-108.html" data-id="p3" data-hood="Morningside Heights" data-beds="3"><div class="num">3</div><div class="img" style="background-image:url('30-morningside-drive-108-git/30morn-108-1.png')"></div><div class="body"><div><div class="name">30 Morningside Drive</div><div class="unit">Unit 108 &middot; Duplex</div><div class="hood">Morningside Heights, Manhattan</div></div><div><div class="meta"><span>3 Beds</span><span>2.5 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+
+    <a class="pcard" href="axel-27b.html" data-id="p4" data-hood="Clinton Hill" data-beds="1"><div class="num">4</div><div class="img" style="background-image:url('the-axel-27B-git/Axel-27B-1.png')"></div><div class="body"><div><div class="name">The Axel</div><div class="unit">Unit 27B</div><div class="hood">Clinton Hill, Brooklyn</div></div><div><div class="meta"><span>1 Bed</span><span>1 Bath</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+
+    <a class="pcard" href="axel-21b.html" data-id="p5" data-hood="Clinton Hill" data-beds="1"><div class="num">5</div><div class="img" style="background-image:url('the-axel-21B-git/axel-21B-1.jpg')"></div><div class="body"><div><div class="name">The Axel</div><div class="unit">Unit 21B</div><div class="hood">Clinton Hill, Brooklyn</div></div><div><div class="meta"><span>1 Bed</span><span>1 Bath</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+
+    <a class="pcard" href="axel-24g.html" data-id="p6" data-hood="Clinton Hill" data-beds="1"><div class="num">6</div><div class="img" style="background-image:url('the-axel-24G-git/axel-24G-1.jpg')"></div><div class="body"><div><div class="name">The Axel</div><div class="unit">Unit 24G</div><div class="hood">Clinton Hill, Brooklyn</div></div><div><div class="meta"><span>1 Bed</span><span>1 Bath</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+
+    <a class="pcard" href="rivington-10.html" data-id="p7" data-hood="Lower East Side" data-beds="2"><div class="num">7</div><div class="img" style="background-image:url('7-rivington-street-10-git/7-rivington-1.jpeg')"></div><div class="body"><div><div class="name">7 Rivington Street</div><div class="unit">Unit 10</div><div class="hood">Lower East Side, Manhattan</div></div><div><div class="meta"><span>2 Beds</span><span>1 Bath</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+
+    <a class="pcard" href="waterside-10-31f.html" data-id="p8" data-hood="Kips Bay" data-beds="3"><div class="num">8</div><div class="img" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div><div class="body"><div><div class="name">10 Waterside Plaza</div><div class="unit">Unit 31F</div><div class="hood">Kips Bay, Manhattan</div></div><div><div class="meta"><span>3 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+  </div>
+
+  <div class="map-col"><div id="map"></div></div>
 </section>
 
 <footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods — move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="mailto:info@broadlineliving.com">info@broadlineliving.com</a></li><li><a href="contact.html">Phone number</a></li><li><a href="contact.html">Mailing address</a></li></ul></div><div><h4>Legal</h4><ul><li><a href="#">Terms &amp; Conditions</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved.</div></div></footer>
@@ -202,12 +114,17 @@
     {id:'p8', num:8, name:'10 Waterside Plaza', unit:'31F', beds:'3 Beds, 2 Baths', lat:40.7398, lng:-73.9755, url:'waterside-10-31f.html', img:'waterisde-plaza-git/30w-22f-1.jpg'}
   ];
 
-  const map = L.map('map', {zoomControl:true, scrollWheelZoom:true, zoomSnap:0.5}).setView([40.745, -73.97], 11);
+  // Fit map tightly to NYC properties — no NJ
+  const map = L.map('map', {zoomControl:true, scrollWheelZoom:true, zoomSnap:0.5}).setView([40.748, -73.97], 12);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution:'&copy; OpenStreetMap, &copy; CARTO',
     maxZoom:19,
     subdomains:'abcd'
   }).addTo(map);
+
+  // Auto-fit bounds to all properties with padding
+  const bounds = L.latLngBounds(properties.map(p => [p.lat, p.lng]));
+  map.fitBounds(bounds, {padding:[60, 60], maxZoom:13});
 
   const markers = {};
   properties.forEach(p => {
@@ -225,17 +142,15 @@
 
   function setActive(id, on) {
     const pin = document.querySelector('[data-pin="'+id+'"]');
-    const tile = document.querySelector('.tile[data-id="'+id+'"]');
+    const card = document.querySelector('.pcard[data-id="'+id+'"]');
     if (pin) pin.classList.toggle('active', on);
-    if (tile) tile.classList.toggle('focused', on);
+    if (card) card.classList.toggle('active', on);
   }
-
-  document.querySelectorAll('.tile').forEach(tile => {
-    const id = tile.dataset.id;
-    tile.addEventListener('mouseenter', () => setActive(id, true));
-    tile.addEventListener('mouseleave', () => setActive(id, false));
+  document.querySelectorAll('.pcard').forEach(card => {
+    const id = card.dataset.id;
+    card.addEventListener('mouseenter', () => setActive(id, true));
+    card.addEventListener('mouseleave', () => setActive(id, false));
   });
-
   document.addEventListener('mouseover', e => {
     const pin = e.target.closest('[data-pin]');
     if (pin) setActive(pin.getAttribute('data-pin'), true);
@@ -249,29 +164,19 @@
     const h = document.getElementById('filter-hood').value.toLowerCase();
     const b = document.getElementById('filter-beds').value;
     const s = document.getElementById('filter-search').value.toLowerCase();
-    let visibleCount = 0;
-    document.querySelectorAll('.tile').forEach(tile => {
-      const hood = (tile.dataset.hood || '').toLowerCase();
-      const beds = tile.dataset.beds;
-      const name = tile.querySelector('.name').textContent.toLowerCase();
+    document.querySelectorAll('.pcard').forEach(card => {
+      const hood = (card.dataset.hood || '').toLowerCase();
+      const beds = card.dataset.beds;
+      const name = card.querySelector('.name').textContent.toLowerCase();
       const matchH = !h || hood === h;
       const matchB = !b || beds === b;
       const matchS = !s || name.includes(s);
-      const show = matchH && matchB && matchS;
-      tile.style.display = show ? '' : 'none';
-      if (show) visibleCount++;
+      card.style.display = (matchH && matchB && matchS) ? '' : 'none';
     });
-    document.getElementById('count').textContent = visibleCount;
   }
   document.getElementById('filter-hood').addEventListener('change', applyFilters);
   document.getElementById('filter-beds').addEventListener('change', applyFilters);
   document.getElementById('filter-search').addEventListener('input', applyFilters);
-  document.getElementById('filter-reset').addEventListener('click', () => {
-    document.getElementById('filter-hood').value = '';
-    document.getElementById('filter-beds').value = '';
-    document.getElementById('filter-search').value = '';
-    applyFilters();
-  });
 </script>
 
 </body>
