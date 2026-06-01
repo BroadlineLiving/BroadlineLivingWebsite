@@ -2,7 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="192x192" href="logo-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Furnished 4-bedroom in a landmark Morningside Heights building with rooftop terrace, fitness center, and concierge.">
+<meta property="og:title" content="30 Morningside Drive, Unit 607 | Broadline Living">
+<meta property="og:description" content="Furnished 4-bedroom in a landmark Morningside Heights building with rooftop terrace, fitness center, and concierge.">
+<meta property="og:image" content="https://broadlineliving.com/og-image.jpg">
+<meta property="og:url" content="https://broadlineliving.com/morningside-607.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Broadline Living">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="30 Morningside Drive, Unit 607 | Broadline Living">
+<meta name="twitter:description" content="Furnished 4-bedroom in a landmark Morningside Heights building with rooftop terrace, fitness center, and concierge.">
+<meta name="twitter:image" content="https://broadlineliving.com/og-image.jpg">
 <title>30 Morningside Drive, Unit 607 | Broadline Living</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,7 +70,8 @@
   .pin{background:var(--grad);width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 4px 12px rgba(16,32,46,.3)}
   .lightbox{position:fixed;inset:0;background:rgba(10,14,22,.92);z-index:999;display:none;align-items:center;justify-content:center}
   .lightbox.open{display:flex}
-  .lightbox img{max-width:92vw;max-height:88vh;object-fit:contain;display:block}
+  .lightbox-frame{width:min(92vw,1100px);aspect-ratio:4/3;position:relative;display:flex;align-items:center;justify-content:center}
+  .lightbox img{width:100%;height:100%;object-fit:cover;display:block;border-radius:3px}
   .lb-close,.lb-prev,.lb-next{position:absolute;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:24px;width:46px;height:46px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
   .lb-close:hover,.lb-prev:hover,.lb-next:hover{background:rgba(255,255,255,.2)}
   .lb-close{top:24px;right:24px}
@@ -174,7 +189,7 @@
 <div class="lightbox" id="lightbox" onclick="if(event.target.id==='lightbox')closeLightbox()">
   <button class="lb-close" onclick="closeLightbox()">&times;</button>
   <button class="lb-prev" onclick="prevPhoto()">&#8249;</button>
-  <img id="lb-img" src="" alt="">
+  <div class="lightbox-frame"><img id="lb-img" src="" alt=""></div>
   <button class="lb-next" onclick="nextPhoto()">&#8250;</button>
 </div>
 
