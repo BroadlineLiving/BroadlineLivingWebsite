@@ -2,8 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="192x192" href="logo-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Broadline Living | Furnished living for modern city life</title>
+<meta name="description" content="Hand-picked, move-in-ready furnished apartments across New York City's best neighborhoods. Flexible leases, premium finishes, personal service.">
+<meta property="og:title" content="Broadline Living | Furnished Apartments NYC">
+<meta property="og:description" content="Hand-picked, move-in-ready furnished apartments across New York City's best neighborhoods. Flexible leases, premium finishes, personal service.">
+<meta property="og:image" content="https://broadlineliving.com/og-image.jpg">
+<meta property="og:url" content="https://broadlineliving.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Broadline Living">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Broadline Living | Furnished Apartments NYC">
+<meta name="twitter:description" content="Hand-picked, move-in-ready furnished apartments across New York City's best neighborhoods. Flexible leases, premium finishes, personal service.">
+<meta name="twitter:image" content="https://broadlineliving.com/og-image.jpg">
+<title>Broadline Living | Furnished Apartments NYC</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
@@ -77,6 +91,29 @@
   .landlord-cta .actions .btn{text-align:center;width:100%}
 }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Broadline Living",
+  "url": "https://broadlineliving.com",
+  "logo": "https://broadlineliving.com/logo.png",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+1-929-737-2160",
+    "email": "Info@broadlineliving.com",
+    "contactType": "customer service"
+  },
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "134 W 29th Street",
+    "addressLocality": "New York",
+    "addressRegion": "NY",
+    "postalCode": "10001",
+    "addressCountry": "US"
+  }
+}
+</script>
 </head>
 <body>
 <header><div class="wrap nav"><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bg)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bg)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bg)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><nav><ul><li><a href="index.html" class="active">Home</a></li><li><a href="about.html">About</a></li><li><a href="availability.html">View Availability</a></li><li><a href="landlords.html">For Landlords</a></li><li><a href="contact.html">Contact Us</a></li></ul></nav><a href="availability.html" class="nav-cta">View Availability</a><button class="burger" id="burger" aria-label="Menu" onclick="toggleMenu()"><svg id="burger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div></header>
@@ -85,7 +122,8 @@
   <a href="availability.html" class="m-cta">View Availability</a>
 </div>
 <section class="hero">
-  <video autoplay muted loop playsinline src="219131.mp4"></video>
+  <video id="hero-vid" autoplay muted loop playsinline preload="auto" poster="hero-poster.jpg" src="219131.mp4"></video>
+  <script>var v=document.getElementById('hero-vid');v.muted=true;v.play().catch(function(){document.addEventListener('touchstart',function(){v.play()},{once:true});document.addEventListener('click',function(){v.play()},{once:true});});</script>
   <div class="hero-overlay"></div>
   <div class="hero-inner">
     <p class="eyebrow">Furnished apartments in New York City</p>
