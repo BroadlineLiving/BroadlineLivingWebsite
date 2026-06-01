@@ -122,8 +122,24 @@
   <a href="availability.html" class="m-cta">View Availability</a>
 </div>
 <section class="hero">
-  <video id="hero-vid" autoplay muted loop playsinline preload="auto" poster="hero-poster.jpg" src="219131.mp4"></video>
-  <script>var v=document.getElementById('hero-vid');v.muted=true;v.play().catch(function(){document.addEventListener('touchstart',function(){v.play()},{once:true});document.addEventListener('click',function(){v.play()},{once:true});});</script>
+  <video id="hero-vid" autoplay muted loop playsinline preload="auto" poster="hero-poster.jpg"><source id="hero-src" src="219131.mp4" type="video/mp4"></video>
+  <script>
+    var v=document.getElementById('hero-vid');
+    if(window.innerWidth<=768){
+      document.getElementById('hero-src').src='219131-mobile.mp4';
+      v.load();
+    }
+    v.muted=true;
+    function tryPlay(){v.play().catch(function(){});}
+    tryPlay();
+    // iOS needs a user gesture — fire on any interaction
+    ['touchstart','touchmove','scroll','click'].forEach(function(evt){
+      document.addEventListener(evt,function handler(){
+        tryPlay();
+        document.removeEventListener(evt,handler);
+      },{once:true,passive:true});
+    });
+  </script>
   <div class="hero-overlay"></div>
   <div class="hero-inner">
     <p class="eyebrow">Furnished apartments in New York City</p>
