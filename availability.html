@@ -118,14 +118,16 @@
 
 <div class="wrap">
   <div class="filters">
-    <select id="filter-hood"><option value="">All Neighborhoods</option><option>Kips Bay</option><option>Morningside Heights</option><option>Clinton Hill</option><option>Lower East Side</option><option>Financial District</option></select>
-    <select id="filter-beds"><option value="">All Bedrooms</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+    <select id="filter-hood"><option value="">All Neighborhoods</option><option>Soho</option><option>Kips Bay</option><option>Morningside Heights</option><option>Clinton Hill</option><option>Lower East Side</option><option>Financial District</option></select>
+    <select id="filter-beds"><option value="">All Bedrooms</option><option value="Studio">Studio</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
     <input id="filter-search" type="text" placeholder="Search by address...">
   </div>
 </div>
 
 <section class="wrap results">
   <div class="listings" id="listings">
+    <a class="pcard" href="thompson-b.html" data-id="p13" data-bld="b-thompson" data-hood="Soho" data-beds="Studio"><div class="img" style="background-image:url('59-thompson-street-B-git/59thomp-B-1.jpg')"></div><div class="body"><div><div class="name">59 Thompson Street</div><div class="unit">Unit B</div><div class="hood">Soho, Manhattan</div></div><div><div class="meta"><span>Studio</span><span>1 Bath</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
+
     <a class="pcard" href="waterside-30-22f.html" data-id="p1" data-bld="b-waterside" data-hood="Kips Bay" data-beds="3"><div class="img" style="background-image:url('waterisde-plaza-git/30w-22f-1.jpg')"></div><div class="body"><div><div class="name">30 Waterside Plaza</div><div class="unit">Unit 22F</div><div class="hood">Kips Bay, Manhattan</div></div><div><div class="meta"><span>3 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
 
     <a class="pcard" href="morningside-607.html" data-id="p2" data-bld="b-morningside" data-hood="Morningside Heights" data-beds="4"><div class="img" style="background-image:url('30-morningside-drive-607-git/30m-607-1.png')"></div><div class="body"><div><div class="name">30 Morningside Drive</div><div class="unit">Unit 607</div><div class="hood">Morningside Heights, Manhattan</div></div><div><div class="meta"><span>4 Beds</span><span>2 Baths</span></div><div class="row"><span></span><span class="lnk">Inquire &#8594;</span></div></div></div></a>
@@ -160,6 +162,13 @@
 <script>
   // Buildings: one pin per building, count badge shows number of units
   const buildings = [
+    {
+      id:'b-thompson', name:'59 Thompson Street', sub:'Soho, Manhattan',
+      lat:40.7244, lng:-74.0035,
+      units:[
+        {unit:'B', meta:'Studio, 1 Bath', url:'thompson-b.html', img:'59-thompson-street-B-git/59thomp-B-1.jpg'}
+      ]
+    },
     {
       id:'b-waterside', name:'Waterside Plaza', sub:'Kips Bay, Manhattan',
       lat:40.7395, lng:-73.9752,
