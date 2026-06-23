@@ -59,7 +59,7 @@ nav a:hover,nav a.active{color:var(--teal)}
 
 /* ── FOOTER ── */
 footer{background:#10243f;color:#aeb8c6;padding:72px 0 30px}
-.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px}
 footer .foot-blurb{max-width:34ch;margin-top:18px;font-size:14px}
 footer h4{color:#fff;font-size:12px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:18px;font-weight:500}
 footer ul{list-style:none;display:grid;gap:11px}
