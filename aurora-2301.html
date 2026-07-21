@@ -80,6 +80,13 @@
   .lb-close{top:24px;right:24px}
   .lb-prev{left:24px;top:50%;transform:translateY(-50%)}
   .lb-next{right:24px;top:50%;transform:translateY(-50%)}
+  @media(max-width:640px){
+    .lb-close,.lb-prev,.lb-next{width:52px;height:52px;font-size:28px;background:rgba(0,0,0,.5);border-color:rgba(255,255,255,.55)}
+    .lb-prev{left:10px}
+    .lb-next{right:10px}
+    .lb-close{top:14px;right:14px}
+    .lightbox-frame{width:96vw}
+  }
   @media(max-width:860px){
     .gallery{grid-template-columns:1fr 1fr;grid-template-rows:200px 200px 200px;gap:6px}
     .gimg.big{grid-column:span 2;grid-row:span 1}
@@ -213,6 +220,25 @@
     if (e.key === 'ArrowRight') nextPhoto();
     if (e.key === 'ArrowLeft') prevPhoto();
   });
+  // Touch swipe navigation for mobile
+  (function(){
+    var lb = document.getElementById('lightbox');
+    if (!lb) return;
+    var startX = 0, startY = 0, tracking = false;
+    lb.addEventListener('touchstart', function(e){
+      if (e.touches.length !== 1) { tracking = false; return; }
+      startX = e.touches[0].clientX; startY = e.touches[0].clientY; tracking = true;
+    }, {passive:true});
+    lb.addEventListener('touchend', function(e){
+      if (!tracking) return;
+      tracking = false;
+      var dx = e.changedTouches[0].clientX - startX;
+      var dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) nextPhoto(); else prevPhoto();
+      }
+    }, {passive:true});
+  })();
 
   // Property location map, clean Positron, no overlays
   const pmap = L.map('pmap', { scrollWheelZoom:false }).setView([40.7476, -73.9773], 15);
