@@ -25,6 +25,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="booking.css">
 <style>
   .crumb{padding:24px 0 8px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
   .crumb a{color:var(--ink-soft);transition:color .2s}
@@ -166,24 +167,7 @@
     </div>
 
     <aside>
-      <div class="inquiry-card">
-        <div class="ic-eyebrow">Inquire</div>
-        <h3>Request More Information</h3>
-        <p class="sub">Tell us your dates and we'll be in touch with pricing and availability.</p>
-        <form action="https://formspree.io/f/mjgzzger" method="POST">
-          <input type="hidden" name="_subject" value="Inquiry: The Axel Unit 24G">
-          <input type="hidden" name="property" value="The Axel Unit 24G (Axel-24G)">
-          <div class="frow">
-            <div class="field"><label>Move-in</label><input type="date" name="move_in" required></div>
-            <div class="field"><label>Move-out</label><input type="date" name="move_out" required></div>
-          </div>
-          <div class="field"><label>Name</label><input type="text" name="name" required></div>
-          <div class="field"><label>Email</label><input type="email" name="email" required></div>
-          <div class="field"><label>Phone</label><input type="tel" name="phone"></div>
-          <div class="field"><label>Message (optional)</label><textarea name="message" placeholder="Anything else we should know?"></textarea></div>
-          <button type="submit" class="submit-btn">Send Inquiry</button>
-        </form>
-      </div>
+      <div id="booking-widget" data-unit-key="axel-24g"></div>
     </aside>
   </section>
 
@@ -273,5 +257,9 @@ document.querySelectorAll('.mobile-menu a').forEach(function(a){
   });
 });
 </script>
+<script src="units-config.js"></script>
+<script src="pricing.js"></script>
+<script src="availability.js"></script>
+<script src="booking.js"></script>
 </body>
 </html>
