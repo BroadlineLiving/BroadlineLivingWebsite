@@ -254,7 +254,6 @@
     // quote
     h += '<div class="bk-quote">';
     if (q && q.ok) {
-      if (q.isAnnual) h += '<div class="bk-badge-annual">12-month rate</div>';
       h += '<div class="bk-quote-main"><span class="bk-quote-amt">' + fmtMoney(q.monthlyRate) + '</span><span class="bk-quote-per">/ month</span></div>';
       h += '<div class="bk-quote-note">' + fmtMoney(q.nightlyRate) + ' per night · ' + q.nights + ' nights</div>';
       h += '<div class="bk-lines">';

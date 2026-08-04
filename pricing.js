@@ -239,11 +239,11 @@ function priceStay(baseRent, moveIn, moveOut, CFG, opts = {}) {
    moveInDate/moveOutDate: JS Date objects (midnight local)
    availableDate: JS Date the unit is next free (from iCal), or null
    Returns guest-safe fields only — no markup %, no internal flags. */
-/* A 12-month stay is always offered at a flat 35% over base — a fixed
-   long-stay rate rather than a seasonally-priced short stay. Applied to
-   any stay of ~12 months or longer. */
-const TWELVE_MONTH_MARKUP = 0.35;
-const TWELVE_MONTH_THRESHOLD = 11.5;
+/* Twelve-month stays price on the normal rules, but never below a 20%
+   markup over base — the length-of-stay discount can otherwise cut an
+   annual term further than we're willing to go. */
+const LONG_STAY_MONTHS = 11.5;
+const LONG_STAY_MIN_MARKUP = 0.20;
 
 function getPublicQuote(unit, moveInDate, moveOutDate, availableDate) {
   const nights = pDaysBetween(moveInDate, moveOutDate);
@@ -253,17 +253,15 @@ function getPublicQuote(unit, moveInDate, moveOutDate, availableDate) {
   const months = nights / 30.4375;
   const daysUntil = availableDate ? Math.max(0, pDaysBetween(pTodayMid(), availableDate)) : null;
 
-  let perMonth, isAnnual = false;
-  if (months >= TWELVE_MONTH_THRESHOLD) {
-    perMonth = unit.baseRent * (1 + TWELVE_MONTH_MARKUP);
-    isAnnual = true;
-  } else {
-    perMonth = priceStay(unit.baseRent, moveInDate, moveOutDate, PRICING_CFG, {
-      applyLeadTime: true,
-      daysUntilAvailable: daysUntil,
-      availableDate: availableDate,
-      moveInForGap: moveInDate
-    }).perMonth;
+  let perMonth = priceStay(unit.baseRent, moveInDate, moveOutDate, PRICING_CFG, {
+    applyLeadTime: true,
+    daysUntilAvailable: daysUntil,
+    availableDate: availableDate,
+    moveInForGap: moveInDate
+  }).perMonth;
+
+  if (months >= LONG_STAY_MONTHS) {
+    perMonth = Math.max(perMonth, unit.baseRent * (1 + LONG_STAY_MIN_MARKUP));
   }
 
   return {
@@ -273,7 +271,6 @@ function getPublicQuote(unit, moveInDate, moveOutDate, availableDate) {
     monthlyRate: Math.round(perMonth),
     nightlyRate: Math.round((perMonth / 30.4375) * 100) / 100,
     total: Math.round(perMonth * months),
-    isAnnual: isAnnual,
     // Utilities are billed separately on stays of 6 months or longer.
     utilitiesSeparate: months >= 5.95
   };

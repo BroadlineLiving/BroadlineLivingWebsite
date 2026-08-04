@@ -134,32 +134,37 @@ Resulting burn charge, Thompson B ($3,500 base, 60-night stay):
 
 ---
 
-## 3. A 12-month stay is always a flat 35% over base
+## 3. 12-month stays: normal rules, floored at 20% markup
 
-Applied on the website in `getPublicQuote()`, which short-circuits `priceStay()`
-entirely for stays of ~12 months or longer:
+Twelve-month terms price on the **standard rules** (no flat rate). The only
+addition is a floor so the length-of-stay discount can't cut an annual term
+below a 20% markup over base.
+
+Applied in `getPublicQuote()` after the normal `priceStay()` call:
 
 ```js
-const TWELVE_MONTH_MARKUP = 0.35;
-const TWELVE_MONTH_THRESHOLD = 11.5; // months
+const LONG_STAY_MONTHS = 11.5;      // months
+const LONG_STAY_MIN_MARKUP = 0.20;  // never quote an annual term below this
 
-if (months >= TWELVE_MONTH_THRESHOLD) {
-  perMonth = baseRent * (1 + TWELVE_MONTH_MARKUP);
-} else {
-  // ...normal priceStay path
+if (months >= LONG_STAY_MONTHS) {
+  perMonth = Math.max(perMonth, baseRent * (1 + LONG_STAY_MIN_MARKUP));
 }
 ```
 
-Two consequences worth a decision before porting:
-
-1. **No burn-day charge applies to a 12-month stay** — the rule is "always
-   35%", so nothing is added on top. Confirm that's what you want.
-2. If you put this inside the engine's `priceStay()` it will also affect
-   **dashboard projections and the "Longer Stay Options" rows**, since those
-   call the same function. If you only want it on quotes, apply it in
-   `renderQuote()` instead. **Sanity-check the dashboard after deploying.**
+In practice the floor rarely binds — with the change in §1, 12-month quotes for
+Thompson B come out at 35–44% depending on move-in month, well clear of 20%.
 
 ---
+
+## Worth sanity-checking
+
+**A far-future move-in produces a very large burn-day charge.** A 12-month stay
+starting Jun 1 2027 on a home that opened Nov 2 2026 carries a 211-day gap; the
+burn rule spreads all of it across the stay and pushes the quote to ~147% markup.
+That is the rule working as specified, and the "Move in when it opens"
+recommendation steers guests away from it — but you may want a cap, or to stop
+charging burn days past some horizon (the home would realistically be re-let in
+the interim). Say the word and it's a small change.
 
 ## Open question
 
