@@ -61,9 +61,9 @@ function isDateBusy(date, busyRanges) {
 }
 
 /* Earliest date, starting from today, that begins a continuous open
-   stretch of at least `minNights` (default 28, matching the 1-month
+   stretch of at least `minNights` (default 30, matching the 1-month
    minimum stay). Scans up to 3 years out as a sane bound. */
-function earliestAvailable(busyRanges, minNights = 28) {
+function earliestAvailable(busyRanges, minNights = 30) {
   if (!busyRanges) return null;
   let cursor = todayMidnight();
   const horizon = new Date(cursor.getFullYear() + 3, cursor.getMonth(), cursor.getDate());

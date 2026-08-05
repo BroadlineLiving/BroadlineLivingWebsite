@@ -239,6 +239,9 @@ function priceStay(baseRent, moveIn, moveOut, CFG, opts = {}) {
    moveInDate/moveOutDate: JS Date objects (midnight local)
    availableDate: JS Date the unit is next free (from iCal), or null
    Returns guest-safe fields only — no markup %, no internal flags. */
+/* Shortest stay we accept, in nights. */
+const MIN_STAY_NIGHTS = 30;
+
 /* Twelve-month stays price on the normal rules, but never below a 20%
    markup over base — the length-of-stay discount can otherwise cut an
    annual term further than we're willing to go. */
@@ -247,8 +250,8 @@ const LONG_STAY_MIN_MARKUP = 0.20;
 
 function getPublicQuote(unit, moveInDate, moveOutDate, availableDate) {
   const nights = pDaysBetween(moveInDate, moveOutDate);
-  if (nights < 28) {
-    return { ok: false, reason: 'min-stay', minNights: 28 };
+  if (nights < MIN_STAY_NIGHTS) {
+    return { ok: false, reason: 'min-stay', minNights: MIN_STAY_NIGHTS };
   }
   const months = nights / 30.4375;
   const daysUntil = availableDate ? Math.max(0, pDaysBetween(pTodayMid(), availableDate)) : null;
