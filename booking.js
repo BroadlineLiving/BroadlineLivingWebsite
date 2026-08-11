@@ -1,15 +1,26 @@
 /* ============================================================
    BROADLINE LIVING — BOOKING WIDGET
-   Live Rentals United availability + instant quote (ported
-   Revenue Engine pricing) + stay recommendations + handoff.
+   Live Rentals United availability + published rates from the
+   Revenue Engine + stay recommendations + application handoff.
 
-   Requires: units-config.js, availability.js, pricing.js, booking.css
+   Pricing is NOT computed here. It is read from Supabase
+   `published_rates` via rates.js — the same rates pushed to
+   Rentals United, so the two can never disagree. The old
+   pricing.js (which shipped base rents and the whole markup
+   model to the browser) has been removed; don't bring it back.
+
+   Requires: units-config.js, rates.js, availability.js, booking.css
    ============================================================ */
 
 (function () {
   'use strict';
 
   var MIN_NIGHTS = 30;
+  /* How far past a home's next-open date we'll still let someone apply
+     instantly. Beyond this the dates get confirmed by a human first — holding
+     a home open for weeks on a self-serve application is how you end up with
+     an empty apartment and no deposit. */
+  var BOOK_WINDOW_DAYS = 3;
   var FORMSPREE = 'https://formspree.io/f/mjgzzger';
   var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   var MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -48,6 +59,12 @@
     this.earliest = null;
     this.viewMonth = null;
     this.submitted = false;
+    /* Final nightly rates published by the Revenue Engine.
+         null = still loading or the lookup failed
+         []   = loaded, but this unit has nothing published yet
+       Both mean "cannot quote", but only the second is a normal state. */
+    this.rates = null;
+    this.ratesLoaded = false;
   }
 
   BookingWidget.prototype.init = function () {
@@ -56,9 +73,18 @@
     var t = todayMid();
     this.viewMonth = new Date(t.getFullYear(), t.getMonth(), 1);
     this.render();
-    window.BroadlineAvailability.fetchBusyRanges(this.unit.ruApartmentId).then(function (ranges) {
+    /* Two independent lookups: RU's iCal for what's booked, Supabase for what
+       it costs. Both must land before a quote is possible, so wait on both
+       rather than rendering a price against half-loaded state. */
+    Promise.all([
+      window.BroadlineAvailability.fetchBusyRanges(this.unit.ruPropertyId),
+      window.BroadlineRates.fetchRates(this.unit.ruPropertyId)
+    ]).then(function (res) {
+      var ranges = res[0], rates = res[1];
       if (ranges === null) { self.loadFailed = true; self.busy = []; }
       else { self.busy = ranges; }
+      self.rates = rates;          // null on failure, [] when nothing published
+      self.ratesLoaded = true;
       self.earliest = window.BroadlineAvailability.earliestAvailable(self.busy, MIN_NIGHTS);
       if (self.earliest && self.earliest > todayMid()) {
         self.viewMonth = new Date(self.earliest.getFullYear(), self.earliest.getMonth(), 1);
@@ -94,14 +120,26 @@
     this.render();
   };
 
+  /* Quotes come from the rates the Revenue Engine published — no pricing model
+     runs in the browser any more. If a night in the range isn't published,
+     this returns ok:false and the UI must offer "Inquire", never a guess. */
   BookingWidget.prototype.quoteFor = function (moveIn, moveOut) {
-    return window.BroadlinePricing.getPublicQuote(
-      { baseRent: this.unit.baseRent }, moveIn, moveOut, this.earliest || null
-    );
+    if (!this.ratesLoaded) return { ok: false, reason: 'loading' };
+    return window.BroadlineRates.quote(this.rates, moveIn, moveOut, this.unit.rooms);
   };
   BookingWidget.prototype.quote = function () {
     if (!this.moveIn || !this.moveOut) return null;
     return this.quoteFor(this.moveIn, this.moveOut);
+  };
+
+  /* True when the chosen move-in is close enough to the home's next-open date
+     to allow a self-serve application. If availability never loaded we don't
+     know the open date, so we fail closed to "enquire" rather than opening the
+     apply flow on an assumption. */
+  BookingWidget.prototype.withinBookingWindow = function () {
+    if (!this.moveIn || !this.earliest) return false;
+    var slack = nightsBetween(this.earliest, this.moveIn);
+    return slack <= BOOK_WINDOW_DAYS;   // negative = before it frees up; the calendar already blocks that
   };
 
   /* ---------- stay recommendations ----------
@@ -258,27 +296,65 @@
       h += '<div class="bk-quote-note">' + fmtMoney(q.nightlyRate) + ' per night · ' + q.nights + ' nights</div>';
       h += '<div class="bk-lines">';
       h += '<div class="bk-line"><span>' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) + '</span><span>' + durationLabel(q.nights) + '</span></div>';
-      h += '<div class="bk-line"><span>Fees &amp; taxes' + (q.utilitiesSeparate ? '' : ', utilities &amp; Wi-Fi') + '</span><span>Included</span></div>';
+      h += '<div class="bk-line"><span>Rent</span><span>' + fmtMoney(q.rentTotal) + '</span></div>';
+      /* Tax is itemised, not folded in. Broadline collects and remits NYC
+         occupancy tax on direct bookings, and stays of 180+ nights are exempt
+         outright — worth showing, since it is a real reason to book longer. */
+      if (q.tax.exempt) {
+        h += '<div class="bk-line"><span>NYC occupancy tax</span><span>Exempt (180+ nights)</span></div>';
+      } else {
+        h += '<div class="bk-line"><span>NYC occupancy tax</span><span>' + fmtMoney(q.tax.total) + '</span></div>';
+      }
       h += '<div class="bk-line total"><span>Estimated total</span><span>' + fmtMoney(q.total) + '</span></div>';
       h += '</div>';
-      h += '<div class="bk-fine">Fully furnished. All fees and taxes are included in the rate above — no booking fees, no surprises. ' +
+      h += '<div class="bk-fine">Fully furnished. No booking fees. ' +
+           (q.tax.exempt
+             ? 'Stays of 180 nights or more are exempt from NYC occupancy tax. '
+             : 'NYC occupancy tax (5.875% plus $2 per room per night) is shown above. ') +
            (q.utilitiesSeparate
              ? '<b>On stays of 6 months or longer, utilities are billed separately.</b>'
              : 'Utilities and Wi-Fi are included.') +
            '</div>';
+    } else if (q && q.reason === 'loading') {
+      h += '<div class="bk-quote-empty">Loading rates…</div>';
+    } else if (q && q.reason === 'unavailable') {
+      h += '<div class="bk-quote-empty">Pricing is temporarily unavailable — please get in touch and we\'ll quote you directly.</div>';
+    } else if (q && (q.reason === 'not-published' || q.reason === 'no-rate-for-date')) {
+      h += '<div class="bk-quote-empty">We don\'t have published pricing for those dates yet — send us an enquiry and we\'ll come back with a rate.</div>';
+    } else if (q && q.reason === 'min-stay') {
+      h += '<div class="bk-quote-empty">Minimum stay is ' + q.minNights + ' nights.</div>';
     } else {
       h += '<div class="bk-quote-empty">Select your dates to see pricing.</div>';
     }
     h += '</div>';
 
+    /* Book vs. enquire.
+       Instant booking is only offered when the move-in is within a few days of
+       the date the home actually frees up. Further out, the rate is still a
+       real quote but the dates need a human — and this cannot be enforced on
+       Rentals United (no such setting), so RU stays request-to-book. */
     var ready = !!(q && q.ok);
-    h += '<button type="button" class="bk-cta" data-act="apply"' + (ready ? '' : ' disabled') + '>' +
-         (ready ? 'Request these dates' : 'Select dates to continue') + '</button>';
+    var inWindow = ready && this.withinBookingWindow();
+    if (ready && inWindow) {
+      h += '<button type="button" class="bk-cta" data-act="apply">Apply for this home</button>';
+    } else if (ready) {
+      h += '<button type="button" class="bk-cta" data-act="inquire">Enquire about these dates</button>';
+      h += '<div class="bk-fine" style="margin-top:8px;">Move-in is more than ' + BOOK_WINDOW_DAYS +
+           ' days after this home frees up (' + fmtShort(this.earliest) + '), so we\'ll confirm these dates with you directly before you apply.</div>';
+    } else {
+      h += '<button type="button" class="bk-cta" data-act="apply" disabled>Select dates to continue</button>';
+    }
 
     h += '<div class="bk-steps"><div class="bk-steps-t">What happens next</div>';
-    h += '<div class="bk-step"><span class="n">1</span><span>Submit your dates and contact details.</span></div>';
-    h += '<div class="bk-step"><span class="n">2</span><span>We email your application link — credit check and documents, all online.</span></div>';
-    h += '<div class="bk-step"><span class="n">3</span><span>Once approved, you sign and move in. Fully furnished, move-in ready.</span></div>';
+    if (inWindow) {
+      h += '<div class="bk-step"><span class="n">1</span><span>Apply online — ID, income and documents, all in one form.</span></div>';
+      h += '<div class="bk-step"><span class="n">2</span><span>A $35 application fee is paid securely at the end.</span></div>';
+      h += '<div class="bk-step"><span class="n">3</span><span>Once approved, you sign and move in. Fully furnished, move-in ready.</span></div>';
+    } else {
+      h += '<div class="bk-step"><span class="n">1</span><span>Send us your dates and contact details.</span></div>';
+      h += '<div class="bk-step"><span class="n">2</span><span>We confirm the dates and send your application link.</span></div>';
+      h += '<div class="bk-step"><span class="n">3</span><span>Once approved, you sign and move in. Fully furnished, move-in ready.</span></div>';
+    }
     h += '</div></div>';
 
     h += '<div class="bk-contact"><h4>Questions?</h4><p>Not sure about dates, or need something specific? Send us a note.</p>' +
@@ -320,7 +396,9 @@
     if (prev) prev.addEventListener('click', function () { self.viewMonth = addMonths(self.viewMonth, -1); self.render(); });
     if (next) next.addEventListener('click', function () { self.viewMonth = addMonths(self.viewMonth, 1); self.render(); });
     var cta = this.el.querySelector('[data-act="apply"]');
-    if (cta) cta.addEventListener('click', function () { self.showApplyForm(); });
+    if (cta) cta.addEventListener('click', function () { self.startApplication(); });
+    var inq = this.el.querySelector('[data-act="inquire"]');
+    if (inq) inq.addEventListener('click', function () { self.showApplyForm(); });
   };
 
   BookingWidget.prototype.calendarHTML = function () {
@@ -373,16 +451,49 @@
     return h;
   };
 
-  /* ---------- application handoff ---------- */
+  /* ---------- application handoff ----------
+     Sends the guest straight into the rental application app.
+
+     This uses the app's PUBLIC listing route (/?property=<id>) — no token, no
+     invite, nothing privileged in this file. The earlier plan here was to call
+     /api/properties/:id/invites to mint a personal link, but that is an admin
+     route behind ADMIN_PASSWORD, and that password can read every applicant's
+     SSN and financial documents. It must never reach the browser. Personalised
+     invites stay a staff action from the admin dashboard.
+
+     The dates and quote are carried as query params so they can be shown back
+     to the applicant / logged. They are display context only — the rate that
+     counts is the one on the signed lease, and the app doesn't price anything. */
+  BookingWidget.prototype.startApplication = function () {
+    var u = this.unit, q = this.quote();
+    if (!q || !q.ok) return;
+
+    if (!u.applicationPropertyId) {
+      // Not wired up yet — fall back to the enquiry form rather than sending
+      // someone to a dead link.
+      this.showApplyForm();
+      return;
+    }
+
+    var base = window.APPLICATION_APP_URL || '';
+    var url = base + '/?property=' + encodeURIComponent(u.applicationPropertyId) +
+      '&move_in=' + encodeURIComponent(window.BroadlineRates.toISO(this.moveIn)) +
+      '&move_out=' + encodeURIComponent(window.BroadlineRates.toISO(this.moveOut)) +
+      '&quoted_monthly=' + encodeURIComponent(q.monthlyRate);
+
+    window.open(url, '_blank', 'noopener');
+  };
+
   BookingWidget.prototype.showApplyForm = function () {
     var self = this;
     var q = this.quote();
     if (!q || !q.ok) return;
     var u = this.unit;
 
-    var h = '<div class="bk-card"><div class="bk-eyebrow">Almost there</div><h3>Request these dates</h3>';
+    var h = '<div class="bk-card"><div class="bk-eyebrow">Almost there</div><h3>Enquire about these dates</h3>';
     h += '<p class="bk-sub">' + esc(u.name) + ' ' + esc(u.unitLabel) + ' · ' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) + '<br>' +
-         '<strong style="color:var(--ink)">' + fmtMoney(q.monthlyRate) + '/month</strong> · ' + fmtMoney(q.total) + ' total · taxes included</p>';
+         '<strong style="color:var(--ink)">' + fmtMoney(q.monthlyRate) + '/month</strong> · ' + fmtMoney(q.total) + ' total' +
+         (q.tax.exempt ? ' · tax exempt (180+ nights)' : ' · incl. NYC occupancy tax') + '</p>';
     h += '<form data-apply>';
     h += '<div class="bk-field"><label>Full name</label><input type="text" name="name" required></div>';
     h += '<div class="bk-field"><label>Email</label><input type="email" name="email" required></div>';
@@ -470,7 +581,7 @@
       if (!u) { badge.style.display = 'none'; return; }
       badge.className = 'avail-badge loading';
       badge.innerHTML = '<span class="dot"></span>Checking…';
-      window.BroadlineAvailability.fetchBusyRanges(u.ruApartmentId).then(function (ranges) {
+      window.BroadlineAvailability.fetchBusyRanges(u.ruPropertyId).then(function (ranges) {
         if (ranges === null) { badge.style.display = 'none'; return; }
         var e = window.BroadlineAvailability.earliestAvailable(ranges, MIN_NIGHTS);
         if (!e) { badge.className = 'avail-badge'; badge.innerHTML = '<span class="dot"></span>Fully booked'; return; }
