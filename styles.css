@@ -70,6 +70,17 @@ footer a:hover{color:#3fe0d0}
 /* ══════════════════════════════════════════
    TABLET  ≤ 900px
 ══════════════════════════════════════════ */
+
+/* ---- Interior page hero -------------------------------------------------
+   Was duplicated inline in availability/about/contact/landlords and had
+   drifted: three different bottom paddings, three `p` widths, and two of the
+   four never shrank the h1 on mobile (42px vs 34px on a phone). Defined once
+   here so every page matches and new pages inherit it. Pages needing a
+   tighter hero override just the padding. */
+.page-hero{text-align:center;padding:90px 0 50px}
+.page-hero h1{font-family:var(--display);font-size:clamp(42px,6vw,72px);font-weight:500;letter-spacing:.01em;margin-top:14px}
+.page-hero p{max-width:54ch;margin:20px auto 0;color:var(--ink-soft);font-size:17px}
+
 @media(max-width:900px){
   .wrap{padding:0 20px}
   nav ul,.nav-cta{display:none}
@@ -83,6 +94,9 @@ footer a:hover{color:#3fe0d0}
 ══════════════════════════════════════════ */
 @media(max-width:600px){
   .wrap{padding:0 16px}
+  .page-hero{padding:60px 0 30px}
+  .page-hero h1{font-size:clamp(34px,9vw,52px)}
+  .page-hero p{font-size:15.5px}
   .nav{height:62px}
   .mobile-menu{top:62px}
 

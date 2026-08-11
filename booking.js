@@ -321,8 +321,15 @@
         h += '<div class="bk-line"><span>NYC occupancy tax</span><span>' + fmtMoney(q.tax.total) + '</span></div>';
       }
       h += '<div class="bk-line total"><span>Estimated total</span><span>' + fmtMoney(q.total) + '</span></div>';
+      /* Deposit sits BELOW the total, not inside it. It's refundable — folding
+         it into the total would overstate the cost of the stay. */
+      h += '<div class="bk-line dep"><span>Refundable deposit' +
+           (q.depositCapped ? ' <span class="bk-dep-note">capped at one month</span>' : '') +
+           '</span><span>' + fmtMoney(q.deposit) + '</span></div>';
+      h += '<div class="bk-line"><span>Due at signing</span><span>' + fmtMoney(q.dueAtSigning) + '</span></div>';
       h += '</div>';
       h += '<div class="bk-fine">Fully furnished. No booking fees. ' +
+           'The ' + fmtMoney(q.deposit) + ' security deposit is refundable and returned after move-out, less any damages. ' +
            (q.tax.exempt
              ? 'Stays of 180 nights or more are exempt from NYC occupancy tax. '
              : 'NYC occupancy tax (5.875% plus $2 per room per night) is shown above. ') +
@@ -518,7 +525,8 @@
 
     var h = '<div class="bk-card"><div class="bk-eyebrow">Inquiry</div><h3>Inquire about these dates</h3>';
     h += '<p class="bk-sub">' + esc(u.name) + ' ' + esc(u.unitLabel) + ' · ' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) + '<br>' +
-         '<strong style="color:var(--ink)">' + fmtMoney(q.monthlyRate) + '/month</strong> · ' + fmtMoney(q.total) + ' total' +
+         '<strong style="color:var(--ink)">' + fmtMoney(q.monthlyRate) + '/month</strong> · ' + fmtMoney(q.total) + ' total · ' +
+         fmtMoney(q.deposit) + ' refundable deposit' +
          (q.tax.exempt ? ' · tax exempt (180+ nights)' : ' · incl. NYC occupancy tax') + '</p>';
     /* Repeat why they're here. They arrived from a blocked apply, and landing
        on a bare name/email form with no explanation looks like the apply flow
@@ -569,6 +577,8 @@
     body.append('duration', durationLabel(q.nights));
     body.append('quoted_monthly', fmtMoney(q.monthlyRate));
     body.append('quoted_total', fmtMoney(q.total));
+    body.append('refundable_deposit', fmtMoney(q.deposit));
+    body.append('due_at_signing', fmtMoney(q.dueAtSigning));
     return fetch(FORMSPREE, { method: 'POST', body: body, headers: { Accept: 'application/json' } })
       .then(function (r) { if (!r.ok) throw new Error('submit failed'); return r; });
   };

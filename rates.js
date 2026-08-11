@@ -141,6 +141,26 @@
      own stay total by ~1.5%). */
   var RATE_NIGHTS_PER_MONTH = 30;
 
+  /* ---- Refundable security deposit ---------------------------------------
+     $1,000 for every month booked, never more than one month's rent. So a
+     three-month stay holds $3,000; anything from roughly five months up is
+     capped at the monthly rate.
+
+     Months are ROUNDED to the nearest whole month rather than taken as a
+     fraction: a deposit is a round figure, and billing $1,167 because a stay
+     ran 35 nights instead of 30 would be strange. A 35-night stay therefore
+     holds $1,000, and 46 nights (1.53 months) holds $2,000.
+
+     This is refundable, so it is deliberately NOT part of the quoted total --
+     it is held, not spent. The UI must present it separately or it reads as a
+     price rise. */
+  var DEPOSIT_PER_MONTH = 1000;
+
+  function depositFor(nights, monthlyRate) {
+    var wholeMonths = Math.max(1, Math.round(nights / RATE_NIGHTS_PER_MONTH));
+    return Math.min(DEPOSIT_PER_MONTH * wholeMonths, Math.round(monthlyRate));
+  }
+
   function quote(rates, moveIn, moveOut, rooms) {
     if (!rates) return { ok: false, reason: 'unavailable' };
     if (!rates.length) return { ok: false, reason: 'not-published' };
@@ -162,13 +182,15 @@
 
     var avgNightly = rentTotal / nights;
     var tax = taxFor(rentTotal, nights, rooms);
+    var monthlyRate = Math.round(avgNightly * RATE_NIGHTS_PER_MONTH);
+    var deposit = depositFor(nights, monthlyRate);
 
     return {
       ok: true,
       nights: nights,
       months: Math.round((nights / RATE_NIGHTS_PER_MONTH) * 100) / 100,
       nightlyRate: Math.round(avgNightly * 100) / 100,
-      monthlyRate: Math.round(avgNightly * RATE_NIGHTS_PER_MONTH),
+      monthlyRate: monthlyRate,
       rentTotal: Math.round(rentTotal),
       tax: {
         occupancyPct: Math.round(tax.pct),
@@ -177,6 +199,11 @@
         exempt: tax.exempt
       },
       total: Math.round(rentTotal + tax.total),
+      /* Refundable — held, not charged. Kept out of `total` on purpose; the
+         caller shows it as a separate line and as part of "due at signing". */
+      deposit: deposit,
+      depositCapped: deposit >= monthlyRate,
+      dueAtSigning: Math.round(rentTotal + tax.total) + deposit,
       // Utilities are billed separately on stays of ~6 months or longer.
       utilitiesSeparate: nights / RATE_NIGHTS_PER_MONTH >= 5.95
     };

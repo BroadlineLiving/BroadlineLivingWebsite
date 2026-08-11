@@ -114,6 +114,10 @@
 .bk-line{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .bk-line span:last-child{font-weight:500;white-space:nowrap}
 .bk-line.total{border-top:1px solid var(--line);padding-top:10px;margin-top:2px;font-size:15.5px}
+/* Refundable deposit — held, not charged. Muted so it reads as distinct from
+   the cost of the stay rather than as an extra fee stacked on the total. */
+.bk-line.dep{color:var(--bk-ink-soft,#6b7580);margin-top:2px}
+.bk-dep-note{font-size:11px;opacity:.8;white-space:nowrap}
 .bk-fine{font-size:11.5px;color:var(--ink-soft);margin-top:11px;line-height:1.55}
 .bk-fine b{font-weight:500;color:var(--ink)}
 .bk-quote-empty{color:var(--ink-soft);font-size:13.5px;text-align:center;padding:14px 0}
