@@ -1,0 +1,211 @@
+/* ============================================================
+   BROADLINE LIVING — BOOKING / AVAILABILITY WIDGET
+   Modern booking UI: live Rentals United availability, instant
+   pricing, and stay recommendations that push longer terms.
+   ============================================================ */
+
+:root{
+  --bk-r:14px;
+  --bk-r-sm:10px;
+  --bk-save:#0f9b6c;
+  --bk-save-bg:#e8f7f1;
+  --bk-shadow:0 1px 2px rgba(16,32,46,.04),0 8px 28px rgba(16,32,46,.07);
+  --bk-shadow-lift:0 6px 16px rgba(16,32,46,.09),0 18px 48px rgba(16,32,46,.12);
+}
+
+.bk-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--bk-r);padding:26px 24px;box-shadow:var(--bk-shadow);position:relative;overflow:hidden}
+.bk-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
+.bk-eyebrow{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:500;margin-bottom:7px}
+.bk-card h3{font-family:var(--display);font-size:27px;font-weight:500;margin-bottom:5px;line-height:1.12;letter-spacing:.01em}
+.bk-sub{color:var(--ink-soft);font-size:13.5px;margin-bottom:18px;line-height:1.5}
+
+/* ── Availability status ── */
+.bk-status{display:flex;align-items:center;gap:9px;font-size:13px;padding:11px 14px;border-radius:var(--bk-r-sm);margin-bottom:16px;background:var(--bg-2);border:1px solid var(--line)}
+.bk-status .dot{width:7px;height:7px;border-radius:50%;flex:none;background:var(--ink-soft)}
+.bk-status.open{background:rgba(15,155,108,.07);border-color:rgba(15,155,108,.22);color:#0b7551}
+.bk-status.open .dot{background:var(--bk-save);box-shadow:0 0 0 3px rgba(15,155,108,.16)}
+.bk-status.soon{background:rgba(26,167,196,.07);border-color:rgba(26,167,196,.24);color:#116b80}
+.bk-status.soon .dot{background:var(--teal);box-shadow:0 0 0 3px rgba(26,167,196,.16)}
+.bk-status.err{background:rgba(90,100,115,.06);color:var(--ink-soft)}
+.bk-status strong{font-weight:500}
+
+/* ── Move-in / move-out tabs ── */
+.bk-range{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.bk-slot{background:none;border:none;border-bottom:2px solid transparent;padding:9px 4px 11px;cursor:pointer;text-align:left;font-family:inherit;transition:border-color .2s,opacity .2s;margin-bottom:-1px}
+.bk-slot:hover{opacity:.75}
+.bk-slot.active{border-bottom-color:var(--cyan)}
+.bk-slot .lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:3px}
+.bk-slot .val{font-size:15.5px;font-weight:500;color:var(--ink)}
+.bk-slot .val.empty{color:#a8b2be;font-weight:400}
+
+/* ── Calendar ── */
+.bk-cal{margin-bottom:16px}
+.bk-months{display:grid;grid-template-columns:1fr;gap:26px}
+.bk-months.two{grid-template-columns:1fr 1fr}
+/* Cap each month grid so square day cells never balloon on wide containers */
+.bk-month{max-width:352px;width:100%;margin:0 auto}
+.bk-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;min-height:30px}
+.bk-cal-title{font-family:var(--display);font-size:18px;font-weight:500}
+.bk-nav{background:#fff;border:1px solid var(--line);width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:all .18s;font-size:15px;line-height:1;padding:0;flex:none}
+.bk-nav:hover:not(:disabled){border-color:var(--cyan);color:var(--cyan);transform:scale(1.06)}
+.bk-nav:disabled{opacity:.28;cursor:not-allowed}
+.bk-dow{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px}
+.bk-dow span{text-align:center;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);padding:4px 0;font-weight:500}
+.bk-grid{display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px}
+
+/* day cells — pill range styling */
+.bk-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13.5px;cursor:pointer;position:relative;border:none;background:none;font-family:inherit;color:var(--ink);padding:0;transition:color .15s;z-index:1}
+.bk-day.blank{cursor:default}
+.bk-day::before{content:"";position:absolute;inset:2px;border-radius:50%;transition:background .15s,transform .15s;z-index:-1}
+.bk-day:hover:not(.disabled):not(.blank):not(.sel)::before{background:rgba(31,184,173,.14)}
+.bk-day.disabled{color:#c9d2db;cursor:not-allowed;text-decoration:line-through;text-decoration-thickness:1px}
+.bk-day.past{color:#e2e7ec;cursor:not-allowed;text-decoration:none}
+/* continuous light band across the selected range */
+.bk-day.in-range::after,.bk-day.sel.start::after,.bk-day.sel.end::after{content:"";position:absolute;top:2px;bottom:2px;background:rgba(31,184,173,.13);z-index:-2}
+.bk-day.in-range::after{left:0;right:0}
+.bk-day.sel.start::after{left:50%;right:0}
+.bk-day.sel.end::after{left:0;right:50%}
+.bk-day.sel{color:#fff;font-weight:500}
+.bk-day.sel::before{background:var(--grad);transform:scale(1.02)}
+.bk-legend{display:flex;gap:15px;flex-wrap:wrap;font-size:11px;color:var(--ink-soft);margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.bk-legend span{display:flex;align-items:center;gap:5px}
+.bk-legend i{width:11px;height:11px;border-radius:3px;display:inline-block;font-style:normal}
+.bk-legend i.free{background:#fff;border:1px solid var(--line)}
+.bk-legend i.taken{background:#eef2f6;border:1px solid var(--line);position:relative}
+.bk-legend i.taken::after{content:"";position:absolute;left:1px;right:1px;top:50%;height:1px;background:#c3ccd6}
+
+/* ── Loading shimmer ── */
+.bk-skel{border-radius:var(--bk-r-sm);background:linear-gradient(100deg,var(--bg-2) 30%,#f7fafc 50%,var(--bg-2) 70%);background-size:220% 100%;animation:bkshimmer 1.3s ease-in-out infinite}
+@keyframes bkshimmer{0%{background-position:170% 0}100%{background-position:-70% 0}}
+.bk-skel-cal{height:250px;margin-bottom:16px}
+
+.bk-msg{font-size:12.5px;padding:10px 13px;border-radius:var(--bk-r-sm);margin-bottom:14px;line-height:1.5}
+.bk-msg.warn{background:rgba(217,138,20,.08);border:1px solid rgba(217,138,20,.22);color:#8a5a08}
+.bk-msg.info{background:rgba(26,167,196,.07);border:1px solid rgba(26,167,196,.2);color:#116b80}
+
+/* ── Stay recommendations (Blueground-style) ── */
+.bk-recs{margin-bottom:18px}
+.bk-recs-t{font-size:13px;font-weight:500;margin-bottom:10px;color:var(--ink)}
+.bk-recs-scroll{display:flex;gap:10px;overflow-x:auto;padding:3px 3px 8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.bk-recs-scroll::-webkit-scrollbar{height:5px}
+.bk-recs-scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+.bk-rec{flex:none;width:143px;border:1.5px solid var(--line);border-radius:var(--bk-r-sm);padding:11px 12px 12px;cursor:pointer;background:#fff;transition:border-color .18s,transform .18s,box-shadow .18s;scroll-snap-align:start;text-align:center;font-family:inherit;position:relative;animation:bkrise .32s ease backwards}
+@keyframes bkrise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.bk-rec:hover{border-color:var(--cyan);transform:translateY(-2px);box-shadow:var(--bk-shadow-lift)}
+.bk-rec.current{border-color:var(--ink);cursor:default}
+.bk-rec.current:hover{transform:none;box-shadow:none;border-color:var(--ink)}
+.bk-rec-flag{font-size:10.5px;font-weight:600;letter-spacing:.02em;color:var(--bk-save);background:var(--bk-save-bg);border-radius:20px;padding:3px 9px;display:inline-block;margin-bottom:7px;white-space:nowrap}
+.bk-rec-flag.neutral{color:var(--ink-soft);background:var(--bg-2)}
+.bk-rec-flag.peak{color:#7a5cc4;background:#efeafc}
+.bk-rec-lbl{font-size:11.5px;color:var(--ink-soft);margin-bottom:3px}
+.bk-rec-amt{font-family:var(--display);font-size:23px;font-weight:600;line-height:1.05;letter-spacing:-.01em}
+.bk-rec-amt .u{font-size:12px;font-weight:400;color:var(--ink-soft);font-family:var(--body)}
+.bk-rec-dur{font-size:11.5px;color:var(--ink-soft);margin-top:5px;padding-top:6px;border-top:1px solid var(--line)}
+
+/* ── Quote ── */
+.bk-quote{border-top:1px solid var(--line);padding-top:17px;margin-bottom:16px}
+.bk-quote-main{display:flex;align-items:baseline;gap:8px;margin-bottom:3px}
+.bk-quote-amt{font-family:var(--display);font-size:40px;font-weight:600;line-height:1;letter-spacing:-.015em;animation:bkpopin .28s ease}
+@keyframes bkpopin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.bk-quote-per{font-size:14px;color:var(--ink-soft)}
+.bk-quote-note{font-size:12.5px;color:var(--ink-soft);margin-bottom:13px}
+.bk-badge-annual{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--bk-save);background:var(--bk-save-bg);border-radius:20px;padding:3px 10px;margin-bottom:10px}
+.bk-lines{display:grid;gap:8px;font-size:13.5px}
+.bk-line{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.bk-line span:last-child{font-weight:500;white-space:nowrap}
+.bk-line.total{border-top:1px solid var(--line);padding-top:10px;margin-top:2px;font-size:15.5px}
+.bk-fine{font-size:11.5px;color:var(--ink-soft);margin-top:11px;line-height:1.55}
+.bk-fine b{font-weight:500;color:var(--ink)}
+.bk-quote-empty{color:var(--ink-soft);font-size:13.5px;text-align:center;padding:14px 0}
+
+/* ── CTA ── */
+.bk-cta{width:100%;padding:15px;background:var(--grad);color:#fff;border:none;border-radius:var(--bk-r-sm);font-family:inherit;font-size:13px;letter-spacing:.09em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:transform .18s,box-shadow .18s,opacity .2s;position:relative;overflow:hidden}
+.bk-cta:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 22px rgba(31,184,173,.34)}
+.bk-cta:active:not(:disabled){transform:translateY(0)}
+.bk-cta:disabled{opacity:.32;cursor:not-allowed}
+.bk-cta::after{content:"";position:absolute;top:0;left:-120%;width:60%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transition:left .55s ease}
+.bk-cta:hover:not(:disabled)::after{left:130%}
+
+.bk-steps{margin-top:16px;padding-top:15px;border-top:1px solid var(--line)}
+.bk-steps-t{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:11px}
+.bk-step{display:flex;gap:10px;font-size:12.5px;color:var(--ink-soft);margin-bottom:8px;line-height:1.45}
+.bk-step .n{width:18px;height:18px;border-radius:50%;background:var(--bg-2);border:1px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--ink);margin-top:1px}
+
+/* ── Contact fallback ── */
+.bk-contact{background:var(--surface);border:1px solid var(--line);border-radius:var(--bk-r);padding:20px 22px;margin-top:16px;box-shadow:var(--bk-shadow)}
+.bk-contact h4{font-family:var(--display);font-size:19px;font-weight:500;margin-bottom:3px}
+.bk-contact p{font-size:13px;color:var(--ink-soft);margin-bottom:13px}
+.bk-contact .field{display:flex;flex-direction:column;margin-bottom:10px}
+.bk-contact label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;color:var(--ink-soft)}
+.bk-contact input,.bk-contact textarea{padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px;background:#fff;color:var(--ink);transition:border-color .2s,box-shadow .2s;width:100%}
+.bk-contact input:focus,.bk-contact textarea:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(31,184,173,.13)}
+.bk-contact textarea{resize:vertical;min-height:62px}
+.bk-contact button{width:100%;padding:12px;background:transparent;border:1px solid var(--cyan);color:var(--teal);border-radius:8px;font-family:inherit;font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:all .2s}
+.bk-contact button:hover{background:rgba(31,184,173,.09)}
+
+/* form fields inside the apply step */
+.bk-field{display:flex;flex-direction:column;margin-bottom:12px}
+.bk-field label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;color:var(--ink-soft)}
+.bk-field input{padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px;transition:border-color .2s,box-shadow .2s}
+.bk-field input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(31,184,173,.13)}
+.bk-back{background:none;border:none;color:var(--ink-soft);font-family:inherit;font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:13px;padding:6px 0;transition:color .2s}
+.bk-back:hover{color:var(--cyan)}
+
+/* ══════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════ */
+.bk-modal{position:fixed;inset:0;background:rgba(10,20,32,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:36px 20px;overflow-y:auto}
+.bk-modal.open{display:flex;animation:bkfade .2s ease}
+@keyframes bkfade{from{opacity:0}to{opacity:1}}
+.bk-modal-inner{background:var(--surface);border-radius:var(--bk-r);width:min(96vw,760px);position:relative;box-shadow:0 24px 70px rgba(16,32,46,.3);animation:bkpop .24s cubic-bezier(.2,.8,.3,1)}
+@keyframes bkpop{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.bk-modal-inner .bk-card{border:none;box-shadow:none;padding:22px 26px 26px;border-radius:0 0 var(--bk-r) var(--bk-r)}
+.bk-modal-inner .bk-card::before{display:none}
+.bk-modal-inner .bk-contact{display:none}
+.bk-close{position:absolute;top:13px;right:13px;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:19px;line-height:1;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;z-index:3;transition:all .2s;padding:0}
+.bk-close:hover{color:var(--ink);border-color:var(--ink-soft);transform:rotate(90deg)}
+.bk-modal-head{padding:24px 26px 0;border-radius:var(--bk-r) var(--bk-r) 0 0;position:relative}
+.bk-modal-head::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);border-radius:var(--bk-r) var(--bk-r) 0 0}
+.bk-modal-head .mh-name{font-family:var(--display);font-size:25px;font-weight:500;line-height:1.12;padding-right:36px}
+.bk-modal-head .mh-unit{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px}
+
+/* ── Availability badge on cards ── */
+.avail-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.04em;padding:5px 11px;border-radius:20px;background:var(--bg-2);border:1px solid var(--line);color:var(--ink-soft);transition:opacity .3s}
+.avail-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--ink-soft);flex:none}
+.avail-badge.now{background:rgba(15,155,108,.08);border-color:rgba(15,155,108,.26);color:#0b7551}
+.avail-badge.now .dot{background:var(--bk-save)}
+.avail-badge.soon{background:rgba(26,167,196,.08);border-color:rgba(26,167,196,.26);color:#116b80}
+.avail-badge.soon .dot{background:var(--teal)}
+.avail-badge.loading{opacity:.5}
+
+/* ── Card restructure ── */
+.pcard-a{display:flex;flex-direction:column;flex:1;text-decoration:none;color:inherit}
+.pcard-foot{padding:0 20px 18px;display:flex;flex-direction:column;align-items:flex-start}
+.pcard-foot .avail-badge{margin-bottom:10px}
+.pcard-book{width:100%;padding:11px;background:var(--grad);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:transform .18s,box-shadow .18s}
+.pcard-book:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(31,184,173,.3)}
+
+/* ── Long-term units sort to the bottom ──
+   Short-term (bookable) cards were converted to <div class="pcard">; the
+   inquire-only long-term ones are still <a class="pcard">, so grid order
+   can separate them without reshuffling the markup. */
+#listings div.pcard{order:1}
+#listings .lt-divider{order:2}
+#listings a.pcard{order:3}
+
+.lt-divider{grid-column:1/-1;margin:16px 0 4px;padding-top:22px;border-top:1px solid var(--line)}
+.lt-divider h3{font-family:var(--display);font-size:24px;font-weight:500;margin-bottom:4px}
+.lt-divider p{font-size:13.5px;color:var(--ink-soft);max-width:56ch}
+
+@media(max-width:900px){
+  .bk-months.two{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .bk-card{padding:22px 18px}
+  .bk-quote-amt{font-size:34px}
+  .bk-modal{padding:0}
+  .bk-modal-inner{width:100%;min-height:100vh;border-radius:0}
+  .bk-modal-head{border-radius:0}
+  .bk-modal-head::before{border-radius:0}
+  .bk-modal-inner .bk-card{border-radius:0}
+}

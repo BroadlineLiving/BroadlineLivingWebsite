@@ -47,6 +47,14 @@
   .field input,.field textarea{padding:13px 15px;border:1px solid var(--line);border-radius:2px;font-family:inherit;font-size:15px;background:var(--bg);color:var(--ink);transition:border-color .2s}
   .field input:focus,.field textarea:focus{outline:none;border-color:var(--cyan)}
   .field textarea{resize:vertical;min-height:120px}
+  /* SMS consent — required by carriers (via Twilio) before A2P texts are
+     delivered. Must be a real checkbox the visitor actively ticks: never
+     pre-checked, never required to submit the form (consent to texts can't be
+     a condition of service). The label wording is fixed and matches what is
+     filed in the Twilio campaign's Message Flow — don't reword it. */
+  .sms-consent{grid-column:1/-1;display:flex;align-items:flex-start;gap:10px;margin:-4px 0 4px}
+  .sms-consent input[type=checkbox]{width:17px;height:17px;margin:2px 0 0;flex:0 0 auto;accent-color:var(--cyan);cursor:pointer}
+  .sms-consent label{font-size:12.5px;line-height:1.5;color:var(--ink-soft);text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
 
   /* Map */
   .map-wrap{margin-top:6px;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:#fff}
@@ -119,6 +127,10 @@
           <div class="field"><label>Last name</label><input type="text" name="last_name" placeholder="Last name"></div>
           <div class="field"><label>Email</label><input type="email" name="email" placeholder="you@email.com"></div>
           <div class="field"><label>Phone</label><input type="tel" name="phone" placeholder="(000) 000-0000"></div>
+          <div class="sms-consent">
+            <input type="checkbox" id="sms_consent" name="sms_consent" value="yes">
+            <label for="sms_consent">I agree to receive text messages from Broadline Living about my inquiry. Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.</label>
+          </div>
           <div class="field full"><label>Subject</label><input type="text" name="subject" placeholder="How can we help?"></div>
           <div class="field full"><label>Message</label><textarea name="message" placeholder="Your message"></textarea></div>
         </div>
@@ -128,7 +140,7 @@
   </div>
 </section>
 
-<footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods. Move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="mailto:Info@broadlineliving.com">Info@broadlineliving.com</a></li><li><a href="tel:+19297372160">+1 (929) 737-2160</a></li><li>134 W 29th St, NY 10001</li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved.</div></div></footer>
+<footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods. Move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="mailto:Info@broadlineliving.com">Info@broadlineliving.com</a></li><li><a href="tel:+19297372160">+1 (929) 737-2160</a></li><li>134 W 29th St, NY 10001</li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved. &nbsp;&middot;&nbsp; <a href="privacy-policy.html">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href="terms-of-service.html">Terms of Service</a></div></div></footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>

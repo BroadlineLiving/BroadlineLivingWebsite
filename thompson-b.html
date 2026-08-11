@@ -25,6 +25,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="booking.css">
 <style>
   .crumb{padding:24px 0 8px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
   .crumb a{color:var(--ink-soft);transition:color .2s}
@@ -159,24 +160,7 @@
     </div>
 
     <aside>
-      <div class="inquiry-card">
-        <div class="ic-eyebrow">Inquire</div>
-        <h3>Request More Information</h3>
-        <p class="sub">Tell us your dates and we'll be in touch with pricing and availability.</p>
-        <form action="https://formspree.io/f/mjgzzger" method="POST">
-          <input type="hidden" name="_subject" value="Inquiry: 59 Thompson Street Unit B">
-          <input type="hidden" name="property" value="59 Thompson Street Unit B (Thompson-B)">
-          <div class="frow">
-            <div class="field"><label>Move-in</label><input type="date" name="move_in" required></div>
-            <div class="field"><label>Move-out</label><input type="date" name="move_out" required></div>
-          </div>
-          <div class="field"><label>Name</label><input type="text" name="name" required></div>
-          <div class="field"><label>Email</label><input type="email" name="email" required></div>
-          <div class="field"><label>Phone</label><input type="tel" name="phone"></div>
-          <div class="field"><label>Message (optional)</label><textarea name="message" placeholder="Anything else we should know?"></textarea></div>
-          <button type="submit" class="submit-btn">Send Inquiry</button>
-        </form>
-      </div>
+      <div id="booking-widget" data-unit-key="thompson-b"></div>
     </aside>
   </section>
 
@@ -194,7 +178,7 @@
   <button class="lb-next" onclick="nextPhoto()">&#8250;</button>
 </div>
 
-<footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods. Move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="mailto:Info@broadlineliving.com">Info@broadlineliving.com</a></li><li><a href="tel:+19297372160">+1 (929) 737-2160</a></li><li>134 W 29th St, NY 10001</li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved.</div></div></footer>
+<footer><div class="wrap"><div class="foot-grid"><div><a href="index.html" class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fe0d0"/><stop offset="0.5" stop-color="#34c8d6"/><stop offset="1" stop-color="#7b6cf0"/></linearGradient></defs><path d="M8 8 H40 V40 H26" stroke="url(#bf)" stroke-width="1.6" fill="none"/><path d="M8 8 V40" stroke="url(#bf)" stroke-width="1.6" fill="none"/><text x="24" y="30" text-anchor="middle" font-family="Jost,sans-serif" font-size="17" font-weight="500" fill="url(#bf)">B</text></svg><span class="name"><span class="b">BROADLINE</span><span class="l">LIVING</span></span></a><p class="foot-blurb">Furnished, fully-managed rentals in the city's best neighborhoods. Move-in ready living, handled end to end.</p></div><div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="landlords.html">Submit Property</a></li><li><a href="contact.html">Contact</a></li></ul></div><div><h4>Contact Info</h4><ul><li><a href="mailto:Info@broadlineliving.com">Info@broadlineliving.com</a></li><li><a href="tel:+19297372160">+1 (929) 737-2160</a></li><li>134 W 29th St, NY 10001</li></ul></div></div><div class="foot-bottom">Copyright &copy; 2026, Broadline Living. All Rights Reserved. &nbsp;&middot;&nbsp; <a href="privacy-policy.html">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href="terms-of-service.html">Terms of Service</a></div></div></footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -266,5 +250,9 @@ document.querySelectorAll('.mobile-menu a').forEach(function(a){
   });
 });
 </script>
+<script src="units-config.js"></script>
+<script src="rates.js"></script>
+<script src="availability.js"></script>
+<script src="booking.js"></script>
 </body>
 </html>
