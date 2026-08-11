@@ -20,7 +20,7 @@
      instantly. Beyond this the dates get confirmed by a human first — holding
      a home open for weeks on a self-serve application is how you end up with
      an empty apartment and no deposit. */
-  var BOOK_WINDOW_DAYS = 3;
+  var BOOK_WINDOW_DAYS = 5;
   var FORMSPREE = 'https://formspree.io/f/mjgzzger';
   var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   var MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -134,7 +134,7 @@
 
   /* True when the chosen move-in is close enough to the home's next-open date
      to allow a self-serve application. If availability never loaded we don't
-     know the open date, so we fail closed to "enquire" rather than opening the
+     know the open date, so we fail closed to "inquire" rather than opening the
      apply flow on an assumption. */
   BookingWidget.prototype.withinBookingWindow = function () {
     if (!this.moveIn || !this.earliest) return false;
@@ -143,9 +143,11 @@
   };
 
   /* ---------- stay recommendations ----------
-     Always surfaces longer terms: a 12-month deal (flat 35%), and an option
-     that ends in peak season so the home re-lets well. Only suggests ranges
-     that are actually free on the live calendar. */
+     Suggests alternatives that end in peak season (when the home re-lets best)
+     or start the day it frees up. Only ranges that are actually free on the
+     live calendar, and only ones that cost LESS per month than the guest's
+     current selection — never an upsell. When nothing is cheaper, nothing is
+     shown, which is the correct outcome rather than a gap to fill. */
   BookingWidget.prototype.recommendations = function () {
     if (!this.moveIn || !this.moveOut) return [];
     var current = this.quote();
@@ -163,9 +165,21 @@
       if (!self.rangeIsFree(moveIn, moveOut)) return;
       var q = self.quoteFor(moveIn, moveOut);
       if (!q.ok) return;
+      var save = current.monthlyRate - q.monthlyRate;
+      /* Never recommend an alternative that costs MORE per month than what the
+         guest already chose. A longer term spanning peak season, or an earlier
+         start that lands in summer, can both price higher — surfacing those as
+         "recommendations" is an upsell, not help.
+
+         This also happens to gate the earlier-start option to exactly when it
+         is useful: moving in sooner is cheaper precisely when there is a real
+         vacancy gap being charged for, which is the case it exists to solve.
+         When the guest's date is months later in another season the comparison
+         is meaningless, and that is when it prices higher and gets dropped. */
+      if (save <= 0) return;
       out.push({
         moveIn: moveIn, moveOut: moveOut, nights: n, quote: q, flavor: flavor,
-        save: current.monthlyRate - q.monthlyRate
+        save: save
       });
     }
 
@@ -267,18 +281,19 @@
            '<div class="bk-rec-amt">' + fmtMoney(q.monthlyRate) + '<span class="u">/mo</span></div>' +
            '<div class="bk-rec-dur">' + durationLabel(q.nights) + '</div></div>';
       recs.forEach(function (r, i) {
-        /* Only claim savings when the longer stay is genuinely cheaper per
-           month — spanning summer can cost more, and a false "save" would
-           be misleading. */
-        var saves = r.save > 0;
+        /* Longer stays only reach here when they actually save money (see
+           recommendations()), so they always carry the savings label. 'nogap'
+           is the one that can be same-price or dearer — it's offered because
+           moving in when the home opens avoids the vacancy surcharge, not
+           because it's cheaper per month. */
         var LABELS = {
           nogap: 'Move in when it opens',
-          long: saves ? 'Stay and save' : 'Stay longer',
-          mid: saves ? 'Stay and save' : 'Stay longer'
+          long: 'Stay and save',
+          mid: 'Stay and save'
         };
-        var flag = saves
-          ? '<div class="bk-rec-flag">Save ' + fmtMoney(r.save) + '/mo</div>'
-          : '<div class="bk-rec-flag neutral">Longer stay</div>';
+        // Everything that reaches here saves money — recommendations() drops
+        // anything that doesn't — so the savings flag always applies.
+        var flag = '<div class="bk-rec-flag">Save ' + fmtMoney(r.save) + '/mo</div>';
         var iso = function (d) { return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); };
         h += '<button type="button" class="bk-rec" data-rec-in="' + iso(r.moveIn) + '" data-rec-out="' + iso(r.moveOut) + '"' +
              ' style="animation-delay:' + (i * 45) + 'ms">' + flag +
@@ -320,7 +335,7 @@
     } else if (q && q.reason === 'unavailable') {
       h += '<div class="bk-quote-empty">Pricing is temporarily unavailable — please get in touch and we\'ll quote you directly.</div>';
     } else if (q && (q.reason === 'not-published' || q.reason === 'no-rate-for-date')) {
-      h += '<div class="bk-quote-empty">We don\'t have published pricing for those dates yet — send us an enquiry and we\'ll come back with a rate.</div>';
+      h += '<div class="bk-quote-empty">We don\'t have published pricing for those dates yet — send us an inquiry and we\'ll come back with a rate.</div>';
     } else if (q && q.reason === 'min-stay') {
       h += '<div class="bk-quote-empty">Minimum stay is ' + q.minNights + ' nights.</div>';
     } else {
@@ -328,7 +343,7 @@
     }
     h += '</div>';
 
-    /* Book vs. enquire.
+    /* Book vs. inquire.
        Instant booking is only offered when the move-in is within a few days of
        the date the home actually frees up. Further out, the rate is still a
        real quote but the dates need a human — and this cannot be enforced on
@@ -338,9 +353,20 @@
     if (ready && inWindow) {
       h += '<button type="button" class="bk-cta" data-act="apply">Apply for this home</button>';
     } else if (ready) {
-      h += '<button type="button" class="bk-cta" data-act="inquire">Enquire about these dates</button>';
-      h += '<div class="bk-fine" style="margin-top:8px;">Move-in is more than ' + BOOK_WINDOW_DAYS +
-           ' days after this home frees up (' + fmtShort(this.earliest) + '), so we\'ll confirm these dates with you directly before you apply.</div>';
+      /* The notice goes ABOVE the button, not in fine print below it. A guest
+         who has just picked dates and seen a price expects to apply; being
+         quietly handed a different button reads as the site being broken.
+         Say plainly that instant apply isn't available for these dates and
+         what happens instead, before they click anything. */
+      var daysOut = nightsBetween(this.earliest, this.moveIn);
+      h += '<div class="bk-msg warn" style="margin-bottom:10px;">' +
+           '<strong>These dates can\'t be booked instantly.</strong><br>' +
+           'This home frees up on ' + fmtShort(this.earliest) + ', and your move-in is ' + daysOut +
+           ' days after that. We only take instant applications within ' + BOOK_WINDOW_DAYS +
+           ' days of a home opening, so we\'ll need to confirm these dates with you first. ' +
+           'Send us your details below and we\'ll come back to you with your application link.' +
+           '</div>';
+      h += '<button type="button" class="bk-cta" data-act="inquire">Inquire about these dates</button>';
     } else {
       h += '<button type="button" class="bk-cta" data-act="apply" disabled>Select dates to continue</button>';
     }
@@ -469,7 +495,7 @@
     if (!q || !q.ok) return;
 
     if (!u.applicationPropertyId) {
-      // Not wired up yet — fall back to the enquiry form rather than sending
+      // Not wired up yet — fall back to the inquiry form rather than sending
       // someone to a dead link.
       this.showApplyForm();
       return;
@@ -490,10 +516,15 @@
     if (!q || !q.ok) return;
     var u = this.unit;
 
-    var h = '<div class="bk-card"><div class="bk-eyebrow">Almost there</div><h3>Enquire about these dates</h3>';
+    var h = '<div class="bk-card"><div class="bk-eyebrow">Inquiry</div><h3>Inquire about these dates</h3>';
     h += '<p class="bk-sub">' + esc(u.name) + ' ' + esc(u.unitLabel) + ' · ' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) + '<br>' +
          '<strong style="color:var(--ink)">' + fmtMoney(q.monthlyRate) + '/month</strong> · ' + fmtMoney(q.total) + ' total' +
          (q.tax.exempt ? ' · tax exempt (180+ nights)' : ' · incl. NYC occupancy tax') + '</p>';
+    /* Repeat why they're here. They arrived from a blocked apply, and landing
+       on a bare name/email form with no explanation looks like the apply flow
+       simply failed. */
+    h += '<div class="bk-msg info" style="margin-bottom:14px;">This isn\'t an application &mdash; these dates need confirming first. ' +
+         'Send your details and we\'ll reply with your application link.</div>';
     h += '<form data-apply>';
     h += '<div class="bk-field"><label>Full name</label><input type="text" name="name" required></div>';
     h += '<div class="bk-field"><label>Email</label><input type="email" name="email" required></div>';
@@ -574,21 +605,68 @@
     document.body.style.overflow = '';
   }
 
+  /* Sort tiers for the listings grid. Cards with a real open date sort by that
+     date; everything undated falls below it, because "no known date" is not the
+     same as "available far in the future" and shouldn't interleave with real
+     dates. Fully-booked ranks above inquiry-only: it's still a live calendar,
+     it just has nothing open right now. */
+  var TIER_FULLY_BOOKED = 9e15;
+  var TIER_NO_CALENDAR  = 1e16;
+
+  /* Reorders the listing cards so the soonest-available home comes first.
+     Runs once, after every availability lookup has settled — sorting as each
+     one lands would make the grid visibly shuffle several times.
+
+     Only reorders; it never hides anything. The hood/beds/search filters work
+     by toggling display, so the two compose without either knowing about the
+     other. Array.prototype.sort is stable, so cards sharing a tier keep the
+     hand-curated order they have in the HTML. */
+  function sortCardsByAvailability(ranks) {
+    var grid = document.getElementById('listings');
+    if (!grid) return;
+    var cards = Array.prototype.slice.call(grid.querySelectorAll('.pcard'));
+    cards.sort(function (a, b) {
+      var av = ranks.has(a) ? ranks.get(a) : TIER_NO_CALENDAR;
+      var bv = ranks.has(b) ? ranks.get(b) : TIER_NO_CALENDAR;
+      return av - bv;
+    });
+    // Re-appending an existing node moves it; no clone, so listeners survive.
+    cards.forEach(function (c) { grid.appendChild(c); });
+  }
+
   function hydrateBadges() {
-    document.querySelectorAll('[data-avail-badge]').forEach(function (badge) {
+    var badges = Array.prototype.slice.call(document.querySelectorAll('[data-avail-badge]'));
+    var ranks = new Map();
+
+    var jobs = badges.map(function (badge) {
       var key = badge.dataset.availBadge;
+      var card = badge.closest ? badge.closest('.pcard') : null;
       var u = window.BROADLINE_UNITS[key];
-      if (!u) { badge.style.display = 'none'; return; }
+      if (!u) { badge.style.display = 'none'; return Promise.resolve(); }
       badge.className = 'avail-badge loading';
       badge.innerHTML = '<span class="dot"></span>Checking…';
-      window.BroadlineAvailability.fetchBusyRanges(u.ruPropertyId).then(function (ranges) {
-        if (ranges === null) { badge.style.display = 'none'; return; }
+      return window.BroadlineAvailability.fetchBusyRanges(u.ruPropertyId).then(function (ranges) {
+        // null = the feed failed. Don't claim "fully booked" off a network
+        // error; hide the badge and let the card sort with the undated ones.
+        if (ranges === null) {
+          badge.style.display = 'none';
+          if (card) ranks.set(card, TIER_NO_CALENDAR);
+          return;
+        }
         var e = window.BroadlineAvailability.earliestAvailable(ranges, MIN_NIGHTS);
-        if (!e) { badge.className = 'avail-badge'; badge.innerHTML = '<span class="dot"></span>Fully booked'; return; }
+        if (!e) {
+          badge.className = 'avail-badge';
+          badge.innerHTML = '<span class="dot"></span>Fully booked';
+          if (card) ranks.set(card, TIER_FULLY_BOOKED);
+          return;
+        }
         if (e <= todayMid()) { badge.className = 'avail-badge now'; badge.innerHTML = '<span class="dot"></span>Available now'; }
         else { badge.className = 'avail-badge soon'; badge.innerHTML = '<span class="dot"></span>Available ' + fmtShort(e); }
+        if (card) ranks.set(card, e.getTime());
       });
     });
+
+    Promise.all(jobs).then(function () { sortCardsByAvailability(ranks); });
   }
 
   window.BroadlineBooking = { mount: mount, openModal: openModal, closeModal: closeModal, hydrateBadges: hydrateBadges };
