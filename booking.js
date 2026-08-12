@@ -37,14 +37,19 @@
   function fmtShort(d) { return MONTHS_SHORT[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear(); }
   function fmtMoney(n) { return '$' + Math.round(n).toLocaleString(); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+  /* A month here is 30 NIGHTS, matching how the rate is quoted — not 30.4375,
+     which measures elapsed time. Using the calendar figure made 30 nights read
+     as "30 nights" while 31 read as "1 month", and silently swallowed up to
+     two extra nights. That is what made the rent line look inflated against
+     the monthly headline: 31 nights of rent under a label claiming one month.
+     Every extra night is now named. */
   function durationLabel(nights) {
-    var m = nights / 30.4375;
-    if (m >= 11.5) return '12 months';
-    if (m >= 1.85) return Math.round(m) + ' months';
-    var whole = Math.floor(m);
-    var days = nights - Math.round(whole * 30.4375);
-    if (whole >= 1 && days > 2) return whole + ' month' + (whole > 1 ? 's' : '') + ' & ' + days + ' days';
-    return whole >= 1 ? whole + ' month' : nights + ' nights';
+    var whole = Math.floor(nights / 30);
+    var extra = nights - whole * 30;
+    if (whole === 0) return nights + ' night' + (nights === 1 ? '' : 's');
+    var base = whole + ' month' + (whole > 1 ? 's' : '');
+    if (!extra) return base;
+    return base + ' & ' + extra + ' night' + (extra === 1 ? '' : 's');
   }
 
   function BookingWidget(mountEl, unitKey) {
@@ -244,7 +249,16 @@
         moveIn: moveIn, moveOut: moveOut, nights: n, quote: q, flavor: flavor,
         allInSave: allInSave,
         rentSave: current.monthlyRate - q.monthlyRate,   // $/mo, may be <= 0
-        taxSave: current.tax.total - q.tax.total          // whole-stay $, may be <= 0
+        /* Per month, so it reads alongside the rent saving in the same unit.
+           For an exempt stay this is the tax THAT stay avoids — not the
+           difference against the guest's shorter selection, which made a
+           six-month exemption look like one month's worth of tax. */
+        taxSavePerMonth: q.tax.exempt
+          ? q.tax.wouldHaveBeenPerMonth
+          : (current.tax.perMonth - q.tax.perMonth),
+        taxSaveTotal: q.tax.exempt
+          ? q.tax.wouldHaveBeen
+          : (current.tax.total - q.tax.total)
       });
     }
 
@@ -423,12 +437,15 @@
            per month; tax is a whole-stay figure that comes off the total.
            Sitting side by side with only "/mo" on one of them, the tax number
            reads as monthly and overstates the saving several times over. */
+        /* Both savings in $/month so they're directly comparable, with the
+           whole-stay figure underneath since that's the number that lands. */
         var bits = '';
         if (r.rentSave > 0) bits += '<div class="bk-rec-flag">Save ' + fmtMoney(r.rentSave) + '/mo</div>';
-        if (r.taxSave > 0) {
+        if (r.taxSavePerMonth > 0) {
           bits += '<div class="bk-rec-flag tax">' +
                   (r.quote.tax.exempt ? 'No tax' : 'Less tax') +
-                  '<span class="amt">&minus;' + fmtMoney(r.taxSave) + ' total</span></div>';
+                  '<span class="amt">Save ' + fmtMoney(r.taxSavePerMonth) + '/mo</span>' +
+                  '<span class="sub">' + fmtMoney(r.taxSaveTotal) + ' over the stay</span></div>';
         }
         if (!bits) bits = '<div class="bk-rec-flag">Save ' + fmtMoney(r.allInSave) + '/mo</div>';
         var iso = function (d) { return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); };
@@ -485,26 +502,37 @@
       h += '<div class="bk-pay"><div class="bk-pay-t">' +
            (pm.available ? 'How you\'d like to pay' : 'Due at signing') + '</div>';
       h += '<div class="bk-pay-opts' + (pm.available ? '' : ' single') + '">';
+      /* Both cards show the SAME measure — total cost of the stay, deposit
+         excluded — so they can actually be compared. Previously this card
+         showed total+deposit while the other showed a per-payment figure, so
+         the cheaper option displayed as the larger number. The deposit is
+         identical either way and already has its own line above. */
       h += '<button type="button" class="bk-pay-opt' + (this.payPlan === 'full' ? ' sel' : '') + '" data-pay="full">' +
            '<div class="bk-pay-h">Pay upfront</div>' +
-           '<div class="bk-pay-amt">' + fmtMoney(q.payFull.atSigning) + '</div>' +
-           '<div class="bk-pay-sub">once at signing, incl. deposit</div>' +
+           '<div class="bk-pay-amt">' + fmtMoney(q.payFull.total) + '</div>' +
+           '<div class="bk-pay-sub">total &middot; one payment</div>' +
            '<div class="bk-pay-tag best">Best price</div></button>';
       if (pm.available) {
+        /* "per payment", never "/mo". A 183-night stay is 6.1 months billed
+           in 6 installments, so an installment is larger than a month's rate
+           — labelling both "/mo" put two different numbers in the same unit. */
         h += '<button type="button" class="bk-pay-opt' + (this.payPlan === 'monthly' ? ' sel' : '') + '" data-pay="monthly">' +
              '<div class="bk-pay-h">Monthly installments</div>' +
-             '<div class="bk-pay-amt">' + fmtMoney(pm.perInstallment) + '<span class="u">/mo</span></div>' +
-             '<div class="bk-pay-sub">' + fmtMoney(pm.atSigning) + ' at signing, then ' +
-             (pm.installments - 1) + ' more payment' + (pm.installments - 1 === 1 ? '' : 's') + '</div>' +
-             '<div class="bk-pay-tag">+' + pm.upliftPct + '% on the rate</div></button>';
+             '<div class="bk-pay-amt">' + fmtMoney(pm.total) + '</div>' +
+             '<div class="bk-pay-sub">total &middot; ' + pm.installments + ' payments of ' +
+             fmtMoney(pm.perInstallment) + '</div>' +
+             '<div class="bk-pay-tag">+' + fmtMoney(pm.premium) + '</div></button>';
       }
       h += '</div>';
       if (pm.available) {
         h += '<div class="bk-fine" style="margin-top:9px;">' +
              (this.payPlan === 'full'
-               ? 'Paying upfront: <strong>' + fmtMoney(q.payFull.atSigning) + '</strong> at signing covers the whole stay plus the refundable deposit.'
-               : 'Paying monthly: <strong>' + fmtMoney(pm.atSigning) + '</strong> at signing (first month plus deposit), then <strong>' +
-                 fmtMoney(pm.perInstallment) + '</strong> a month. That\'s ' + fmtMoney(pm.premium) + ' more overall than paying upfront.') +
+               ? '<strong>' + fmtMoney(q.payFull.atSigning) + '</strong> due at signing &mdash; the full stay plus the ' +
+                 fmtMoney(q.deposit) + ' refundable deposit.'
+               : '<strong>' + fmtMoney(pm.atSigning) + '</strong> due at signing &mdash; your first payment of ' +
+                 fmtMoney(pm.perInstallment) + ' plus the ' + fmtMoney(q.deposit) + ' refundable deposit, then ' +
+                 (pm.installments - 1) + ' more payment' + (pm.installments - 1 === 1 ? '' : 's') + ' of ' +
+                 fmtMoney(pm.perInstallment) + '. Costs ' + fmtMoney(pm.premium) + ' more than paying upfront.') +
              '</div>';
       }
       h += '</div>';
@@ -523,11 +551,7 @@
       h += '<div class="bk-quote-empty">We don\'t have published pricing for those dates yet — send us an inquiry and we\'ll come back with a rate.</div>';
     } else if (q && q.reason === 'gap-too-large') {
       h += '<div class="bk-quote-empty"><strong>Large gap &mdash; inquire for rates.</strong><br>' +
-           'This home frees up on ' + fmtShort(q.availableDate) + ' and your move-in is ' + q.gapDays +
-           ' days after that. We price stays starting within ' + q.limitDays +
-           ' days of a home opening; past that the rate depends on how long it sits empty, so we quote it directly. ' +
-           'Move your start date to within ' + q.limitDays + ' days of ' + fmtShort(q.availableDate) +
-           ' to see a price, or send us an inquiry.</div>';
+           'This home opens ' + fmtShort(q.availableDate) + ', ' + q.gapDays + ' days before your move-in.</div>';
     } else if (q && q.reason === 'min-stay') {
       h += '<div class="bk-quote-empty">Minimum stay is ' + q.minNights + ' nights.</div>';
     } else {
@@ -558,6 +582,9 @@
            ' days of a home opening, so we\'ll need to confirm these dates with you first. ' +
            'Send us your details below and we\'ll come back to you with your application link.' +
            '</div>';
+      h += '<button type="button" class="bk-cta" data-act="inquire">Inquire about these dates</button>';
+    } else if (q && q.reason === 'gap-too-large') {
+      // Not quotable, but still a lead — give them a way through.
       h += '<button type="button" class="bk-cta" data-act="inquire">Inquire about these dates</button>';
     } else {
       h += '<button type="button" class="bk-cta" data-act="apply" disabled>Select dates to continue</button>';
@@ -718,19 +745,24 @@
   BookingWidget.prototype.showApplyForm = function () {
     var self = this;
     var q = this.quote();
-    if (!q || !q.ok) return;
+    // Reachable with no quote at all when the gap is too large to price —
+    // that's exactly the case most worth capturing, so don't bail.
+    var priced = !!(q && q.ok);
     var u = this.unit;
 
     var h = '<div class="bk-card"><div class="bk-eyebrow">Inquiry</div><h3>Inquire about these dates</h3>';
-    h += '<p class="bk-sub">' + esc(u.name) + ' ' + esc(u.unitLabel) + ' · ' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) + '<br>' +
-         '<strong style="color:var(--ink)">' + fmtMoney(q.monthlyRate) + '/month</strong> · ' + fmtMoney(q.total) + ' total · ' +
-         fmtMoney(q.deposit) + ' refundable deposit' +
-         (q.tax.exempt ? ' · tax exempt (180+ nights)' : ' · incl. NYC occupancy tax') + '</p>';
+    h += '<p class="bk-sub">' + esc(u.name) + ' ' + esc(u.unitLabel) + ' · ' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) +
+         (priced
+           ? '<br><strong style="color:var(--ink)">' + fmtMoney(q.monthlyRate) + '/month</strong> · ' + fmtMoney(q.total) + ' total · ' +
+             fmtMoney(q.deposit) + ' refundable deposit'
+           : '') + '</p>';
     /* Repeat why they're here. They arrived from a blocked apply, and landing
        on a bare name/email form with no explanation looks like the apply flow
        simply failed. */
-    h += '<div class="bk-msg info" style="margin-bottom:14px;">This isn\'t an application &mdash; these dates need confirming first. ' +
-         'Send your details and we\'ll reply with your application link.</div>';
+    h += '<div class="bk-msg info" style="margin-bottom:14px;">' +
+         (priced
+           ? 'This isn\'t an application &mdash; these dates need confirming first. Send your details and we\'ll reply with your application link.'
+           : 'We\'ll price these dates for you and come back with a quote.') + '</div>';
     h += '<form data-apply>';
     h += '<div class="bk-field"><label>Full name</label><input type="text" name="name" required></div>';
     h += '<div class="bk-field"><label>Email</label><input type="email" name="email" required></div>';
@@ -772,14 +804,25 @@
     body.append('phone', data.phone || '');
     body.append('move_in', fmtShort(this.moveIn));
     body.append('move_out', fmtShort(this.moveOut));
-    body.append('duration', durationLabel(q.nights));
-    body.append('quoted_monthly', fmtMoney(q.monthlyRate));
-    body.append('quoted_total', fmtMoney(q.total));
-    body.append('refundable_deposit', fmtMoney(q.deposit));
-    body.append('due_at_signing', fmtMoney(this.payPlan === 'monthly' ? q.payMonthly.atSigning : q.payFull.atSigning));
-    body.append('payment_plan', this.payPlan === 'monthly'
-      ? 'Monthly installments (+' + q.payMonthly.upliftPct + '%) — ' + fmtMoney(q.payMonthly.perInstallment) + '/mo x ' + q.payMonthly.installments
-      : 'Paid upfront in full');
+    body.append('duration', durationLabel(nightsBetween(this.moveIn, this.moveOut)));
+    /* No quote when the gap is too large to price — that lead still has to
+       send. Report why instead of throwing on undefined fields. */
+    if (q && q.ok) {
+      body.append('quoted_monthly', fmtMoney(q.monthlyRate));
+      body.append('quoted_total', fmtMoney(q.total));
+      body.append('refundable_deposit', fmtMoney(q.deposit));
+      body.append('due_at_signing', fmtMoney(this.payPlan === 'monthly' ? q.payMonthly.atSigning : q.payFull.atSigning));
+      body.append('payment_plan', this.payPlan === 'monthly'
+        ? 'Monthly installments (+' + q.payMonthly.upliftPct + '%) — ' + fmtMoney(q.payMonthly.perInstallment) + '/mo x ' + q.payMonthly.installments
+        : 'Paid upfront in full');
+    } else {
+      body.append('quoted_monthly', 'NOT QUOTED');
+      body.append('quote_blocked_reason', (q && q.reason) || 'unknown');
+      if (this.earliest) {
+        body.append('home_opens', fmtShort(this.earliest));
+        body.append('gap_days', String(nightsBetween(this.earliest, this.moveIn)));
+      }
+    }
     return fetch(FORMSPREE, { method: 'POST', body: body, headers: { Accept: 'application/json' } })
       .then(function (r) { if (!r.ok) throw new Error('submit failed'); return r; });
   };

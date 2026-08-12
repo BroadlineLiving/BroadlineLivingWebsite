@@ -228,6 +228,7 @@
 /* "total" qualifier on its own line so it can't be read as a monthly figure
    next to the per-month rent saving, and so the chip doesn't overflow. */
 .bk-rec-flag.tax .amt{display:block;font-weight:700}
+.bk-rec-flag.tax .sub{display:block;font-weight:500;opacity:.75;font-size:9.5px;margin-top:1px}
 
 /* ── Payment options ──
    Side by side rather than a toggle, so the trade-off is legible without

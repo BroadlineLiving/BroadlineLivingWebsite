@@ -69,12 +69,18 @@
   var TAX_EXEMPT_NIGHTS = 180;
 
   function taxFor(rentTotal, nights, rooms) {
-    if (nights >= TAX_EXEMPT_NIGHTS) {
-      return { pct: 0, perRoom: 0, total: 0, exempt: true };
-    }
     var pct = rentTotal * OCCUPANCY_PCT;
     var perRoom = PER_ROOM_NIGHT * (rooms || 1) * nights;
-    return { pct: pct, perRoom: perRoom, total: pct + perRoom, exempt: false };
+    var full = pct + perRoom;
+    if (nights >= TAX_EXEMPT_NIGHTS) {
+      /* `wouldHaveBeen` is the tax this stay avoids by crossing 180 nights.
+         That is the number worth showing: comparing against the guest's
+         current shorter stay understates it badly — a one-month selection
+         carries one month of tax, so the "saving" looked like a single
+         month's worth rather than the whole exempt term. */
+      return { pct: 0, perRoom: 0, total: 0, exempt: true, wouldHaveBeen: full };
+    }
+    return { pct: pct, perRoom: perRoom, total: full, exempt: false, wouldHaveBeen: full };
   }
 
   /* ---- fetching ----------------------------------------------------------
@@ -275,7 +281,11 @@
         occupancyPct: Math.round(tax.pct),
         perRoomNight: Math.round(tax.perRoom),
         total: Math.round(tax.total),
-        exempt: tax.exempt
+        exempt: tax.exempt,
+        wouldHaveBeen: Math.round(tax.wouldHaveBeen),
+        // Per month, so it can sit next to a per-month rent saving.
+        perMonth: Math.round(tax.total / months),
+        wouldHaveBeenPerMonth: Math.round(tax.wouldHaveBeen / months)
       },
       total: total,
       /* Refundable — held, not charged. Kept out of `total` on purpose; the
