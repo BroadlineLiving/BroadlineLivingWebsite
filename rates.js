@@ -300,45 +300,62 @@
          wholesale. Previously only the payment card knew about the uplift and
          every other figure kept showing the upfront price, so choosing
          "monthly" appeared to change nothing. */
-      /* Two plans, same shape. Tax is a stay-level charge in both: it is
-         collected in full at signing and never spread across installments.
-         Only RENT is spread. */
-      payFull: {
+      /* Two plans, same shape. Rent and the headline rate are the BASE
+         figures on both — the installment uplift is a separate component, not
+         folded into the rate, so the advertised monthly never changes based on
+         how you choose to pay. Tax is a stay-level charge collected in full at
+         signing on both plans; only rent is ever spread. */
+      payFull: (function () {
+        /* Totals are summed from the ROUNDED components, not rounded from the
+           unrounded sum. Otherwise the lines on screen add to one thing and
+           the total prints another — an off-by-one the guest can see. */
+        var rent = Math.round(rentPlusBurn), tx = Math.round(tax.total);
+        return {
         available: true,
-        rentForStay: Math.round(rentPlusBurn),
-        taxTotal: Math.round(tax.total),
+        rentForStay: rent,
+        surcharge: 0,
+        taxTotal: tx,
         exempt: tax.exempt,
         deposit: deposit,
-        total: total,
-        atSigning: total + deposit,
+        total: rent + tx,
+        atSigning: rent + tx + deposit,
         monthlyRate: monthlyRate,
         nightlyRate: Math.round(avgNightly * 100) / 100
-      },
+        };
+      })(),
       payMonthly: (function () {
-        var upRent = rentPlusBurn * (1 + INSTALLMENT_UPLIFT);
-        var upTax = taxFor(upRent, nights, rooms);
+        var surcharge = rentPlusBurn * INSTALLMENT_UPLIFT;
+        var chargeableRent = rentPlusBurn + surcharge;
+        var upTax = taxFor(chargeableRent, nights, rooms);
         var installments = Math.max(1, Math.round(months));
-        // Rent only — tax is not amortised.
-        var rentPer = Math.round(upRent / installments);
-        var upTotal = Math.round(upRent + upTax.total);
+        // Rent + surcharge is what gets spread. Tax never is.
+        var rentR = Math.round(rentPlusBurn);
+        var surR = Math.round(surcharge);
+        var taxR = Math.round(upTax.total);
+        // Spread the rounded chargeable rent so installments reconcile too.
+        var rentPer = Math.round((rentR + surR) / installments);
+        var upTotal = rentR + surR + taxR;
         return {
           /* A single-installment "plan" is not a plan — it's the whole stay
              with a surcharge bolted on, and it would price ABOVE paying
              upfront. Offer the choice only when there is something to spread. */
           available: installments >= 2,
           upliftPct: INSTALLMENT_UPLIFT * 100,
-          rentForStay: Math.round(upRent),
-          taxTotal: Math.round(upTax.total),
+          // Base rent, same as payFull — the surcharge stands on its own line.
+          rentForStay: rentR,
+          surcharge: surR,
+          taxTotal: taxR,
           exempt: upTax.exempt,
           deposit: deposit,
           total: upTotal,
-          monthlyRate: Math.round((upRent / nights) * RATE_NIGHTS_PER_MONTH),
-          nightlyRate: Math.round((upRent / nights) * 100) / 100,
           installments: installments,
           rentPerInstallment: rentPer,
           /* First rent installment + ALL the tax + the deposit. */
-          atSigning: rentPer + Math.round(upTax.total) + deposit,
-          premium: upTotal - total
+          atSigning: rentPer + taxR + deposit,
+          premium: upTotal - (Math.round(rentPlusBurn) + Math.round(tax.total)),
+          // Headline stays the BASE rate regardless of plan.
+          monthlyRate: monthlyRate,
+          nightlyRate: Math.round(avgNightly * 100) / 100
         };
       })(),
       // Utilities are billed separately on stays of ~6 months or longer.

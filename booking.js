@@ -488,9 +488,12 @@
          showing the upfront price — the +5% appeared only on the payment card,
          so it looked like the plan made no difference. */
       var v = (this.payPlan === 'monthly' && q.payMonthly.available) ? q.payMonthly : q.payFull;
+      /* The advertised rate is the BASE rate on both plans. It used to absorb
+         the installment uplift, so the headline moved when you switched how
+         you pay — the home appeared to cost more. The uplift is a separate
+         line below instead. */
       h += '<div class="bk-quote-main"><span class="bk-quote-amt">' + fmtMoney(v.monthlyRate) + '</span><span class="bk-quote-per">/ month</span></div>';
-      h += '<div class="bk-quote-note">' + fmtMoney(v.nightlyRate) + ' per night · ' + q.nights + ' nights' +
-           (v === q.payMonthly ? ' · incl. ' + q.payMonthly.upliftPct + '% installment rate' : '') + '</div>';
+      h += '<div class="bk-quote-note">' + fmtMoney(v.nightlyRate) + ' per night · ' + q.nights + ' nights</div>';
       /* Reads top to bottom as one arithmetic: what you pay each month,
          what that adds up to, the deposit held on top, and the single figure
          you actually hand over at signing. Nothing is repeated and every
@@ -502,6 +505,11 @@
       h += '<div class="bk-lines">';
       h += '<div class="bk-line"><span>' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) + '</span><span>' + durationLabel(q.nights) + '</span></div>';
       h += '<div class="bk-line"><span>Total rent for stay</span><span>' + fmtMoney(v.rentForStay) + '</span></div>';
+      // Only exists on the installment plan; never rendered otherwise.
+      if (v.surcharge > 0) {
+        h += '<div class="bk-line"><span>Installment surcharge (' + q.payMonthly.upliftPct + '%)</span><span>' +
+             fmtMoney(v.surcharge) + '</span></div>';
+      }
       if (v.exempt) {
         h += '<div class="bk-line"><span>NYC taxes</span><span>None</span></div>';
       } else {
