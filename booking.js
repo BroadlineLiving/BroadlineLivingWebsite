@@ -471,7 +471,11 @@
            (v === q.payMonthly ? ' · incl. ' + q.payMonthly.upliftPct + '% installment rate' : '') + '</div>';
       h += '<div class="bk-lines">';
       h += '<div class="bk-line"><span>' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) + '</span><span>' + durationLabel(q.nights) + '</span></div>';
-      h += '<div class="bk-line"><span>Rent</span><span>' + fmtMoney(v.rentTotal) + '</span></div>';
+      /* "Total rent for stay", not "Rent" — this is every night of the term,
+         which is a bigger number than the monthly rate in the headline
+         whenever the stay isn't an exact multiple of 30 nights. Naming it
+         removes the apparent contradiction. */
+      h += '<div class="bk-line"><span>Total rent for stay</span><span>' + fmtMoney(v.rentTotal) + '</span></div>';
       /* Vacancy gap. Shown as its own line so a higher effective rate isn't
          unexplained, but without spelling out the formula. */
       if (q.burnDays > 0) {
