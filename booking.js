@@ -471,10 +471,12 @@
            (v === q.payMonthly ? ' · incl. ' + q.payMonthly.upliftPct + '% installment rate' : '') + '</div>';
       h += '<div class="bk-lines">';
       h += '<div class="bk-line"><span>' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) + '</span><span>' + durationLabel(q.nights) + '</span></div>';
-      /* "Total rent for stay", not "Rent" — this is every night of the term,
-         which is a bigger number than the monthly rate in the headline
-         whenever the stay isn't an exact multiple of 30 nights. Naming it
-         removes the apparent contradiction. */
+      /* Rent per month first, then the stay total. Both are needed: the
+         per-month figure is what people shop on, but dropping the total
+         would leave the column not adding up — rent + tax has to equal the
+         estimated total, and on any stay that isn't an exact multiple of 30
+         nights the monthly rate alone doesn't get there. */
+      h += '<div class="bk-line"><span>Rent per month</span><span>' + fmtMoney(v.monthlyRate) + '</span></div>';
       h += '<div class="bk-line"><span>Total rent for stay</span><span>' + fmtMoney(v.rentTotal) + '</span></div>';
       /* Vacancy gap. Shown as its own line so a higher effective rate isn't
          unexplained, but without spelling out the formula. */
@@ -667,11 +669,14 @@
     if (inq) inq.addEventListener('click', function () { self.showApplyForm(); });
   };
 
+  /* Always one month. This used to render two side by side whenever the
+     container happened to be 600px or wider, so the same widget looked
+     different on a unit page than in a narrower slot — and the two-up view
+     squeezed both months small enough to be awkward to tap. One month is
+     consistent everywhere and gives each date a full-size target. */
   BookingWidget.prototype.calendarHTML = function () {
-    var two = this.el.clientWidth >= 600;
-    var h = '<div class="bk-cal"><div class="bk-months' + (two ? ' two' : '') + '">';
-    h += this.monthHTML(this.viewMonth, true, !two);
-    if (two) h += this.monthHTML(addMonths(this.viewMonth, 1), false, true);
+    var h = '<div class="bk-cal"><div class="bk-months">';
+    h += this.monthHTML(this.viewMonth, true, true);
     h += '</div>';
     h += '<div class="bk-legend"><span><i class="free"></i>Available</span><span><i class="taken"></i>Booked</span></div>';
     h += '</div>';

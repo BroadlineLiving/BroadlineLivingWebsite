@@ -41,9 +41,8 @@
 /* ── Calendar ── */
 .bk-cal{margin-bottom:16px}
 .bk-months{display:grid;grid-template-columns:1fr;gap:26px}
-.bk-months.two{grid-template-columns:1fr 1fr}
 /* Cap each month grid so square day cells never balloon on wide containers */
-.bk-month{max-width:352px;width:100%;margin:0 auto}
+.bk-month{max-width:400px;width:100%;margin:0 auto}
 .bk-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;min-height:30px}
 .bk-cal-title{font-family:var(--display);font-size:18px;font-weight:500}
 .bk-nav{background:#fff;border:1px solid var(--line);width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:all .18s;font-size:15px;line-height:1;padding:0;flex:none}
@@ -202,7 +201,6 @@
 .lt-divider p{font-size:13.5px;color:var(--ink-soft);max-width:56ch}
 
 @media(max-width:900px){
-  .bk-months.two{grid-template-columns:1fr}
 }
 @media(max-width:600px){
   .bk-card{padding:22px 18px}
