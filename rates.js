@@ -191,14 +191,14 @@
   var BURN_RECOVERY_PCT = 0.5;
 
   /* ---- Payment options ----------------------------------------------------
-     Pay the whole stay at signing, or pay monthly for 5% more on the rate.
+     Pay the whole stay at signing, or pay monthly for 3% more on the rate.
      The uplift applies to RENT, and tax is then recalculated on that higher
      rent — tax is a percentage of what's actually charged, so applying the
      uplift after tax would quietly under-collect it.
 
      The first installment is due at signing alongside the deposit, so the
      guest hands over one month plus the deposit rather than the full term. */
-  var INSTALLMENT_UPLIFT = 0.05;
+  var INSTALLMENT_UPLIFT = 0.03;
 
   function burnCostFor(rates, availableDate, moveIn) {
     if (!availableDate || moveIn <= availableDate) return { days: 0, cost: 0 };
@@ -309,7 +309,13 @@
         tax: { total: Math.round(tax.total), exempt: tax.exempt },
         total: total,
         deposit: deposit,
-        atSigning: total + deposit
+        atSigning: total + deposit,
+        /* Per-month view. Rent is the base rate; there is no surcharge on
+           this plan, so the three components sum to totalPerMonth. */
+        rentPerMonth: Math.round(rentPlusBurn / months),
+        surchargePerMonth: 0,
+        taxPerMonth: Math.round(tax.total / months),
+        totalPerMonth: Math.round((rentPlusBurn + tax.total) / months)
       },
       payMonthly: (function () {
         var upRent = rentPlusBurn * (1 + INSTALLMENT_UPLIFT);
@@ -337,7 +343,15 @@
           atSigning: per + deposit,
           perInstallment: per,
           installments: installments,
-          premium: upTotal - total
+          premium: upTotal - total,
+          /* Per-month view. Rent stays the BASE rate and the uplift is its
+             own line, so the guest can see exactly what the plan costs
+             rather than finding it silently folded into the rent. Tax is
+             computed on rent + surcharge, since that is what's charged. */
+          rentPerMonth: Math.round(rentPlusBurn / months),
+          surchargePerMonth: Math.round((rentPlusBurn * INSTALLMENT_UPLIFT) / months),
+          taxPerMonth: Math.round(upTax.total / months),
+          totalPerMonth: Math.round((upRent + upTax.total) / months)
         };
       })(),
       // Utilities are billed separately on stays of ~6 months or longer.

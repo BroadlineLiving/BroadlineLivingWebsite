@@ -471,30 +471,25 @@
            (v === q.payMonthly ? ' · incl. ' + q.payMonthly.upliftPct + '% installment rate' : '') + '</div>';
       h += '<div class="bk-lines">';
       h += '<div class="bk-line"><span>' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) + '</span><span>' + durationLabel(q.nights) + '</span></div>';
-      /* Rent per month first, then the stay total. Both are needed: the
-         per-month figure is what people shop on, but dropping the total
-         would leave the column not adding up — rent + tax has to equal the
-         estimated total, and on any stay that isn't an exact multiple of 30
-         nights the monthly rate alone doesn't get there. */
-      h += '<div class="bk-line"><span>Rent per month</span><span>' + fmtMoney(v.monthlyRate) + '</span></div>';
-      h += '<div class="bk-line"><span>Total rent for stay</span><span>' + fmtMoney(v.rentTotal) + '</span></div>';
-      /* Vacancy gap. Shown as its own line so a higher effective rate isn't
-         unexplained, but without spelling out the formula. */
+      /* Everything per month, in the order it accrues: rent, the installment
+         surcharge if they've chosen that plan, then tax on the sum. The three
+         add up to the total below them, so the column reconciles on screen. */
+      h += '<div class="bk-line"><span>Rent per month</span><span>' + fmtMoney(v.rentPerMonth) + '</span></div>';
       if (q.burnDays > 0) {
         h += '<div class="bk-line"><span>Holding ' + q.burnDays + ' night' + (q.burnDays === 1 ? '' : 's') +
-             ' before move-in</span><span>' + fmtMoney(v.burnCost) + '</span></div>';
+             ' before move-in</span><span>included</span></div>';
       }
-      /* Just the number. The rate and the per-room-night breakdown are ours,
-         not the guest's problem — spelling out "5.875% plus $2 per room per
-         night" invites arithmetic instead of a decision. */
+      // Surcharge only exists on the installment plan — never shown otherwise.
+      if (v.surchargePerMonth > 0) {
+        h += '<div class="bk-line"><span>Installment surcharge (' + q.payMonthly.upliftPct + '%)</span><span>' +
+             fmtMoney(v.surchargePerMonth) + '</span></div>';
+      }
       if (v.tax.exempt) {
-        h += '<div class="bk-line"><span>Tax</span><span>None &mdash; 180+ nights</span></div>';
+        h += '<div class="bk-line"><span>Tax per month</span><span>None &mdash; 180+ nights</span></div>';
       } else {
-        h += '<div class="bk-line"><span>Tax</span><span>' + fmtMoney(v.tax.total) + '</span></div>';
+        h += '<div class="bk-line"><span>Tax per month</span><span>' + fmtMoney(v.taxPerMonth) + '</span></div>';
       }
-      h += '<div class="bk-line total"><span>Estimated total</span><span>' + fmtMoney(v.total) + '</span></div>';
-      /* Deposit sits BELOW the total, not inside it. It's refundable — folding
-         it into the total would overstate the cost of the stay. */
+      h += '<div class="bk-line total"><span>Total per month</span><span>' + fmtMoney(v.totalPerMonth) + '</span></div>';
       h += '<div class="bk-line dep"><span>Refundable deposit</span><span>' + fmtMoney(q.deposit) + '</span></div>';
       h += '</div>';
 
