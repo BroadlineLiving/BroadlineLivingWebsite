@@ -231,7 +231,7 @@
 
 /* Tax saving on a recommendation card. Distinct from the rent saving so the
    two read as separate wins rather than one number the guest has to unpick. */
-.bk-rec-flag.tax{background:rgba(26,167,196,.12);color:#116b80;white-space:normal;line-height:1.3}
+.bk-rec-flag.tax{background:rgba(26,167,196,.12);color:#116b80}
 /* "total" qualifier on its own line so it can't be read as a monthly figure
    next to the per-month rent saving, and so the chip doesn't overflow. */
 .bk-rec-flag.tax .amt{display:block;font-weight:700}

@@ -300,58 +300,43 @@
          wholesale. Previously only the payment card knew about the uplift and
          every other figure kept showing the upfront price, so choosing
          "monthly" appeared to change nothing. */
+      /* Two plans, same shape. Tax is a stay-level charge in both: it is
+         collected in full at signing and never spread across installments.
+         Only RENT is spread. */
       payFull: {
         available: true,
-        rentTotal: Math.round(rentTotal),
-        burnCost: Math.round(burn.cost),
-        nightlyRate: Math.round(avgNightly * 100) / 100,
-        monthlyRate: monthlyRate,
-        tax: { total: Math.round(tax.total), exempt: tax.exempt },
-        total: total,
+        rentForStay: Math.round(rentPlusBurn),
+        taxTotal: Math.round(tax.total),
+        exempt: tax.exempt,
         deposit: deposit,
+        total: total,
         atSigning: total + deposit,
-        /* Per-month view. Rent is the base rate; there is no surcharge on
-           this plan, so the three components sum to totalPerMonth. */
-        rentPerMonth: Math.round(rentPlusBurn / months),
-        surchargePerMonth: 0,
-        taxPerMonth: Math.round(tax.total / months),
-        totalPerMonth: Math.round((rentPlusBurn + tax.total) / months)
+        monthlyRate: monthlyRate
       },
       payMonthly: (function () {
         var upRent = rentPlusBurn * (1 + INSTALLMENT_UPLIFT);
         var upTax = taxFor(upRent, nights, rooms);
-        var upTotal = Math.round(upRent + upTax.total);
-        // Whole months, minimum one, so a 35-night stay is a single payment
-        // rather than 1.17 awkward ones.
         var installments = Math.max(1, Math.round(months));
-        var per = Math.round(upTotal / installments);
+        // Rent only — tax is not amortised.
+        var rentPer = Math.round(upRent / installments);
+        var upTotal = Math.round(upRent + upTax.total);
         return {
           /* A single-installment "plan" is not a plan — it's the whole stay
-             with a 5% surcharge bolted on, and it would price ABOVE paying
+             with a surcharge bolted on, and it would price ABOVE paying
              upfront. Offer the choice only when there is something to spread. */
           available: installments >= 2,
           upliftPct: INSTALLMENT_UPLIFT * 100,
-          // Same fields as payFull, all carrying the uplift.
-          rentTotal: Math.round(rentTotal * (1 + INSTALLMENT_UPLIFT)),
-          burnCost: Math.round(burn.cost * (1 + INSTALLMENT_UPLIFT)),
-          nightlyRate: Math.round((upRent / nights) * 100) / 100,
-          monthlyRate: Math.round((upRent / nights) * RATE_NIGHTS_PER_MONTH),
-          tax: { total: Math.round(upTax.total), exempt: upTax.exempt },
-          total: upTotal,
+          rentForStay: Math.round(upRent),
+          taxTotal: Math.round(upTax.total),
+          exempt: upTax.exempt,
           deposit: deposit,
-          // First installment plus the deposit, handed over at signing.
-          atSigning: per + deposit,
-          perInstallment: per,
+          total: upTotal,
+          monthlyRate: Math.round((upRent / nights) * RATE_NIGHTS_PER_MONTH),
           installments: installments,
-          premium: upTotal - total,
-          /* Per-month view. Rent stays the BASE rate and the uplift is its
-             own line, so the guest can see exactly what the plan costs
-             rather than finding it silently folded into the rent. Tax is
-             computed on rent + surcharge, since that is what's charged. */
-          rentPerMonth: Math.round(rentPlusBurn / months),
-          surchargePerMonth: Math.round((rentPlusBurn * INSTALLMENT_UPLIFT) / months),
-          taxPerMonth: Math.round(upTax.total / months),
-          totalPerMonth: Math.round((upRent + upTax.total) / months)
+          rentPerInstallment: rentPer,
+          /* First rent installment + ALL the tax + the deposit. */
+          atSigning: rentPer + Math.round(upTax.total) + deposit,
+          premium: upTotal - total
         };
       })(),
       // Utilities are billed separately on stays of ~6 months or longer.

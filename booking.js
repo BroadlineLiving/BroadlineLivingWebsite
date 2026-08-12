@@ -311,7 +311,7 @@
       if (seen[k]) return;
       seen[k] = 1; unique.push(r);
     });
-    return unique.slice(0, 4);
+    return unique.slice(0, 3);
   };
 
   /* Month-end dates falling in May, June or July, from move-in out to 12
@@ -439,14 +439,12 @@
            reads as monthly and overstates the saving several times over. */
         /* Both savings in $/month so they're directly comparable, with the
            whole-stay figure underneath since that's the number that lands. */
+        /* Rent saving carries a number; tax does not. Quoting a tax figure
+           here invited comparison with the tax line in the breakdown, which
+           is a different basis. "No tax" is the whole message. */
         var bits = '';
         if (r.rentSave > 0) bits += '<div class="bk-rec-flag">Save ' + fmtMoney(r.rentSave) + '/mo</div>';
-        if (r.taxSavePerMonth > 0) {
-          bits += '<div class="bk-rec-flag tax">' +
-                  (r.quote.tax.exempt ? 'No tax' : 'Less tax') +
-                  '<span class="amt">Save ' + fmtMoney(r.taxSavePerMonth) + '/mo</span>' +
-                  '<span class="sub">' + fmtMoney(r.taxSaveTotal) + ' over the stay</span></div>';
-        }
+        if (r.quote.tax.exempt) bits += '<div class="bk-rec-flag tax">No tax</div>';
         if (!bits) bits = '<div class="bk-rec-flag">Save ' + fmtMoney(r.allInSave) + '/mo</div>';
         var iso = function (d) { return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); };
         h += '<button type="button" class="bk-rec" data-rec-in="' + iso(r.moveIn) + '" data-rec-out="' + iso(r.moveOut) + '"' +
@@ -473,44 +471,33 @@
          what that adds up to, the deposit held on top, and the single figure
          you actually hand over at signing. Nothing is repeated and every
          line either adds to the one below it or is clearly separated from it. */
-      /* Order: what you pay monthly, the tax for the whole stay, then the
-         monthly figure that carries that tax spread across the term, the
-         deposit, and finally the one number due at signing.
-
-         Tax is shown as a stay total because that's how it's charged — once,
-         not monthly — but it IS amortised into "total monthly charges", since
-         that line answers "what leaves my account each month". The two views
-         of the same tax are labelled so they can't be read as two charges. */
+      /* Four lines, one arithmetic: rent for the whole stay, tax on it, the
+         deposit, and the sum. Tax is never amortised — it is charged once, in
+         full, at signing, on both plans. */
       var payingMonthly = (v === q.payMonthly);
-      var atSigning = payingMonthly ? q.payMonthly.atSigning : q.payFull.atSigning;
-
       h += '<div class="bk-lines">';
       h += '<div class="bk-line"><span>' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) + '</span><span>' + durationLabel(q.nights) + '</span></div>';
-      h += '<div class="bk-line"><span>Rent per month</span><span>' + fmtMoney(v.rentPerMonth) + '</span></div>';
-      // Surcharge only exists on the installment plan — never shown otherwise.
-      if (v.surchargePerMonth > 0) {
-        h += '<div class="bk-line"><span>Installment surcharge (' + q.payMonthly.upliftPct + '%)</span><span>' +
-             fmtMoney(v.surchargePerMonth) + '</span></div>';
-      }
-      if (v.tax.exempt) {
-        h += '<div class="bk-line"><span>Tax &mdash; total for stay</span><span>None &mdash; 180+ nights</span></div>';
+      h += '<div class="bk-line"><span>Total rent for stay</span><span>' + fmtMoney(v.rentForStay) + '</span></div>';
+      if (v.exempt) {
+        h += '<div class="bk-line"><span>NYC taxes</span><span>None</span></div>';
       } else {
-        h += '<div class="bk-line"><span>Tax &mdash; total for stay</span><span>' + fmtMoney(v.tax.total) + '</span></div>';
+        h += '<div class="bk-line"><span>NYC taxes</span><span>' + fmtMoney(v.taxTotal) + '</span></div>';
       }
-      h += '<div class="bk-line subtotal"><span>Total monthly charges</span><span>' + fmtMoney(v.totalPerMonth) + '</span></div>';
-      if (!v.tax.exempt) {
-        h += '<div class="bk-line note"><span>includes ' + fmtMoney(v.taxPerMonth) + ' tax, spread across the stay</span><span></span></div>';
+      h += '<div class="bk-line dep"><span>Refundable deposit</span><span>' + fmtMoney(v.deposit) + '</span></div>';
+      h += '<div class="bk-line grand"><span>Total due for stay</span><span>' +
+           fmtMoney(v.total + v.deposit) + '</span></div>';
+      if (payingMonthly) {
+        /* Say plainly that the tax is not spread — it's the whole point of the
+           split and the thing a guest would otherwise be surprised by. */
+        h += '<div class="bk-line note"><span>' + fmtMoney(v.atSigning) + ' at signing &mdash; first rent payment of ' +
+             fmtMoney(v.rentPerInstallment) + ', all ' + (v.exempt ? '' : fmtMoney(v.taxTotal) + ' ') +
+             'taxes, and the deposit. Then ' + (v.installments - 1) + ' rent payment' +
+             (v.installments - 1 === 1 ? '' : 's') + ' of ' + fmtMoney(v.rentPerInstallment) +
+             '.</span><span></span></div>';
+      } else {
+        h += '<div class="bk-line note"><span>One payment at signing, including the ' +
+             fmtMoney(v.deposit) + ' refundable deposit.</span><span></span></div>';
       }
-      h += '<div class="bk-line dep"><span>Refundable deposit</span><span>' + fmtMoney(q.deposit) + '</span></div>';
-      h += '<div class="bk-line grand"><span>' +
-           (payingMonthly ? 'Due at signing' : 'Total due upfront') +
-           '</span><span>' + fmtMoney(atSigning) + '</span></div>';
-      h += '<div class="bk-line note"><span>' +
-           (payingMonthly
-             ? 'First payment of ' + fmtMoney(q.payMonthly.perInstallment) + ' + ' + fmtMoney(q.deposit) +
-               ' deposit, then ' + (q.payMonthly.installments - 1) + ' more of ' + fmtMoney(q.payMonthly.perInstallment)
-             : durationLabel(q.nights) + ' + ' + fmtMoney(q.deposit) + ' refundable deposit') +
-           '</span><span></span></div>';
       h += '</div>';
 
       /* Two ways to pay. Presented side by side rather than as a toggle so
@@ -531,7 +518,7 @@
       h += '<button type="button" class="bk-pay-opt' + (this.payPlan === 'full' ? ' sel' : '') + '" data-pay="full">' +
            '<div class="bk-pay-h">Pay upfront</div>' +
            '<div class="bk-pay-amt">' + fmtMoney(q.payFull.total) + '</div>' +
-           '<div class="bk-pay-sub">total &middot; one payment</div>' +
+           '<div class="bk-pay-sub">rent + taxes &middot; one payment</div>' +
            '<div class="bk-pay-tag best">Best price</div></button>';
       if (pm.available) {
         /* "per payment", never "/mo". A 183-night stay is 6.1 months billed
@@ -540,22 +527,12 @@
         h += '<button type="button" class="bk-pay-opt' + (this.payPlan === 'monthly' ? ' sel' : '') + '" data-pay="monthly">' +
              '<div class="bk-pay-h">Monthly installments</div>' +
              '<div class="bk-pay-amt">' + fmtMoney(pm.total) + '</div>' +
-             '<div class="bk-pay-sub">total &middot; ' + pm.installments + ' payments of ' +
-             fmtMoney(pm.perInstallment) + '</div>' +
+             '<div class="bk-pay-sub">rent in ' + pm.installments + ' payments of ' +
+             fmtMoney(pm.rentPerInstallment) + ' &middot; taxes at signing</div>' +
              '<div class="bk-pay-tag">+' + fmtMoney(pm.premium) + '</div></button>';
       }
       h += '</div>';
-      if (pm.available) {
-        h += '<div class="bk-fine" style="margin-top:9px;">' +
-             (this.payPlan === 'full'
-               ? '<strong>' + fmtMoney(q.payFull.atSigning) + '</strong> due at signing &mdash; the full stay plus the ' +
-                 fmtMoney(q.deposit) + ' refundable deposit.'
-               : '<strong>' + fmtMoney(pm.atSigning) + '</strong> due at signing &mdash; your first payment of ' +
-                 fmtMoney(pm.perInstallment) + ' plus the ' + fmtMoney(q.deposit) + ' refundable deposit, then ' +
-                 (pm.installments - 1) + ' more payment' + (pm.installments - 1 === 1 ? '' : 's') + ' of ' +
-                 fmtMoney(pm.perInstallment) + '. Costs ' + fmtMoney(pm.premium) + ' more than paying upfront.') +
-             '</div>';
-      }
+      // The breakdown above already states the signing split; don't repeat it.
       h += '</div>';
       h += '<div class="bk-fine">Fully furnished. No booking fees. ' +
            'The ' + fmtMoney(q.deposit) + ' security deposit is refundable and returned after move-out, less any damages. ' +
@@ -842,7 +819,8 @@
       body.append('refundable_deposit', fmtMoney(q.deposit));
       body.append('due_at_signing', fmtMoney(this.payPlan === 'monthly' ? q.payMonthly.atSigning : q.payFull.atSigning));
       body.append('payment_plan', this.payPlan === 'monthly'
-        ? 'Monthly installments (+' + q.payMonthly.upliftPct + '%) — ' + fmtMoney(q.payMonthly.perInstallment) + '/mo x ' + q.payMonthly.installments
+        ? 'Monthly installments (+' + q.payMonthly.upliftPct + '%) — rent ' + fmtMoney(q.payMonthly.rentPerInstallment) +
+          ' x ' + q.payMonthly.installments + ', taxes paid at signing'
         : 'Paid upfront in full');
     } else {
       body.append('quoted_monthly', 'NOT QUOTED');
