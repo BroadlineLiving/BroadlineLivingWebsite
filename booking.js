@@ -299,19 +299,43 @@
       consider(this.moveIn, mid, 'mid');
     }
 
-    /* Dedupe on the label the guest actually reads, not the exact dates.
-       274 and 280 nights both render as "9 months", so keying on dates left
-       two cards claiming the same duration at different prices — which just
-       looks broken. Sort by saving first so the survivor of each duration is
-       the best one. */
+    /* Suggestions must be visibly different lengths. Keying on the duration
+       label stopped working once the label got precise about extra nights:
+       "9 months & 3 nights" and "9 months & 17 nights" are distinct strings
+       but the same offer as far as a guest is concerned. Month buckets don't
+       fix it either — 273 nights rounds to 9 and 287 to 10, so a two-week gap
+       still slips through as two separate cards.
+
+       So enforce real spacing: sort by saving, then accept a candidate only
+       if it is at least a month away from every one already accepted. The
+       best-value option in each part of the range survives.
+
+       'nogap' is exempt — it's the same length started earlier, a different
+       axis entirely, and it gets one slot. */
+    var MIN_SPACING_NIGHTS = 30;
     out.sort(function (a, b) { return b.allInSave - a.allInSave; });
-    var seen = {}, unique = [];
+    var picked = [], usedNogap = false;
     out.forEach(function (r) {
-      var k = r.flavor === 'nogap' ? 'nogap' : durationLabel(r.nights);
-      if (seen[k]) return;
-      seen[k] = 1; unique.push(r);
+      if (r.flavor === 'nogap') {
+        if (usedNogap) return;
+        usedNogap = true; picked.push(r); return;
+      }
+      var tooClose = picked.some(function (p) {
+        return p.flavor !== 'nogap' && Math.abs(p.nights - r.nights) < MIN_SPACING_NIGHTS;
+      });
+      if (tooClose) return;
+      picked.push(r);
     });
-    return unique.slice(0, 3);
+    /* Selected by value, but displayed shortest-to-longest. Leaving them in
+       savings order put 6 months, 8 months, then 4 months side by side, which
+       reads as unsorted. The earlier-start card stays first — it's a different
+       axis (same length, sooner) and belongs at the front. */
+    picked = picked.slice(0, 3).sort(function (a, b) {
+      if (a.flavor === 'nogap') return -1;
+      if (b.flavor === 'nogap') return 1;
+      return a.nights - b.nights;
+    });
+    return picked;
   };
 
   /* Month-end dates falling in May, June or July, from move-in out to 12
