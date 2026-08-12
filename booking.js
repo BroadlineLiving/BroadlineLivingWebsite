@@ -550,8 +550,13 @@
     } else if (q && (q.reason === 'not-published' || q.reason === 'no-rate-for-date')) {
       h += '<div class="bk-quote-empty">We don\'t have published pricing for those dates yet — send us an inquiry and we\'ll come back with a rate.</div>';
     } else if (q && q.reason === 'gap-too-large') {
+      /* Name the way out, not just the problem. The guest can either move
+         their start date into the priced window or ask us — say both, and
+         give the actual latest date that works so it isn't arithmetic. */
+      var lastPriced = addDays(q.availableDate, q.limitDays);
       h += '<div class="bk-quote-empty"><strong>Large gap &mdash; inquire for rates.</strong><br>' +
-           'This home opens ' + fmtShort(q.availableDate) + ', ' + q.gapDays + ' days before your move-in.</div>';
+           'This home opens ' + fmtShort(q.availableDate) + ', ' + q.gapDays + ' days before your move-in. ' +
+           'Pick a move-in up to ' + fmtShort(lastPriced) + ' to see a price, or inquire below.</div>';
     } else if (q && q.reason === 'min-stay') {
       h += '<div class="bk-quote-empty">Minimum stay is ' + q.minNights + ' nights.</div>';
     } else {
