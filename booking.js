@@ -34,6 +34,7 @@
   function addMonths(d, n) { var r = new Date(d); r.setMonth(r.getMonth() + n); return r; }
   function nightsBetween(a, b) { return Math.round((b - a) / 86400000); }
   function sameDay(a, b) { return a && b && a.getTime() === b.getTime(); }
+  function toKey(d) { return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); }
   function fmtShort(d) { return MONTHS_SHORT[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear(); }
   function fmtMoney(n) { return '$' + Math.round(n).toLocaleString(); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
@@ -65,6 +66,16 @@
        Both mean "cannot quote", but only the second is a normal state. */
     this.rates = null;
     this.ratesLoaded = false;
+    /* Dates the guest had chosen before applying a recommendation, so the
+       suggestion is reversible. Without this the only way back was a page
+       reload, which loses everything. */
+    this.prevSelection = null;
+    /* One-shot message explaining why a calendar click did nothing. The old
+       code just `return`ed on an invalid pick, so the widget looked frozen. */
+    this.dayHint = null;
+    /* Which payment plan the guest picked. Carried through to the application
+       and the inquiry email so the choice isn't lost at handoff. */
+    this.payPlan = 'full';   // 'full' | 'monthly'
   }
 
   BookingWidget.prototype.init = function () {
@@ -109,14 +120,41 @@
   };
 
   BookingWidget.prototype.onDayClick = function (d) {
+    this.dayHint = null;
     if (this.picking === 'out' && this.moveIn) {
       if (this.canBeMoveOut(d)) { this.moveOut = d; this.picking = 'in'; }
       else if (d <= this.moveIn) { this.moveIn = d; this.moveOut = null; }
-      else return;
+      else if (nightsBetween(this.moveIn, d) < MIN_NIGHTS) {
+        // Say why. Silently ignoring the click reads as a broken calendar.
+        this.dayHint = 'Minimum stay is ' + MIN_NIGHTS + ' nights — pick a move-out on or after ' +
+                       fmtShort(addDays(this.moveIn, MIN_NIGHTS)) + '.';
+      } else {
+        this.dayHint = 'Those dates run into a booked period. Try an earlier move-out.';
+      }
     } else {
-      if (this.isBusy(d) || d < todayMid()) return;
-      this.moveIn = d; this.moveOut = null; this.picking = 'out';
+      if (d < todayMid()) { this.dayHint = 'That date has already passed.'; }
+      else if (this.isBusy(d)) { this.dayHint = 'That date is already booked.'; }
+      else { this.moveIn = d; this.moveOut = null; this.picking = 'out'; }
     }
+    this.render();
+  };
+
+  /* Wipe the selection back to nothing. */
+  BookingWidget.prototype.clearDates = function () {
+    this.moveIn = null; this.moveOut = null; this.picking = 'in';
+    this.prevSelection = null; this.dayHint = null;
+    this.render();
+  };
+
+  /* Undo a recommendation and go back to whatever the guest had picked. */
+  BookingWidget.prototype.restorePrevious = function () {
+    if (!this.prevSelection) return;
+    this.moveIn = this.prevSelection.moveIn;
+    this.moveOut = this.prevSelection.moveOut;
+    this.prevSelection = null;
+    this.dayHint = null;
+    this.picking = 'in';
+    this.viewMonth = new Date(this.moveIn.getFullYear(), this.moveIn.getMonth(), 1);
     this.render();
   };
 
@@ -125,7 +163,10 @@
      this returns ok:false and the UI must offer "Inquire", never a guess. */
   BookingWidget.prototype.quoteFor = function (moveIn, moveOut) {
     if (!this.ratesLoaded) return { ok: false, reason: 'loading' };
-    return window.BroadlineRates.quote(this.rates, moveIn, moveOut, this.unit.rooms);
+    /* availableDate drives both the vacancy-gap charge and the refusal to
+       quote too far past the opening. */
+    return window.BroadlineRates.quote(this.rates, moveIn, moveOut, this.unit.rooms,
+      { availableDate: this.earliest || null });
   };
   BookingWidget.prototype.quote = function () {
     if (!this.moveIn || !this.moveOut) return null;
@@ -165,48 +206,74 @@
       if (!self.rangeIsFree(moveIn, moveOut)) return;
       var q = self.quoteFor(moveIn, moveOut);
       if (!q.ok) return;
-      var save = current.monthlyRate - q.monthlyRate;
-      /* Never recommend an alternative that costs MORE per month than what the
-         guest already chose. A longer term spanning peak season, or an earlier
-         start that lands in summer, can both price higher — surfacing those as
-         "recommendations" is an upsell, not help.
-
-         This also happens to gate the earlier-start option to exactly when it
-         is useful: moving in sooner is cheaper precisely when there is a real
-         vacancy gap being charged for, which is the case it exists to solve.
-         When the guest's date is months later in another season the comparison
-         is meaningless, and that is when it prices higher and gets dropped. */
-      if (save <= 0) return;
+      /* QUALIFY on the all-in cost (rent + tax), DISPLAY the two separately.
+         Judging on rent alone hid the biggest saving available: at 180+ nights
+         occupancy tax falls away completely, so a longer stay can be far
+         cheaper to actually pay while its rent line looks unchanged. Those
+         options now surface. But the card still shows the rent-only monthly,
+         so the headline rate matches every other rate on the site, with the
+         tax saving called out as its own figure. */
+      var allInSave = current.monthlyAllIn - q.monthlyAllIn;
+      /* Never recommend an alternative that costs MORE overall than what the
+         guest already chose — that's an upsell, not help. This also gates the
+         earlier-start option to when it's useful: moving in sooner is cheaper
+         precisely when a vacancy gap is being charged for. */
+      if (allInSave <= 0) return;
       out.push({
         moveIn: moveIn, moveOut: moveOut, nights: n, quote: q, flavor: flavor,
-        save: save
+        allInSave: allInSave,
+        rentSave: current.monthlyRate - q.monthlyRate,   // $/mo, may be <= 0
+        taxSave: current.tax.total - q.tax.total          // whole-stay $, may be <= 0
       });
     }
 
     /* 1. Same stay length, but starting the day the home is actually free.
        Booking after the opening makes the guest absorb the empty "burn days"
-       through the vacancy-recovery surcharge — moving in sooner removes it. */
+       through the vacancy charge — moving in sooner removes it. */
     if (this.earliest && this.earliest < this.moveIn) {
       consider(this.earliest, addDays(this.earliest, curNights), 'nogap');
     }
 
-    /* 2 & 3. End dates that land in May/June/July, when the home re-lets best.
-       Offer the longest such stay within 12 months, plus one nearer 6 months. */
+    /* 2. Fixed-duration alternatives from the same move-in.
+       Previously the ONLY long options came from peak-end dates longer than
+       the current stay, so a guest who already picked a long stay — or who
+       landed on the longest suggestion — saw nothing at all. These durations
+       are always tried, in both directions, so tweaking dates never empties
+       the list.
+
+       183 nights is deliberately in the set: that is where occupancy tax
+       stops applying, which is usually the single biggest saving available
+       and was previously reachable only by accident. */
+    var DURATIONS = [90, 120, 183, 274, 365];
+    DURATIONS.forEach(function (n) {
+      if (Math.abs(n - curNights) < 5) return;          // materially different only
+      consider(self.moveIn, addDays(self.moveIn, n), n > curNights ? 'long' : 'short');
+    });
+
+    /* 3. End dates landing in May/June/July, when the home re-lets best. */
     var cands = this.peakEndCandidates(this.moveIn).filter(function (d) {
-      return nightsBetween(self.moveIn, d) > curNights && self.rangeIsFree(self.moveIn, d);
+      return !sameDay(d, self.moveOut) && self.rangeIsFree(self.moveIn, d);
     });
     if (cands.length) {
-      var longest = cands[cands.length - 1];
-      consider(this.moveIn, longest, 'long');
-      var target = 183; // ~6 months
+      consider(this.moveIn, cands[cands.length - 1], 'long');
+      var target = 183;
       var mid = cands.reduce(function (best, d) {
         return Math.abs(nightsBetween(self.moveIn, d) - target) <
                Math.abs(nightsBetween(self.moveIn, best) - target) ? d : best;
       }, cands[0]);
-      if (!sameDay(mid, longest)) consider(this.moveIn, mid, 'mid');
+      consider(this.moveIn, mid, 'mid');
     }
 
-    return out;
+    /* Same span can arrive from several generators; keep the first. Then rank
+       by actual saving and cap the row so it stays scannable. */
+    var seen = {}, unique = [];
+    out.forEach(function (r) {
+      var k = toKey(r.moveIn) + '_' + toKey(r.moveOut);
+      if (seen[k]) return;
+      seen[k] = 1; unique.push(r);
+    });
+    unique.sort(function (a, b) { return b.allInSave - a.allInSave; });
+    return unique.slice(0, 4);
   };
 
   /* Month-end dates falling in May, June or July, from move-in out to 12
@@ -259,44 +326,72 @@
 
     h += '<div class="bk-range">';
     h += '<button type="button" class="bk-slot' + (this.picking === 'in' ? ' active' : '') + '" data-pick="in">' +
-         '<div class="lbl">Move-in</div><div class="val' + (this.moveIn ? '' : ' empty') + '">' +
+         '<div class="lbl">Move-in' + (this.moveIn ? ' <span class="bk-slot-edit">change</span>' : '') + '</div>' +
+         '<div class="val' + (this.moveIn ? '' : ' empty') + '">' +
          (this.moveIn ? fmtShort(this.moveIn) : 'Select date') + '</div></button>';
     h += '<button type="button" class="bk-slot' + (this.picking === 'out' ? ' active' : '') + '" data-pick="out">' +
-         '<div class="lbl">Move-out</div><div class="val' + (this.moveOut ? '' : ' empty') + '">' +
+         '<div class="lbl">Move-out' + (this.moveOut ? ' <span class="bk-slot-edit">change</span>' : '') + '</div>' +
+         '<div class="val' + (this.moveOut ? '' : ' empty') + '">' +
          (this.moveOut ? fmtShort(this.moveOut) : 'Select date') + '</div></button>';
     h += '</div>';
 
+    /* Escape hatches. Previously neither existed: applying a recommendation
+       overwrote the guest's dates with no way back, and there was no way to
+       start over short of reloading the page. */
+    if (this.prevSelection || this.moveIn) {
+      h += '<div class="bk-reset-row">';
+      if (this.prevSelection) {
+        h += '<button type="button" class="bk-linkbtn" data-act="restore">&#8249; Back to ' +
+             fmtShort(this.prevSelection.moveIn) + ' &ndash; ' + fmtShort(this.prevSelection.moveOut) + '</button>';
+      }
+      if (this.moveIn) h += '<button type="button" class="bk-linkbtn" data-act="clear">Clear dates</button>';
+      h += '</div>';
+    }
+
     h += loading ? '<div class="bk-skel bk-skel-cal"></div>' : this.calendarHTML();
 
-    if (!loading && this.moveIn && !this.moveOut) {
+    if (this.dayHint) {
+      h += '<div class="bk-msg warn">' + this.dayHint + '</div>';
+    } else if (!loading && this.moveIn && !this.moveOut) {
       h += '<div class="bk-msg info">Now choose your move-out date — minimum stay is one month (' + MIN_NIGHTS + ' nights).</div>';
     }
 
     // stay recommendations
     var recs = this.recommendations();
     var q = this.quote();
+    /* Nothing cheaper exists — say so instead of leaving a silent gap where
+       the options row was. Reassurance, not an upsell. */
+    if (q && q.ok && !recs.length) {
+      h += '<div class="bk-msg info">These dates are the best value we can offer for this home — ' +
+           'no other length or start date comes out cheaper.</div>';
+    }
     if (q && q.ok && recs.length) {
       h += '<div class="bk-recs"><div class="bk-recs-t">Stay recommendations</div><div class="bk-recs-scroll">';
       h += '<div class="bk-rec current"><div class="bk-rec-flag neutral">Your dates</div>' +
            '<div class="bk-rec-amt">' + fmtMoney(q.monthlyRate) + '<span class="u">/mo</span></div>' +
            '<div class="bk-rec-dur">' + durationLabel(q.nights) + '</div></div>';
       recs.forEach(function (r, i) {
-        /* Longer stays only reach here when they actually save money (see
-           recommendations()), so they always carry the savings label. 'nogap'
-           is the one that can be same-price or dearer — it's offered because
-           moving in when the home opens avoids the vacancy surcharge, not
-           because it's cheaper per month. */
         var LABELS = {
           nogap: 'Move in when it opens',
           long: 'Stay and save',
-          mid: 'Stay and save'
+          mid: 'Stay and save',
+          short: 'Shorter stay'
         };
-        // Everything that reaches here saves money — recommendations() drops
-        // anything that doesn't — so the savings flag always applies.
-        var flag = '<div class="bk-rec-flag">Save ' + fmtMoney(r.save) + '/mo</div>';
+        /* Two savings, shown separately. The rate stays rent-only so it lines
+           up with every other rate on the site; the tax saving is its own
+           figure. An option can qualify on tax alone — a 180+ night stay drops
+           occupancy tax entirely — and that's exactly the case the old
+           rent-only comparison made invisible. */
+        var bits = '';
+        if (r.rentSave > 0) bits += '<div class="bk-rec-flag">Save ' + fmtMoney(r.rentSave) + '/mo</div>';
+        if (r.taxSave > 0) {
+          bits += '<div class="bk-rec-flag tax">' +
+                  (r.quote.tax.exempt ? 'No tax · save ' : 'Save ') + fmtMoney(r.taxSave) + '</div>';
+        }
+        if (!bits) bits = '<div class="bk-rec-flag">Save ' + fmtMoney(r.allInSave) + '/mo</div>';
         var iso = function (d) { return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); };
         h += '<button type="button" class="bk-rec" data-rec-in="' + iso(r.moveIn) + '" data-rec-out="' + iso(r.moveOut) + '"' +
-             ' style="animation-delay:' + (i * 45) + 'ms">' + flag +
+             ' style="animation-delay:' + (i * 45) + 'ms">' + bits +
              '<div class="bk-rec-lbl">' + LABELS[r.flavor] + '</div>' +
              '<div class="bk-rec-amt">' + fmtMoney(r.quote.monthlyRate) + '<span class="u">/mo</span></div>' +
              '<div class="bk-rec-dur">' + (r.flavor === 'nogap' ? fmtShort(r.moveIn) + ' start' : durationLabel(r.nights)) + '</div></button>';
@@ -312,27 +407,62 @@
       h += '<div class="bk-lines">';
       h += '<div class="bk-line"><span>' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) + '</span><span>' + durationLabel(q.nights) + '</span></div>';
       h += '<div class="bk-line"><span>Rent</span><span>' + fmtMoney(q.rentTotal) + '</span></div>';
-      /* Tax is itemised, not folded in. Broadline collects and remits NYC
-         occupancy tax on direct bookings, and stays of 180+ nights are exempt
-         outright — worth showing, since it is a real reason to book longer. */
+      /* Vacancy gap. Shown as its own line so a higher effective rate isn't
+         unexplained, but without spelling out the formula. */
+      if (q.burnDays > 0) {
+        h += '<div class="bk-line"><span>Holding ' + q.burnDays + ' night' + (q.burnDays === 1 ? '' : 's') +
+             ' before move-in</span><span>' + fmtMoney(q.burnCost) + '</span></div>';
+      }
+      /* Just the number. The rate and the per-room-night breakdown are ours,
+         not the guest's problem — spelling out "5.875% plus $2 per room per
+         night" invites arithmetic instead of a decision. */
       if (q.tax.exempt) {
-        h += '<div class="bk-line"><span>NYC occupancy tax</span><span>Exempt (180+ nights)</span></div>';
+        h += '<div class="bk-line"><span>Tax</span><span>None &mdash; 180+ nights</span></div>';
       } else {
-        h += '<div class="bk-line"><span>NYC occupancy tax</span><span>' + fmtMoney(q.tax.total) + '</span></div>';
+        h += '<div class="bk-line"><span>Tax</span><span>' + fmtMoney(q.tax.total) + '</span></div>';
       }
       h += '<div class="bk-line total"><span>Estimated total</span><span>' + fmtMoney(q.total) + '</span></div>';
       /* Deposit sits BELOW the total, not inside it. It's refundable — folding
          it into the total would overstate the cost of the stay. */
-      h += '<div class="bk-line dep"><span>Refundable deposit' +
-           (q.depositCapped ? ' <span class="bk-dep-note">capped at one month</span>' : '') +
-           '</span><span>' + fmtMoney(q.deposit) + '</span></div>';
-      h += '<div class="bk-line"><span>Due at signing</span><span>' + fmtMoney(q.dueAtSigning) + '</span></div>';
+      h += '<div class="bk-line dep"><span>Refundable deposit</span><span>' + fmtMoney(q.deposit) + '</span></div>';
+      h += '</div>';
+
+      /* Two ways to pay. Presented side by side rather than as a toggle so
+         the trade-off is visible without interacting: pay once and pay less,
+         or spread it and pay a premium. */
+      var pm = q.payMonthly;
+      /* Below two months there is nothing to spread, so the plan is hidden
+         rather than shown as a worse version of paying once. */
+      if (!pm.available && this.payPlan === 'monthly') this.payPlan = 'full';
+      h += '<div class="bk-pay"><div class="bk-pay-t">' +
+           (pm.available ? 'How you\'d like to pay' : 'Due at signing') + '</div>';
+      h += '<div class="bk-pay-opts' + (pm.available ? '' : ' single') + '">';
+      h += '<button type="button" class="bk-pay-opt' + (this.payPlan === 'full' ? ' sel' : '') + '" data-pay="full">' +
+           '<div class="bk-pay-h">Pay upfront</div>' +
+           '<div class="bk-pay-amt">' + fmtMoney(q.payFull.atSigning) + '</div>' +
+           '<div class="bk-pay-sub">once at signing, incl. deposit</div>' +
+           '<div class="bk-pay-tag best">Best price</div></button>';
+      if (pm.available) {
+        h += '<button type="button" class="bk-pay-opt' + (this.payPlan === 'monthly' ? ' sel' : '') + '" data-pay="monthly">' +
+             '<div class="bk-pay-h">Monthly installments</div>' +
+             '<div class="bk-pay-amt">' + fmtMoney(pm.perInstallment) + '<span class="u">/mo</span></div>' +
+             '<div class="bk-pay-sub">' + fmtMoney(pm.atSigning) + ' at signing, then ' +
+             (pm.installments - 1) + ' more payment' + (pm.installments - 1 === 1 ? '' : 's') + '</div>' +
+             '<div class="bk-pay-tag">+' + pm.upliftPct + '% on the rate</div></button>';
+      }
+      h += '</div>';
+      if (pm.available) {
+        h += '<div class="bk-fine" style="margin-top:9px;">' +
+             (this.payPlan === 'full'
+               ? 'Paying upfront: <strong>' + fmtMoney(q.payFull.atSigning) + '</strong> at signing covers the whole stay plus the refundable deposit.'
+               : 'Paying monthly: <strong>' + fmtMoney(pm.atSigning) + '</strong> at signing (first month plus deposit), then <strong>' +
+                 fmtMoney(pm.perInstallment) + '</strong> a month. That\'s ' + fmtMoney(pm.premium) + ' more overall than paying upfront.') +
+             '</div>';
+      }
       h += '</div>';
       h += '<div class="bk-fine">Fully furnished. No booking fees. ' +
            'The ' + fmtMoney(q.deposit) + ' security deposit is refundable and returned after move-out, less any damages. ' +
-           (q.tax.exempt
-             ? 'Stays of 180 nights or more are exempt from NYC occupancy tax. '
-             : 'NYC occupancy tax (5.875% plus $2 per room per night) is shown above. ') +
+           (q.tax.exempt ? 'Stays of 180 nights or more are exempt from occupancy tax. ' : '') +
            (q.utilitiesSeparate
              ? '<b>On stays of 6 months or longer, utilities are billed separately.</b>'
              : 'Utilities and Wi-Fi are included.') +
@@ -343,6 +473,13 @@
       h += '<div class="bk-quote-empty">Pricing is temporarily unavailable — please get in touch and we\'ll quote you directly.</div>';
     } else if (q && (q.reason === 'not-published' || q.reason === 'no-rate-for-date')) {
       h += '<div class="bk-quote-empty">We don\'t have published pricing for those dates yet — send us an inquiry and we\'ll come back with a rate.</div>';
+    } else if (q && q.reason === 'gap-too-large') {
+      h += '<div class="bk-quote-empty"><strong>Large gap &mdash; inquire for rates.</strong><br>' +
+           'This home frees up on ' + fmtShort(q.availableDate) + ' and your move-in is ' + q.gapDays +
+           ' days after that. We price stays starting within ' + q.limitDays +
+           ' days of a home opening; past that the rate depends on how long it sits empty, so we quote it directly. ' +
+           'Move your start date to within ' + q.limitDays + ' days of ' + fmtShort(q.availableDate) +
+           ' to see a price, or send us an inquiry.</div>';
     } else if (q && q.reason === 'min-stay') {
       h += '<div class="bk-quote-empty">Minimum stay is ' + q.minNights + ' nights.</div>';
     } else {
@@ -413,10 +550,22 @@
         self.onDayClick(new Date(p[0], p[1], p[2]));
       });
     });
+    this.el.querySelectorAll('[data-pay]').forEach(function (b) {
+      b.addEventListener('click', function () { self.payPlan = b.dataset.pay; self.render(); });
+    });
+    var rst = this.el.querySelector('[data-act="restore"]');
+    if (rst) rst.addEventListener('click', function () { self.restorePrevious(); });
+    var clr = this.el.querySelector('[data-act="clear"]');
+    if (clr) clr.addEventListener('click', function () { self.clearDates(); });
     this.el.querySelectorAll('[data-rec-out]').forEach(function (b) {
       b.addEventListener('click', function () {
         var pi = b.dataset.recIn.split('-').map(Number);
         var po = b.dataset.recOut.split('-').map(Number);
+        // Remember what they had so the suggestion can be undone.
+        if (self.moveIn && self.moveOut) {
+          self.prevSelection = { moveIn: self.moveIn, moveOut: self.moveOut };
+        }
+        self.dayHint = null;
         self.moveIn = new Date(pi[0], pi[1], pi[2]);
         self.moveOut = new Date(po[0], po[1], po[2]);
         self.picking = 'in';
@@ -512,7 +661,8 @@
     var url = base + '/?property=' + encodeURIComponent(u.applicationPropertyId) +
       '&move_in=' + encodeURIComponent(window.BroadlineRates.toISO(this.moveIn)) +
       '&move_out=' + encodeURIComponent(window.BroadlineRates.toISO(this.moveOut)) +
-      '&quoted_monthly=' + encodeURIComponent(q.monthlyRate);
+      '&quoted_monthly=' + encodeURIComponent(this.payPlan === 'monthly' ? q.payMonthly.monthlyRate : q.monthlyRate) +
+      '&pay_plan=' + encodeURIComponent(this.payPlan);
 
     window.open(url, '_blank', 'noopener');
   };
@@ -578,7 +728,10 @@
     body.append('quoted_monthly', fmtMoney(q.monthlyRate));
     body.append('quoted_total', fmtMoney(q.total));
     body.append('refundable_deposit', fmtMoney(q.deposit));
-    body.append('due_at_signing', fmtMoney(q.dueAtSigning));
+    body.append('due_at_signing', fmtMoney(this.payPlan === 'monthly' ? q.payMonthly.atSigning : q.payFull.atSigning));
+    body.append('payment_plan', this.payPlan === 'monthly'
+      ? 'Monthly installments (+' + q.payMonthly.upliftPct + '%) — ' + fmtMoney(q.payMonthly.perInstallment) + '/mo x ' + q.payMonthly.installments
+      : 'Paid upfront in full');
     return fetch(FORMSPREE, { method: 'POST', body: body, headers: { Accept: 'application/json' } })
       .then(function (r) { if (!r.ok) throw new Error('submit failed'); return r; });
   };

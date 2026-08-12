@@ -161,7 +161,58 @@
     return Math.min(DEPOSIT_PER_MONTH * wholeMonths, Math.round(monthlyRate));
   }
 
-  function quote(rates, moveIn, moveOut, rooms) {
+  /* ---- Vacancy gap ("burn days") -----------------------------------------
+     Nights between a home opening up and the guest actually moving in earn
+     nothing. Previously nothing recovered them: the engine publishes block
+     rates and never passes a move-in date, so published_rates carries no gap
+     charge at all, and the website's old copy of that math went with
+     pricing.js. This restores it on the published-rate side.
+
+     GAP_LIMIT_DAYS also bounds what we will quote at all. Past it the empty
+     stretch is long enough that the rate is a conversation, not a formula —
+     the UI shows an inquiry prompt instead of a number. It matches the
+     instant-apply window on purpose, so "can I get a price" and "can I apply"
+     are the same question rather than two different cutoffs.
+
+     BURN_RECOVERY_PCT is the dial. The old model charged 85% of BASE RENT per
+     burn night — i.e. recover the landlord cost, not the margin. Base rent is
+     deliberately not available in the browser any more, so this is expressed
+     against the published nightly instead. Across the markup range actually
+     in use (~20-110%), 85% of base lands near 0.45-0.57 of the published
+     nightly, so 0.5 approximates the old behaviour. Tune this one number if
+     you want gaps to hurt more or less. */
+  var GAP_LIMIT_DAYS = 5;
+  var BURN_RECOVERY_PCT = 0.5;
+
+  /* ---- Payment options ----------------------------------------------------
+     Pay the whole stay at signing, or pay monthly for 5% more on the rate.
+     The uplift applies to RENT, and tax is then recalculated on that higher
+     rent — tax is a percentage of what's actually charged, so applying the
+     uplift after tax would quietly under-collect it.
+
+     The first installment is due at signing alongside the deposit, so the
+     guest hands over one month plus the deposit rather than the full term. */
+  var INSTALLMENT_UPLIFT = 0.05;
+
+  function burnCostFor(rates, availableDate, moveIn) {
+    if (!availableDate || moveIn <= availableDate) return { days: 0, cost: 0 };
+    var days = nightsBetween(availableDate, moveIn);
+    var cost = 0;
+    for (var d = new Date(availableDate); d < moveIn; d = addDays(d, 1)) {
+      var r = rateOn(rates, d);
+      // No published rate for a burn night: skip it rather than guess. Under-
+      // charging is better than inventing a number for a date we can't price.
+      if (r) cost += r.nightly * BURN_RECOVERY_PCT;
+    }
+    return { days: days, cost: cost };
+  }
+
+  /* opts.availableDate — the date the home actually frees up. Supplying it
+     enables the vacancy-gap charge and the too-large-gap cutoff. Omitting it
+     quotes with no gap logic at all, which is right for hypothetical ranges
+     (e.g. costing a recommendation that starts on the open date). */
+  function quote(rates, moveIn, moveOut, rooms, opts) {
+    opts = opts || {};
     if (!rates) return { ok: false, reason: 'unavailable' };
     if (!rates.length) return { ok: false, reason: 'not-published' };
 
@@ -170,6 +221,19 @@
 
     var minNights = rates[0].minNights || 30;
     if (nights < minNights) return { ok: false, reason: 'min-stay', minNights: minNights };
+
+    /* Too long a gap between the home opening and the move-in: refuse to
+       quote. Checked before pricing anything so no number is ever computed
+       for a range we won't stand behind. */
+    var avail = opts.availableDate || null;
+    if (avail && nightsBetween(avail, moveIn) > GAP_LIMIT_DAYS) {
+      return {
+        ok: false, reason: 'gap-too-large',
+        gapDays: nightsBetween(avail, moveIn),
+        limitDays: GAP_LIMIT_DAYS,
+        availableDate: avail
+      };
+    }
 
     var rentTotal = 0;
     for (var d = new Date(moveIn); d < moveOut; d = addDays(d, 1)) {
@@ -180,32 +244,80 @@
       rentTotal += r.nightly;
     }
 
-    var avgNightly = rentTotal / nights;
-    var tax = taxFor(rentTotal, nights, rooms);
+    /* Vacancy gap. Treated as rent — it is money paid to hold the home — so
+       it sits inside the taxable base and lifts the effective nightly, which
+       is what makes "move in when it opens" genuinely cheaper. */
+    var burn = burnCostFor(rates, avail, moveIn);
+    var rentPlusBurn = rentTotal + burn.cost;
+
+    var avgNightly = rentPlusBurn / nights;
+    var tax = taxFor(rentPlusBurn, nights, rooms);
     var monthlyRate = Math.round(avgNightly * RATE_NIGHTS_PER_MONTH);
     var deposit = depositFor(nights, monthlyRate);
+    var total = Math.round(rentPlusBurn + tax.total);
+    var months = nights / RATE_NIGHTS_PER_MONTH;
 
     return {
       ok: true,
       nights: nights,
-      months: Math.round((nights / RATE_NIGHTS_PER_MONTH) * 100) / 100,
+      months: Math.round(months * 100) / 100,
       nightlyRate: Math.round(avgNightly * 100) / 100,
       monthlyRate: monthlyRate,
+      /* Rent AND tax, per month. This is the number to compare stays on:
+         comparing rent-only monthlies hides the 180-night tax exemption, so a
+         longer stay that is cheaper purely because tax drops off would look
+         like no saving at all. */
+      monthlyAllIn: Math.round((rentPlusBurn + tax.total) / months),
       rentTotal: Math.round(rentTotal),
+      burnDays: burn.days,
+      burnCost: Math.round(burn.cost),
       tax: {
         occupancyPct: Math.round(tax.pct),
         perRoomNight: Math.round(tax.perRoom),
         total: Math.round(tax.total),
         exempt: tax.exempt
       },
-      total: Math.round(rentTotal + tax.total),
+      total: total,
       /* Refundable — held, not charged. Kept out of `total` on purpose; the
          caller shows it as a separate line and as part of "due at signing". */
       deposit: deposit,
-      depositCapped: deposit >= monthlyRate,
-      dueAtSigning: Math.round(rentTotal + tax.total) + deposit,
+      dueAtSigning: total + deposit,
+
+      /* Two ways to pay the same stay. `payFull` is the figures above; the
+         installment plan re-prices rent with the uplift and recomputes tax on
+         top of it. Both carry the same refundable deposit. */
+      payFull: {
+        total: total,
+        atSigning: total + deposit,
+        monthlyRate: monthlyRate
+      },
+      payMonthly: (function () {
+        var upRent = rentPlusBurn * (1 + INSTALLMENT_UPLIFT);
+        var upTax = taxFor(upRent, nights, rooms);
+        var upTotal = Math.round(upRent + upTax.total);
+        // Whole months, minimum one, so a 35-night stay is a single payment
+        // rather than 1.17 awkward ones.
+        var installments = Math.max(1, Math.round(months));
+        var per = Math.round(upTotal / installments);
+        return {
+          /* A single-installment "plan" is not a plan — it's the whole stay
+             with a 5% surcharge bolted on, and it would price ABOVE paying
+             upfront. Offer the choice only when there is something to spread. */
+          available: installments >= 2,
+          upliftPct: INSTALLMENT_UPLIFT * 100,
+          monthlyRate: Math.round((upRent / nights) * RATE_NIGHTS_PER_MONTH),
+          perInstallment: per,
+          installments: installments,
+          total: upTotal,
+          // First installment plus the deposit, handed over at signing.
+          atSigning: per + deposit,
+          premium: upTotal - total,
+          taxTotal: Math.round(upTax.total),
+          exempt: upTax.exempt
+        };
+      })(),
       // Utilities are billed separately on stays of ~6 months or longer.
-      utilitiesSeparate: nights / RATE_NIGHTS_PER_MONTH >= 5.95
+      utilitiesSeparate: months >= 5.95
     };
   }
 
@@ -217,7 +329,8 @@
       rateOn: rateOn,
       parseDate: parseDate,
       toISO: toISO,
-      TAX_EXEMPT_NIGHTS: TAX_EXEMPT_NIGHTS
+      TAX_EXEMPT_NIGHTS: TAX_EXEMPT_NIGHTS,
+      GAP_LIMIT_DAYS: GAP_LIMIT_DAYS
     };
   }
 })();

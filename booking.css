@@ -213,3 +213,44 @@
   .bk-modal-head::before{border-radius:0}
   .bk-modal-inner .bk-card{border-radius:0}
 }
+
+/* Escape hatches under the date slots — undo a recommendation, or start over.
+   Neither existed before; applying a suggestion was a one-way door. */
+.bk-reset-row{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0 2px}
+.bk-linkbtn{background:none;border:none;padding:0;font:inherit;font-size:12px;
+  color:var(--bk-accent,#1aa7c4);cursor:pointer;text-decoration:underline;
+  -webkit-tap-highlight-color:transparent}
+.bk-linkbtn:hover{opacity:.75}
+
+/* Tax saving on a recommendation card. Distinct from the rent saving so the
+   two read as separate wins rather than one number the guest has to unpick. */
+.bk-rec-flag.tax{background:rgba(26,167,196,.12);color:#116b80}
+
+/* ── Payment options ──
+   Side by side rather than a toggle, so the trade-off is legible without
+   the guest having to click to discover the other option. */
+.bk-pay{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.bk-pay-t{font-size:13px;font-weight:500;margin-bottom:9px;color:var(--ink)}
+.bk-pay-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:420px){.bk-pay-opts{grid-template-columns:1fr}}
+.bk-pay-opt{border:1.5px solid var(--line);border-radius:var(--bk-r-sm);padding:12px 13px;background:#fff;
+  cursor:pointer;text-align:left;font-family:inherit;width:100%;
+  transition:border-color .18s,box-shadow .18s,transform .18s;-webkit-tap-highlight-color:transparent}
+.bk-pay-opt:hover{border-color:var(--cyan);transform:translateY(-1px);box-shadow:var(--bk-shadow)}
+.bk-pay-opt.sel{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(26,167,196,.13)}
+.bk-pay-opt.sel .bk-pay-h{color:var(--cyan)}
+.bk-pay-h{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px}
+.bk-pay-amt{font-family:var(--display);font-size:21px;font-weight:600;line-height:1.1;letter-spacing:-.01em}
+.bk-pay-amt .u{font-size:11.5px;font-weight:400;color:var(--ink-soft);font-family:var(--body)}
+.bk-pay-sub{font-size:11.5px;color:var(--ink-soft);margin-top:4px;line-height:1.45}
+.bk-pay-tag{display:inline-block;margin-top:8px;font-size:10.5px;font-weight:600;
+  border-radius:20px;padding:3px 9px;color:var(--ink-soft);background:var(--bg-2)}
+.bk-pay-tag.best{color:var(--bk-save);background:var(--bk-save-bg)}
+
+.bk-pay-opts.single{grid-template-columns:1fr}
+
+/* "change" hint on a filled date slot — makes it obvious the dates are
+   editable in place rather than something you have to reload to redo. */
+.bk-slot-edit{font-size:9px;letter-spacing:.06em;color:var(--cyan);margin-left:5px;
+  text-transform:uppercase;opacity:0;transition:opacity .15s}
+.bk-slot:hover .bk-slot-edit,.bk-slot.active .bk-slot-edit{opacity:1}
