@@ -34,7 +34,6 @@
   function addMonths(d, n) { var r = new Date(d); r.setMonth(r.getMonth() + n); return r; }
   function nightsBetween(a, b) { return Math.round((b - a) / 86400000); }
   function sameDay(a, b) { return a && b && a.getTime() === b.getTime(); }
-  function toKey(d) { return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); }
   function fmtShort(d) { return MONTHS_SHORT[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear(); }
   function fmtMoney(n) { return '$' + Math.round(n).toLocaleString(); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
@@ -143,6 +142,9 @@
   BookingWidget.prototype.clearDates = function () {
     this.moveIn = null; this.moveOut = null; this.picking = 'in';
     this.prevSelection = null; this.dayHint = null;
+    // Starting over means starting over — a stale monthly selection would
+    // otherwise silently apply the 5% uplift to whatever they pick next.
+    this.payPlan = 'full';
     this.render();
   };
 
@@ -192,8 +194,27 @@
   BookingWidget.prototype.recommendations = function () {
     if (!this.moveIn || !this.moveOut) return [];
     var current = this.quote();
-    if (!current || !current.ok) return [];
     var self = this;
+
+    /* Dates too far past the opening to price. Rather than leaving the guest
+       at a dead end with only "inquire", offer the one alternative that is
+       guaranteed to work: the same length stay starting when the home
+       actually opens. There's no quotable "current" to compare against, so it
+       carries no savings flair — just a real, bookable price. */
+    if (current && !current.ok && current.reason === 'gap-too-large' && this.earliest) {
+      var n = nightsBetween(this.moveIn, this.moveOut);
+      var alt = this.quoteFor(this.earliest, addDays(this.earliest, n));
+      if (alt.ok && this.rangeIsFree(this.earliest, addDays(this.earliest, n))) {
+        return [{
+          moveIn: this.earliest, moveOut: addDays(this.earliest, n),
+          nights: n, quote: alt, flavor: 'nogap',
+          allInSave: 0, rentSave: 0, taxSave: 0, noCompare: true
+        }];
+      }
+      return [];
+    }
+
+    if (!current || !current.ok) return [];
     var out = [];
     var curNights = nightsBetween(this.moveIn, this.moveOut);
 
@@ -264,15 +285,18 @@
       consider(this.moveIn, mid, 'mid');
     }
 
-    /* Same span can arrive from several generators; keep the first. Then rank
-       by actual saving and cap the row so it stays scannable. */
+    /* Dedupe on the label the guest actually reads, not the exact dates.
+       274 and 280 nights both render as "9 months", so keying on dates left
+       two cards claiming the same duration at different prices — which just
+       looks broken. Sort by saving first so the survivor of each duration is
+       the best one. */
+    out.sort(function (a, b) { return b.allInSave - a.allInSave; });
     var seen = {}, unique = [];
     out.forEach(function (r) {
-      var k = toKey(r.moveIn) + '_' + toKey(r.moveOut);
+      var k = r.flavor === 'nogap' ? 'nogap' : durationLabel(r.nights);
       if (seen[k]) return;
       seen[k] = 1; unique.push(r);
     });
-    unique.sort(function (a, b) { return b.allInSave - a.allInSave; });
     return unique.slice(0, 4);
   };
 
@@ -361,6 +385,19 @@
     var q = this.quote();
     /* Nothing cheaper exists — say so instead of leaving a silent gap where
        the options row was. Reassurance, not an upsell. */
+    if (q && !q.ok && recs.length) {
+      // Gap-too-large fallback: show the bookable alternative above the notice.
+      h += '<div class="bk-recs"><div class="bk-recs-t">Available instead</div><div class="bk-recs-scroll">';
+      recs.forEach(function (r) {
+        var iso = function (d) { return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); };
+        h += '<button type="button" class="bk-rec" data-rec-in="' + iso(r.moveIn) + '" data-rec-out="' + iso(r.moveOut) + '">' +
+             '<div class="bk-rec-flag">Bookable</div>' +
+             '<div class="bk-rec-lbl">Move in when it opens</div>' +
+             '<div class="bk-rec-amt">' + fmtMoney(r.quote.monthlyRate) + '<span class="u">/mo</span></div>' +
+             '<div class="bk-rec-dur">' + fmtShort(r.moveIn) + ' start</div></button>';
+      });
+      h += '</div></div>';
+    }
     if (q && q.ok && !recs.length) {
       h += '<div class="bk-msg info">These dates are the best value we can offer for this home — ' +
            'no other length or start date comes out cheaper.</div>';
@@ -382,11 +419,16 @@
            figure. An option can qualify on tax alone — a 180+ night stay drops
            occupancy tax entirely — and that's exactly the case the old
            rent-only comparison made invisible. */
+        /* The two savings are in different units and must say so. Rent is
+           per month; tax is a whole-stay figure that comes off the total.
+           Sitting side by side with only "/mo" on one of them, the tax number
+           reads as monthly and overstates the saving several times over. */
         var bits = '';
         if (r.rentSave > 0) bits += '<div class="bk-rec-flag">Save ' + fmtMoney(r.rentSave) + '/mo</div>';
         if (r.taxSave > 0) {
           bits += '<div class="bk-rec-flag tax">' +
-                  (r.quote.tax.exempt ? 'No tax · save ' : 'Save ') + fmtMoney(r.taxSave) + '</div>';
+                  (r.quote.tax.exempt ? 'No tax' : 'Less tax') +
+                  '<span class="amt">&minus;' + fmtMoney(r.taxSave) + ' total</span></div>';
         }
         if (!bits) bits = '<div class="bk-rec-flag">Save ' + fmtMoney(r.allInSave) + '/mo</div>';
         var iso = function (d) { return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); };
@@ -402,26 +444,32 @@
     // quote
     h += '<div class="bk-quote">';
     if (q && q.ok) {
-      h += '<div class="bk-quote-main"><span class="bk-quote-amt">' + fmtMoney(q.monthlyRate) + '</span><span class="bk-quote-per">/ month</span></div>';
-      h += '<div class="bk-quote-note">' + fmtMoney(q.nightlyRate) + ' per night · ' + q.nights + ' nights</div>';
+      /* Every figure below follows the selected plan. Reading q.* directly
+         meant picking "monthly" left the headline rate, rent and total all
+         showing the upfront price — the +5% appeared only on the payment card,
+         so it looked like the plan made no difference. */
+      var v = (this.payPlan === 'monthly' && q.payMonthly.available) ? q.payMonthly : q.payFull;
+      h += '<div class="bk-quote-main"><span class="bk-quote-amt">' + fmtMoney(v.monthlyRate) + '</span><span class="bk-quote-per">/ month</span></div>';
+      h += '<div class="bk-quote-note">' + fmtMoney(v.nightlyRate) + ' per night · ' + q.nights + ' nights' +
+           (v === q.payMonthly ? ' · incl. ' + q.payMonthly.upliftPct + '% installment rate' : '') + '</div>';
       h += '<div class="bk-lines">';
       h += '<div class="bk-line"><span>' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) + '</span><span>' + durationLabel(q.nights) + '</span></div>';
-      h += '<div class="bk-line"><span>Rent</span><span>' + fmtMoney(q.rentTotal) + '</span></div>';
+      h += '<div class="bk-line"><span>Rent</span><span>' + fmtMoney(v.rentTotal) + '</span></div>';
       /* Vacancy gap. Shown as its own line so a higher effective rate isn't
          unexplained, but without spelling out the formula. */
       if (q.burnDays > 0) {
         h += '<div class="bk-line"><span>Holding ' + q.burnDays + ' night' + (q.burnDays === 1 ? '' : 's') +
-             ' before move-in</span><span>' + fmtMoney(q.burnCost) + '</span></div>';
+             ' before move-in</span><span>' + fmtMoney(v.burnCost) + '</span></div>';
       }
       /* Just the number. The rate and the per-room-night breakdown are ours,
          not the guest's problem — spelling out "5.875% plus $2 per room per
          night" invites arithmetic instead of a decision. */
-      if (q.tax.exempt) {
+      if (v.tax.exempt) {
         h += '<div class="bk-line"><span>Tax</span><span>None &mdash; 180+ nights</span></div>';
       } else {
-        h += '<div class="bk-line"><span>Tax</span><span>' + fmtMoney(q.tax.total) + '</span></div>';
+        h += '<div class="bk-line"><span>Tax</span><span>' + fmtMoney(v.tax.total) + '</span></div>';
       }
-      h += '<div class="bk-line total"><span>Estimated total</span><span>' + fmtMoney(q.total) + '</span></div>';
+      h += '<div class="bk-line total"><span>Estimated total</span><span>' + fmtMoney(v.total) + '</span></div>';
       /* Deposit sits BELOW the total, not inside it. It's refundable — folding
          it into the total would overstate the cost of the stay. */
       h += '<div class="bk-line dep"><span>Refundable deposit</span><span>' + fmtMoney(q.deposit) + '</span></div>';

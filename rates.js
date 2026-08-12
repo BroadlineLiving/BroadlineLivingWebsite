@@ -286,10 +286,20 @@
       /* Two ways to pay the same stay. `payFull` is the figures above; the
          installment plan re-prices rent with the uplift and recomputes tax on
          top of it. Both carry the same refundable deposit. */
+      /* Both plans expose the SAME shape so the UI can swap between them
+         wholesale. Previously only the payment card knew about the uplift and
+         every other figure kept showing the upfront price, so choosing
+         "monthly" appeared to change nothing. */
       payFull: {
+        available: true,
+        rentTotal: Math.round(rentTotal),
+        burnCost: Math.round(burn.cost),
+        nightlyRate: Math.round(avgNightly * 100) / 100,
+        monthlyRate: monthlyRate,
+        tax: { total: Math.round(tax.total), exempt: tax.exempt },
         total: total,
-        atSigning: total + deposit,
-        monthlyRate: monthlyRate
+        deposit: deposit,
+        atSigning: total + deposit
       },
       payMonthly: (function () {
         var upRent = rentPlusBurn * (1 + INSTALLMENT_UPLIFT);
@@ -305,15 +315,19 @@
              upfront. Offer the choice only when there is something to spread. */
           available: installments >= 2,
           upliftPct: INSTALLMENT_UPLIFT * 100,
+          // Same fields as payFull, all carrying the uplift.
+          rentTotal: Math.round(rentTotal * (1 + INSTALLMENT_UPLIFT)),
+          burnCost: Math.round(burn.cost * (1 + INSTALLMENT_UPLIFT)),
+          nightlyRate: Math.round((upRent / nights) * 100) / 100,
           monthlyRate: Math.round((upRent / nights) * RATE_NIGHTS_PER_MONTH),
-          perInstallment: per,
-          installments: installments,
+          tax: { total: Math.round(upTax.total), exempt: upTax.exempt },
           total: upTotal,
+          deposit: deposit,
           // First installment plus the deposit, handed over at signing.
           atSigning: per + deposit,
-          premium: upTotal - total,
-          taxTotal: Math.round(upTax.total),
-          exempt: upTax.exempt
+          perInstallment: per,
+          installments: installments,
+          premium: upTotal - total
         };
       })(),
       // Utilities are billed separately on stays of ~6 months or longer.
