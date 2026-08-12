@@ -469,28 +469,48 @@
       h += '<div class="bk-quote-main"><span class="bk-quote-amt">' + fmtMoney(v.monthlyRate) + '</span><span class="bk-quote-per">/ month</span></div>';
       h += '<div class="bk-quote-note">' + fmtMoney(v.nightlyRate) + ' per night · ' + q.nights + ' nights' +
            (v === q.payMonthly ? ' · incl. ' + q.payMonthly.upliftPct + '% installment rate' : '') + '</div>';
+      /* Reads top to bottom as one arithmetic: what you pay each month,
+         what that adds up to, the deposit held on top, and the single figure
+         you actually hand over at signing. Nothing is repeated and every
+         line either adds to the one below it or is clearly separated from it. */
+      /* Order: what you pay monthly, the tax for the whole stay, then the
+         monthly figure that carries that tax spread across the term, the
+         deposit, and finally the one number due at signing.
+
+         Tax is shown as a stay total because that's how it's charged — once,
+         not monthly — but it IS amortised into "total monthly charges", since
+         that line answers "what leaves my account each month". The two views
+         of the same tax are labelled so they can't be read as two charges. */
+      var payingMonthly = (v === q.payMonthly);
+      var atSigning = payingMonthly ? q.payMonthly.atSigning : q.payFull.atSigning;
+
       h += '<div class="bk-lines">';
       h += '<div class="bk-line"><span>' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) + '</span><span>' + durationLabel(q.nights) + '</span></div>';
-      /* Everything per month, in the order it accrues: rent, the installment
-         surcharge if they've chosen that plan, then tax on the sum. The three
-         add up to the total below them, so the column reconciles on screen. */
       h += '<div class="bk-line"><span>Rent per month</span><span>' + fmtMoney(v.rentPerMonth) + '</span></div>';
-      if (q.burnDays > 0) {
-        h += '<div class="bk-line"><span>Holding ' + q.burnDays + ' night' + (q.burnDays === 1 ? '' : 's') +
-             ' before move-in</span><span>included</span></div>';
-      }
       // Surcharge only exists on the installment plan — never shown otherwise.
       if (v.surchargePerMonth > 0) {
         h += '<div class="bk-line"><span>Installment surcharge (' + q.payMonthly.upliftPct + '%)</span><span>' +
              fmtMoney(v.surchargePerMonth) + '</span></div>';
       }
       if (v.tax.exempt) {
-        h += '<div class="bk-line"><span>Tax per month</span><span>None &mdash; 180+ nights</span></div>';
+        h += '<div class="bk-line"><span>Tax &mdash; total for stay</span><span>None &mdash; 180+ nights</span></div>';
       } else {
-        h += '<div class="bk-line"><span>Tax per month</span><span>' + fmtMoney(v.taxPerMonth) + '</span></div>';
+        h += '<div class="bk-line"><span>Tax &mdash; total for stay</span><span>' + fmtMoney(v.tax.total) + '</span></div>';
       }
-      h += '<div class="bk-line total"><span>Total per month</span><span>' + fmtMoney(v.totalPerMonth) + '</span></div>';
+      h += '<div class="bk-line subtotal"><span>Total monthly charges</span><span>' + fmtMoney(v.totalPerMonth) + '</span></div>';
+      if (!v.tax.exempt) {
+        h += '<div class="bk-line note"><span>includes ' + fmtMoney(v.taxPerMonth) + ' tax, spread across the stay</span><span></span></div>';
+      }
       h += '<div class="bk-line dep"><span>Refundable deposit</span><span>' + fmtMoney(q.deposit) + '</span></div>';
+      h += '<div class="bk-line grand"><span>' +
+           (payingMonthly ? 'Due at signing' : 'Total due upfront') +
+           '</span><span>' + fmtMoney(atSigning) + '</span></div>';
+      h += '<div class="bk-line note"><span>' +
+           (payingMonthly
+             ? 'First payment of ' + fmtMoney(q.payMonthly.perInstallment) + ' + ' + fmtMoney(q.deposit) +
+               ' deposit, then ' + (q.payMonthly.installments - 1) + ' more of ' + fmtMoney(q.payMonthly.perInstallment)
+             : durationLabel(q.nights) + ' + ' + fmtMoney(q.deposit) + ' refundable deposit') +
+           '</span><span></span></div>';
       h += '</div>';
 
       /* Two ways to pay. Presented side by side rather than as a toggle so

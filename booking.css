@@ -112,6 +112,15 @@
 .bk-lines{display:grid;gap:8px;font-size:13.5px}
 .bk-line{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .bk-line span:last-child{font-weight:500;white-space:nowrap}
+/* Three tiers so the eye can find the important numbers without reading
+   every row: components are plain, the monthly subtotal is separated and
+   slightly heavier, and the figure due at signing is the anchor. */
+.bk-line.subtotal{border-top:1px solid var(--line);padding-top:10px;margin-top:4px;font-size:15px;font-weight:500}
+.bk-line.grand{border-top:2px solid var(--ink);padding-top:11px;margin-top:8px;font-size:18px;font-weight:600}
+.bk-line.grand span:last-child{font-weight:700}
+.bk-line.note{font-size:11px;color:var(--ink-soft);margin-top:-4px}
+.bk-line.note span:last-child{font-weight:400}
+/* kept for any older markup still using it */
 .bk-line.total{border-top:1px solid var(--line);padding-top:10px;margin-top:2px;font-size:15.5px}
 /* Refundable deposit — held, not charged. Muted so it reads as distinct from
    the cost of the stay rather than as an extra fee stacked on the total. */
