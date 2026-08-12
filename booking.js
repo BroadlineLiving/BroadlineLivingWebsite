@@ -313,29 +313,36 @@
        'nogap' is exempt — it's the same length started earlier, a different
        axis entirely, and it gets one slot. */
     var MIN_SPACING_NIGHTS = 30;
-    out.sort(function (a, b) { return b.allInSave - a.allInSave; });
-    var picked = [], usedNogap = false;
+    var nogap = null, durations = [];
     out.forEach(function (r) {
-      if (r.flavor === 'nogap') {
-        if (usedNogap) return;
-        usedNogap = true; picked.push(r); return;
-      }
+      if (r.flavor === 'nogap') { if (!nogap) nogap = r; }
+      else durations.push(r);
+    });
+
+    /* Walk shortest to longest, keeping only options whose rate is no higher
+       than every shorter one already kept. A longer term that costs MORE per
+       month than a shorter one is not an offer — showing a 12-month above a
+       6-month reads as a penalty for committing, and invites the obvious
+       question of why anyone would take it. Peak-season spans can price that
+       way, so they get dropped rather than explained. */
+    durations.sort(function (a, b) { return a.nights - b.nights; });
+    var picked = [], bestRate = Infinity;
+    durations.forEach(function (r) {
+      if (r.quote.monthlyRate > bestRate) return;          // dearer than a shorter stay
       var tooClose = picked.some(function (p) {
-        return p.flavor !== 'nogap' && Math.abs(p.nights - r.nights) < MIN_SPACING_NIGHTS;
+        return Math.abs(p.nights - r.nights) < MIN_SPACING_NIGHTS;
       });
       if (tooClose) return;
+      bestRate = r.quote.monthlyRate;
       picked.push(r);
     });
+    if (nogap) picked.unshift(nogap);
     /* Selected by value, but displayed shortest-to-longest. Leaving them in
        savings order put 6 months, 8 months, then 4 months side by side, which
        reads as unsorted. The earlier-start card stays first — it's a different
        axis (same length, sooner) and belongs at the front. */
-    picked = picked.slice(0, 3).sort(function (a, b) {
-      if (a.flavor === 'nogap') return -1;
-      if (b.flavor === 'nogap') return 1;
-      return a.nights - b.nights;
-    });
-    return picked;
+    // Already ordered: earlier-start first, then ascending duration.
+    return picked.slice(0, 3);
   };
 
   /* Month-end dates falling in May, June or July, from move-in out to 12
