@@ -515,10 +515,13 @@
          showed total+deposit while the other showed a per-payment figure, so
          the cheaper option displayed as the larger number. The deposit is
          identical either way and already has its own line above. */
+      /* These cards sit under "due at signing", so they show what is actually
+         handed over — deposit INCLUDED. Showing the stay total here left the
+         deposit out of the one number a guest checks before committing. */
       h += '<button type="button" class="bk-pay-opt' + (this.payPlan === 'full' ? ' sel' : '') + '" data-pay="full">' +
            '<div class="bk-pay-h">Pay upfront</div>' +
-           '<div class="bk-pay-amt">' + fmtMoney(q.payFull.total) + '</div>' +
-           '<div class="bk-pay-sub">rent + taxes &middot; one payment</div>' +
+           '<div class="bk-pay-amt">' + fmtMoney(q.payFull.atSigning) + '</div>' +
+           '<div class="bk-pay-sub">everything at signing &middot; incl. deposit</div>' +
            '<div class="bk-pay-tag best">Best price</div></button>';
       if (pm.available) {
         /* "per payment", never "/mo". A 183-night stay is 6.1 months billed
@@ -526,10 +529,10 @@
            — labelling both "/mo" put two different numbers in the same unit. */
         h += '<button type="button" class="bk-pay-opt' + (this.payPlan === 'monthly' ? ' sel' : '') + '" data-pay="monthly">' +
              '<div class="bk-pay-h">Monthly installments</div>' +
-             '<div class="bk-pay-amt">' + fmtMoney(pm.total) + '</div>' +
-             '<div class="bk-pay-sub">rent in ' + pm.installments + ' payments of ' +
-             fmtMoney(pm.rentPerInstallment) + ' &middot; taxes at signing</div>' +
-             '<div class="bk-pay-tag">+' + fmtMoney(pm.premium) + '</div></button>';
+             '<div class="bk-pay-amt">' + fmtMoney(pm.atSigning) + '</div>' +
+             '<div class="bk-pay-sub">at signing &middot; then ' + (pm.installments - 1) + ' &times; ' +
+             fmtMoney(pm.rentPerInstallment) + '</div>' +
+             '<div class="bk-pay-tag">+' + fmtMoney(pm.premium) + ' overall</div></button>';
       }
       h += '</div>';
       // The breakdown above already states the signing split; don't repeat it.

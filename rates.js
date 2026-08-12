@@ -311,7 +311,8 @@
         deposit: deposit,
         total: total,
         atSigning: total + deposit,
-        monthlyRate: monthlyRate
+        monthlyRate: monthlyRate,
+        nightlyRate: Math.round(avgNightly * 100) / 100
       },
       payMonthly: (function () {
         var upRent = rentPlusBurn * (1 + INSTALLMENT_UPLIFT);
@@ -332,6 +333,7 @@
           deposit: deposit,
           total: upTotal,
           monthlyRate: Math.round((upRent / nights) * RATE_NIGHTS_PER_MONTH),
+          nightlyRate: Math.round((upRent / nights) * 100) / 100,
           installments: installments,
           rentPerInstallment: rentPer,
           /* First rent installment + ALL the tax + the deposit. */
