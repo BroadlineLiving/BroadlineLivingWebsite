@@ -100,6 +100,13 @@ const BROADLINE_UNITS = {
     rooms: 1,                    // studio
     applicationPropertyId: "53be119f-ef6c-49a7-8f60-84d297c23693"
   },
+  "sheridan-10a": {
+    name: "The Shenandoah",
+    unitLabel: "Unit 10A",
+    ruPropertyId: "5777690",
+    rooms: 2,                    // 1BR
+    applicationPropertyId: null
+  },
   "lawrence-2401": {
     name: "Lawrence Tower",
     unitLabel: "Unit 2401",
