@@ -190,6 +190,29 @@
     return slack <= BOOK_WINDOW_DAYS;   // negative = before it frees up; the calendar already blocks that
   };
 
+  /* Why this home can't be booked from the page, or null when it can.
+     A calendar is only worth showing when picking a date can actually lead
+     somewhere. In every case below it can't, and drawing one either wastes
+     the guest's time or — worse, on a failed feed — shows a grid of "free"
+     days we have no basis for. Those become an inquiry instead.
+
+     Returns null while still loading: absence of data isn't a state yet. */
+  BookingWidget.prototype.inquiryOnlyReason = function () {
+    if (this.busy === null) return null;                  // still loading
+    if (this.unit.inquiryOnly) return 'configured';       // set by hand in units-config
+    if (this.loadFailed) return 'no-calendar';            // iCal feed down — we don't know what's free
+    if (!this.earliest) return 'fully-booked';            // nothing open for a MIN_NIGHTS stay
+    if (this.ratesLoaded && (!this.rates || !this.rates.length)) return 'no-rates';
+    return null;
+  };
+
+  var INQUIRY_STATUS = {
+    'configured':   'Dates and pricing on request',
+    'no-calendar':  'Live calendar unavailable — contact us for dates',
+    'fully-booked': 'Fully booked — contact us for upcoming dates',
+    'no-rates':     'Dates and pricing on request'
+  };
+
   /* ---------- stay recommendations ----------
      Suggests alternatives that end in peak season (when the home re-lets best)
      or start the day it frees up. Only ranges that are actually free on the
@@ -376,6 +399,29 @@
     }
 
     var loading = this.busy === null;
+
+    /* Inquiry-only: keep the section — guests still arrive here from the
+       "Check dates & price" card — but drop the calendar and say plainly that
+       this one goes through us. A date picker that can't produce a price is
+       worse than no date picker. */
+    var inqReason = this.inquiryOnlyReason();
+    if (!loading && inqReason) {
+      this.el.innerHTML =
+        '<div class="bk-card">' +
+        '<div class="bk-eyebrow">Check price &amp; availability</div>' +
+        '<h3>Inquiry only</h3>' +
+        '<p class="bk-sub">' + esc(u.name) + ' ' + esc(u.unitLabel) + ' isn\'t open for instant booking.</p>' +
+        '<div class="bk-status soon"><span class="dot"></span><span>' + INQUIRY_STATUS[inqReason] + '</span></div>' +
+        '<div class="bk-msg info">Send us the dates you have in mind and we\'ll come back with availability and a price.</div>' +
+        '<button type="button" class="bk-cta" data-act="inquire">Inquire about this home</button>' +
+        '<div class="bk-msg info">Prefer to talk? Email <a href="mailto:Info@broadlineliving.com" style="color:inherit;text-decoration:underline">Info@broadlineliving.com</a> ' +
+        'or call <a href="tel:+19297372160" style="color:inherit;text-decoration:underline">(929) 737-2160</a>.</div>' +
+        '</div>';
+      var iq = this.el.querySelector('[data-act="inquire"]');
+      if (iq) iq.addEventListener('click', function () { self.showApplyForm(); });
+      return;
+    }
+
     var h = '<div class="bk-card">';
     h += '<div class="bk-eyebrow">Check availability</div>';
     h += '<h3>Reserve your dates</h3>';
@@ -798,8 +844,15 @@
     var priced = !!(q && q.ok);
     var u = this.unit;
 
-    var h = '<div class="bk-card"><div class="bk-eyebrow">Inquiry</div><h3>Inquire about these dates</h3>';
-    h += '<p class="bk-sub">' + esc(u.name) + ' ' + esc(u.unitLabel) + ' · ' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) +
+    /* Reachable two ways now: from a blocked apply (dates chosen) and from an
+       inquiry-only home (no calendar, so no dates). Everything date-shaped
+       below has to tolerate both. */
+    var dated = !!(this.moveIn && this.moveOut);
+
+    var h = '<div class="bk-card"><div class="bk-eyebrow">Inquiry</div>';
+    h += '<h3>' + (dated ? 'Inquire about these dates' : 'Inquire about this home') + '</h3>';
+    h += '<p class="bk-sub">' + esc(u.name) + ' ' + esc(u.unitLabel) +
+         (dated ? ' · ' + fmtShort(this.moveIn) + ' → ' + fmtShort(this.moveOut) : '') +
          (priced
            ? '<br><strong style="color:var(--ink)">' + fmtMoney(q.monthlyRate) + '/month</strong> · ' + fmtMoney(q.total) + ' total · ' +
              fmtMoney(q.deposit) + ' refundable deposit'
@@ -810,22 +863,36 @@
     h += '<div class="bk-msg info" style="margin-bottom:14px;">' +
          (priced
            ? 'This isn\'t an application &mdash; these dates need confirming first. Send your details and we\'ll reply with your application link.'
-           : 'We\'ll price these dates for you and come back with a quote.') + '</div>';
+           : dated
+             ? 'We\'ll price these dates for you and come back with a quote.'
+             : 'Tell us roughly when you\'d move in and we\'ll come back with availability and a price.') + '</div>';
     h += '<form data-apply>';
     h += '<div class="bk-field"><label>Full name</label><input type="text" name="name" required></div>';
     h += '<div class="bk-field"><label>Email</label><input type="email" name="email" required></div>';
     h += '<div class="bk-field"><label>Phone</label><input type="tel" name="phone"></div>';
+    /* Without a calendar the lead is otherwise just a name — ask for the dates
+       in words so the reply can actually answer the question. */
+    if (!dated) {
+      h += '<div class="bk-field"><label>Dates you have in mind</label>' +
+           '<input type="text" name="dates" placeholder="e.g. October for 6 months"></div>';
+    }
     h += '<div id="bk-apply-err"></div>';
     h += '<button type="submit" class="bk-cta">Send request</button></form>';
-    h += '<button type="button" class="bk-back" data-back>&#8249; Back to dates</button></div>';
+    h += dated ? '<button type="button" class="bk-back" data-back>&#8249; Back to dates</button>' : '';
+    h += '</div>';
 
     this.el.innerHTML = h;
-    this.el.querySelector('[data-back]').addEventListener('click', function () { self.render(); });
+    // No back button on the dateless form — there are no dates to go back to.
+    var back = this.el.querySelector('[data-back]');
+    if (back) back.addEventListener('click', function () { self.render(); });
     this.el.querySelector('[data-apply]').addEventListener('submit', function (e) {
       e.preventDefault();
       var btn = this.querySelector('button[type="submit"]');
       btn.disabled = true; btn.textContent = 'Sending…';
-      self.submitApplication({ name: this.name.value, email: this.email.value, phone: this.phone.value })
+      self.submitApplication({
+        name: this.name.value, email: this.email.value, phone: this.phone.value,
+        dates: this.dates ? this.dates.value : ''
+      })
         .then(function () { self.submitted = true; self.render(); })
         .catch(function () {
           btn.disabled = false; btn.textContent = 'Send request';
@@ -844,15 +911,27 @@
      be embedded here — it can read every applicant's SSN and financials. */
   BookingWidget.prototype.submitApplication = function (data) {
     var u = this.unit, q = this.quote();
+    var dated = !!(this.moveIn && this.moveOut);
+    var inqReason = this.inquiryOnlyReason();
     var body = new FormData();
-    body.append('_subject', 'APPLICATION REQUEST: ' + u.name + ' ' + u.unitLabel);
+    /* Two different jobs for whoever reads the inbox: a dated lead needs the
+       dates confirmed, an inquiry-only lead needs someone to work out whether
+       the home can be offered at all. Say which in the subject. */
+    body.append('_subject', (dated ? 'APPLICATION REQUEST: ' : 'INQUIRY: ') + u.name + ' ' + u.unitLabel);
     body.append('property', u.name + ' ' + u.unitLabel);
     body.append('name', data.name);
     body.append('email', data.email);
     body.append('phone', data.phone || '');
-    body.append('move_in', fmtShort(this.moveIn));
-    body.append('move_out', fmtShort(this.moveOut));
-    body.append('duration', durationLabel(nightsBetween(this.moveIn, this.moveOut)));
+    if (dated) {
+      body.append('move_in', fmtShort(this.moveIn));
+      body.append('move_out', fmtShort(this.moveOut));
+      body.append('duration', durationLabel(nightsBetween(this.moveIn, this.moveOut)));
+    } else {
+      // fmtShort/nightsBetween on null yields "Invalid Date" and NaN — skip them.
+      body.append('move_in', 'NOT SPECIFIED — inquiry only');
+      body.append('dates_wanted', data.dates || '(not given)');
+      body.append('inquiry_reason', inqReason || 'unknown');
+    }
     /* No quote when the gap is too large to price — that lead still has to
        send. Report why instead of throwing on undefined fields. */
     if (q && q.ok) {
@@ -866,10 +945,11 @@
         : 'Paid upfront in full');
     } else {
       body.append('quoted_monthly', 'NOT QUOTED');
-      body.append('quote_blocked_reason', (q && q.reason) || 'unknown');
+      body.append('quote_blocked_reason', (q && q.reason) || inqReason || 'unknown');
       if (this.earliest) {
         body.append('home_opens', fmtShort(this.earliest));
-        body.append('gap_days', String(nightsBetween(this.earliest, this.moveIn)));
+        // gap only means something against a chosen move-in
+        if (dated) body.append('gap_days', String(nightsBetween(this.earliest, this.moveIn)));
       }
     }
     return fetch(FORMSPREE, { method: 'POST', body: body, headers: { Accept: 'application/json' } })

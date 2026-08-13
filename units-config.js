@@ -23,6 +23,13 @@
      rooms                 bedrooms + 1 (the living room counts;
                            a studio is 1). Drives the $2/room/night
                            portion of NYC occupancy tax.
+     inquiryOnly           Optional. true = never show a calendar on the unit
+                           page; show "Inquiry only" and an inquiry form
+                           instead. Use for homes that are let through us
+                           rather than booked online. The page also falls
+                           back to this on its own when a home is fully
+                           booked, has no published rates, or its calendar
+                           feed is down.
      applicationPropertyId Property id in the rental-application app.
                            Guests are sent to
                            <APP>/?property=<applicationPropertyId>.
