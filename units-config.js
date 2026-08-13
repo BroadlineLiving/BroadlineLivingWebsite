@@ -112,7 +112,7 @@ const BROADLINE_UNITS = {
     unitLabel: "Unit 10A",
     ruPropertyId: "5777690",
     rooms: 2,                    // 1BR
-    applicationPropertyId: null
+    applicationPropertyId: "cdf4538f-645b-411e-ae13-19bbf73603e6"
   },
   "lawrence-2401": {
     name: "Lawrence Tower",
