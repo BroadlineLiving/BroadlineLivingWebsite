@@ -122,6 +122,16 @@
     if (nightsBetween(this.moveIn, d) < MIN_NIGHTS) return false;
     return this.rangeIsFree(this.moveIn, d);
   };
+  /* A day can start a stay only if the minimum stay actually fits after it.
+     Being merely un-booked isn't enough: a two-night gap between bookings is
+     free on the calendar but can't hold a 30-night minimum, and picking one
+     used to leave every move-out day disabled with no explanation — the
+     widget looked frozen. */
+  BookingWidget.prototype.canBeMoveIn = function (d) {
+    if (d < todayMid()) return false;
+    if (this.isBusy(d)) return false;
+    return this.rangeIsFree(d, addDays(d, MIN_NIGHTS));
+  };
 
   BookingWidget.prototype.onDayClick = function (d) {
     this.dayHint = null;
@@ -138,6 +148,12 @@
     } else {
       if (d < todayMid()) { this.dayHint = 'That date has already passed.'; }
       else if (this.isBusy(d)) { this.dayHint = 'That date is already booked.'; }
+      else if (!this.canBeMoveIn(d)) {
+        /* Free day, but the run of free nights after it is shorter than the
+           minimum stay. The grid disables these, so this is a backstop — and
+           it explains itself rather than swallowing the click. */
+        this.dayHint = 'There aren\'t ' + MIN_NIGHTS + ' free nights from that date. Pick a date with a longer opening.';
+      }
       else { this.moveIn = d; this.moveOut = null; this.picking = 'out'; }
     }
     this.render();
@@ -187,7 +203,12 @@
   BookingWidget.prototype.withinBookingWindow = function () {
     if (!this.moveIn || !this.earliest) return false;
     var slack = nightsBetween(this.earliest, this.moveIn);
-    return slack <= BOOK_WINDOW_DAYS;   // negative = before it frees up; the calendar already blocks that
+    /* Negative slack means the move-in lands before the home frees up. This
+       used to pass — `-70 <= 5` is true — on the assumption that the calendar
+       had already blocked such a date, which it hadn't. Reject it explicitly
+       rather than trusting a sibling component to have done it. */
+    if (slack < 0) return false;
+    return slack <= BOOK_WINDOW_DAYS;
   };
 
   /* Why this home can't be booked from the page, or null when it can.
@@ -758,7 +779,7 @@
     var h = '<div class="bk-cal"><div class="bk-months">';
     h += this.monthHTML(this.viewMonth, true, true);
     h += '</div>';
-    h += '<div class="bk-legend"><span><i class="free"></i>Available</span><span><i class="taken"></i>Booked</span></div>';
+    h += '<div class="bk-legend"><span><i class="free"></i>Available</span><span><i class="taken"></i>Unavailable</span></div>';
     h += '</div>';
     return h;
   };
@@ -785,7 +806,7 @@
       if (d < today) { cls += ' past'; disabled = true; }
       else if (this.picking === 'out' && this.moveIn) {
         if (!this.canBeMoveOut(d) && !sameDay(d, this.moveIn)) { cls += ' disabled'; disabled = true; }
-      } else if (this.isBusy(d)) { cls += ' disabled'; disabled = true; }
+      } else if (!this.canBeMoveIn(d)) { cls += ' disabled'; disabled = true; }
 
       if (sameDay(d, this.moveIn) || sameDay(d, this.moveOut)) {
         cls += ' sel';
