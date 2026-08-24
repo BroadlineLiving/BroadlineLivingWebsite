@@ -35,7 +35,7 @@ img{max-width:100%;display:block}
 .logo .name .l{font-size:9px;font-weight:400;letter-spacing:.42em;color:var(--ink-soft);margin-top:3px}
 
 /* ── HEADER / NAV ── */
-header{position:sticky;top:0;z-index:200;background:rgba(246,248,250,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:200;background:rgba(246,248,250,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);transform:translateZ(0);will-change:transform}
 .nav{display:flex;align-items:center;justify-content:space-between;height:72px}
 nav ul{display:flex;gap:34px;list-style:none}
 nav a{font-size:13px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);transition:color .2s;-webkit-tap-highlight-color:transparent}
@@ -46,8 +46,8 @@ nav a:hover,nav a.active{color:var(--teal)}
 .burger svg{width:24px;height:24px;display:block}
 
 /* Mobile slide-down menu */
-.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;bottom:0;background:rgba(246,248,250,.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:199;flex-direction:column;padding:32px 28px 40px;overflow-y:auto;transform:translateY(-8px);opacity:0;transition:transform .28s ease,opacity .28s ease}
-.mobile-menu.open{display:flex;transform:translateY(0);opacity:1}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;bottom:0;background:rgba(246,248,250,.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:199;flex-direction:column;padding:32px 28px 40px;overflow-y:auto;transform:translateY(-8px) translateZ(0);opacity:0;will-change:transform;transition:transform .28s ease,opacity .28s ease}
+.mobile-menu.open{display:flex;transform:translateY(0) translateZ(0);opacity:1}
 .mobile-menu ul{list-style:none;display:flex;flex-direction:column;gap:0}
 .mobile-menu li{border-bottom:1px solid var(--line)}
 .mobile-menu a{display:block;padding:18px 0;font-size:18px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);transition:color .2s}
