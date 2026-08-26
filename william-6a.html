@@ -244,8 +244,12 @@
 
   // Property location map — clean Positron, no overlays
   const pmap = L.map('pmap', { scrollWheelZoom:false }).setView([40.7088, -74.0064], 15);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution:'&copy; OpenStreetMap, &copy; CARTO', maxZoom:19, subdomains:'abcd'
+  L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    attribution:'&copy; OpenStreetMap contributors, Esri, HERE, Garmin', maxZoom:19, maxNativeZoom:16, zIndex:1
+  }).addTo(pmap);
+  // Street/place labels ship as a separate transparent layer in this basemap.
+  L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom:19, maxNativeZoom:16, zIndex:2
   }).addTo(pmap);
   const icon = L.divIcon({className:'', html:'<div class="pin"></div>', iconSize:[20,20]});
   L.marker([40.7088, -74.0064], {icon}).addTo(pmap);

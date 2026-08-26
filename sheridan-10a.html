@@ -8,15 +8,15 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Furnished one-bedroom at The Shenandoah, 10 Sheridan Square in the West Village. Doorman building with elevator and laundry room, steps from Christopher Street.">
-<meta property="og:title" content="Lawrence Tower, Unit 2401 | Broadline Living">
+<meta property="og:title" content="The Shenandoah, Unit 10A | Broadline Living">
 <meta property="og:description" content="Furnished one-bedroom at The Shenandoah, 10 Sheridan Square in the West Village. Doorman building with elevator and laundry room, steps from Christopher Street.">
 <meta property="og:image" content="https://broadlineliving.com/og-image.jpg">
-<meta property="og:url" content="https://broadlineliving.com/lawrence-2401.html">
-<link rel="canonical" href="https://broadlineliving.com/lawrence-2401.html">
+<meta property="og:url" content="https://broadlineliving.com/sheridan-10a.html">
+<link rel="canonical" href="https://broadlineliving.com/sheridan-10a.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Broadline Living">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Lawrence Tower, Unit 2401 | Broadline Living">
+<meta name="twitter:title" content="The Shenandoah, Unit 10A | Broadline Living">
 <meta name="twitter:description" content="Furnished one-bedroom at The Shenandoah, 10 Sheridan Square in the West Village. Doorman building with elevator and laundry room, steps from Christopher Street.">
 <meta name="twitter:image" content="https://broadlineliving.com/og-image.jpg">
 <title>The Shenandoah, Unit 10A | Broadline Living</title>
@@ -227,8 +227,12 @@
 
   // Property location map — clean Positron, no overlays
   const pmap = L.map('pmap', { scrollWheelZoom:false }).setView([40.7318, -74.0021], 15);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution:'&copy; OpenStreetMap, &copy; CARTO', maxZoom:19, subdomains:'abcd'
+  L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    attribution:'&copy; OpenStreetMap contributors, Esri, HERE, Garmin', maxZoom:19, maxNativeZoom:16, zIndex:1
+  }).addTo(pmap);
+  // Street/place labels ship as a separate transparent layer in this basemap.
+  L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom:19, maxNativeZoom:16, zIndex:2
   }).addTo(pmap);
   const icon = L.divIcon({className:'', html:'<div class="pin"></div>', iconSize:[20,20]});
   L.marker([40.7318, -74.0021], {icon}).addTo(pmap);

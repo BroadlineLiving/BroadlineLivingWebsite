@@ -233,8 +233,12 @@
   const map = L.map('map', {zoomControl:true, scrollWheelZoom:true, zoomSnap:0.5}).setView([40.748, -73.97], 12);
 
   // Clean default Positron - no colored overlays, no borough outlines
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution:'&copy; OpenStreetMap, &copy; CARTO', maxZoom:19, subdomains:'abcd'
+  L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    attribution:'&copy; OpenStreetMap contributors, Esri, HERE, Garmin', maxZoom:19, maxNativeZoom:16, zIndex:1
+  }).addTo(map);
+  // Street/place labels ship as a separate transparent layer in this basemap.
+  L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom:19, maxNativeZoom:16, zIndex:2
   }).addTo(map);
 
   const bounds = L.latLngBounds(buildings.map(b => [b.lat, b.lng]));
