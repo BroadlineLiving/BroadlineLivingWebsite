@@ -191,14 +191,14 @@
   var BURN_RECOVERY_PCT = 0.5;
 
   /* ---- Payment options ----------------------------------------------------
-     Pay the whole stay at signing, or pay monthly for 3% more on the rate.
+     Pay the whole stay at signing, or pay monthly for 5% more on the rate.
      The uplift applies to RENT, and tax is then recalculated on that higher
      rent — tax is a percentage of what's actually charged, so applying the
      uplift after tax would quietly under-collect it.
 
      The first installment is due at signing alongside the deposit, so the
      guest hands over one month plus the deposit rather than the full term. */
-  var INSTALLMENT_UPLIFT = 0.03;
+  var INSTALLMENT_UPLIFT = 0.05;
 
   function burnCostFor(rates, availableDate, moveIn) {
     if (!availableDate || moveIn <= availableDate) return { days: 0, cost: 0 };
