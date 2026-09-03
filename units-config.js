@@ -119,14 +119,14 @@ const BROADLINE_UNITS = {
     unitLabel: "Unit 34H",
     ruPropertyId: "5957043",
     rooms: 3,                    // flex 2BR — living room + 2 bedrooms
-    applicationPropertyId: null
+    applicationPropertyId: "ec4cab02-87b3-4627-99b7-66c1dc63e44e"
   },
   "atlas-39h": {
     name: "Atlas New York",
     unitLabel: "Unit 39H",
     ruPropertyId: "5957163",
     rooms: 3,                    // flex 2BR — living room + 2 bedrooms
-    applicationPropertyId: null
+    applicationPropertyId: "7b2dbc85-c78f-4f43-9ae6-20cb437c80cf"
   },
   "lawrence-2401": {
     name: "Lawrence Tower",
