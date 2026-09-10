@@ -128,6 +128,13 @@ const BROADLINE_UNITS = {
     rooms: 3,                    // flex 2BR — living room + 2 bedrooms
     applicationPropertyId: "7b2dbc85-c78f-4f43-9ae6-20cb437c80cf"
   },
+  "mott-4": {
+    name: "223 Mott Street",
+    unitLabel: "Unit 4",
+    ruPropertyId: "6066885",
+    rooms: 2,                    // 1BR
+    applicationPropertyId: "5c6021c0-80db-4e8d-b6a2-f2fd8901dcd9"
+  },
   "lawrence-2401": {
     name: "Lawrence Tower",
     unitLabel: "Unit 2401",
