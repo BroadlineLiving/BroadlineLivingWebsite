@@ -265,3 +265,21 @@
 .bk-slot-edit{font-size:9px;letter-spacing:.06em;color:var(--cyan);margin-left:5px;
   text-transform:uppercase;opacity:0;transition:opacity .15s}
 .bk-slot:hover .bk-slot-edit,.bk-slot.active .bk-slot-edit{opacity:1}
+
+/* ---- mobile: the month grid is a picker, not a permanent fixture ----
+   ~400px of calendar left open after both dates are chosen pushed the price
+   roughly two screens down. Below 600px it collapses to a single row showing
+   the chosen stay, which reopens it. Desktop is unaffected: the rules only
+   exist inside this query. */
+.bk-cal-reopen{display:none}
+@media(max-width:600px){
+  .bk-card.bk-cal-collapsed .bk-cal{display:none}
+  .bk-card.bk-cal-collapsed .bk-legend{display:none}
+  .bk-cal-reopen{display:flex;width:100%;align-items:center;justify-content:space-between;
+    gap:12px;margin:0 0 16px;padding:13px 14px;background:var(--bg-2,#eef2f6);
+    border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px;
+    font-weight:500;color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .bk-cal-reopen:active{background:#e4eaf1}
+  .bk-cal-reopen-cta{font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--cyan);font-weight:600;white-space:nowrap}
+}

@@ -80,6 +80,13 @@
     /* Which payment plan the guest picked. Carried through to the application
        and the inquiry email so the choice isn't lost at handoff. */
     this.payPlan = 'full';   // 'full' | 'monthly'
+    /* Whether the month grid is showing. On a phone the grid is ~400px, so
+       leaving it open after both dates are set pushed the price about two
+       screens down — the guest had to scroll back past a calendar they'd
+       finished with to find out the cost. It collapses once a stay is chosen
+       and reopens the moment either date field is tapped. Desktop has the room
+       and ignores this entirely (CSS-gated), so the flag can stay on always. */
+    this.calOpen = true;
   }
 
   BookingWidget.prototype.init = function () {
@@ -156,13 +163,14 @@
       }
       else { this.moveIn = d; this.moveOut = null; this.picking = 'out'; }
     }
+    this.calOpen = !(this.moveIn && this.moveOut);
     this.render();
   };
 
   /* Wipe the selection back to nothing. */
   BookingWidget.prototype.clearDates = function () {
     this.moveIn = null; this.moveOut = null; this.picking = 'in';
-    this.prevSelection = null; this.dayHint = null;
+    this.prevSelection = null; this.dayHint = null; this.calOpen = true;
     // Starting over means starting over — a stale monthly selection would
     // otherwise silently apply the 5% uplift to whatever they pick next.
     this.payPlan = 'full';
@@ -443,7 +451,7 @@
       return;
     }
 
-    var h = '<div class="bk-card">';
+    var h = '<div class="bk-card' + ((this.moveIn && this.moveOut && !this.calOpen) ? ' bk-cal-collapsed' : '') + '">';
     h += '<div class="bk-eyebrow">Check availability</div>';
     h += '<h3>Reserve your dates</h3>';
     h += '<p class="bk-sub">Live availability and instant pricing. One month minimum.</p>';
@@ -484,6 +492,13 @@
       h += '</div>';
     }
 
+    var stayChosen = !!(this.moveIn && this.moveOut);
+    var collapsed = stayChosen && !this.calOpen;
+    if (collapsed) {
+      h += '<button type="button" class="bk-cal-reopen" data-pick="in">' +
+           '<span>' + fmtShort(this.moveIn) + ' &ndash; ' + fmtShort(this.moveOut) + '</span>' +
+           '<span class="bk-cal-reopen-cta">Edit dates</span></button>';
+    }
     h += loading ? '<div class="bk-skel bk-skel-cal"></div>' : this.calendarHTML();
 
     if (this.dayHint) {
@@ -729,7 +744,14 @@
   BookingWidget.prototype.bind = function () {
     var self = this;
     this.el.querySelectorAll('[data-pick]').forEach(function (b) {
-      b.addEventListener('click', function () { self.picking = b.dataset.pick; self.render(); });
+      b.addEventListener('click', function () {
+        self.picking = b.dataset.pick; self.calOpen = true; self.render();
+        // bring the grid into view; it may be off-screen on a phone
+        setTimeout(function () {
+          var cal = self.el.querySelector('.bk-cal');
+          if (cal && window.innerWidth <= 600) cal.scrollIntoView({ block: 'nearest' });
+        }, 0);
+      });
     });
     this.el.querySelectorAll('[data-day]').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -756,6 +778,7 @@
         self.moveIn = new Date(pi[0], pi[1], pi[2]);
         self.moveOut = new Date(po[0], po[1], po[2]);
         self.picking = 'in';
+        self.calOpen = false;
         self.viewMonth = new Date(self.moveIn.getFullYear(), self.moveIn.getMonth(), 1);
         self.render();
       });
