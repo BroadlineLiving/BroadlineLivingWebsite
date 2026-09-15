@@ -423,7 +423,7 @@
         '<h3>Thanks — you\'re in the queue</h3>' +
         '<p class="bk-sub">We have your dates for ' + esc(u.name) + ' ' + esc(u.unitLabel) + '. ' +
         'You\'ll receive your application link by email shortly — credit check and documents are handled there.</p>' +
-        '<div class="bk-msg info">Questions in the meantime? Email <a href="mailto:Info@broadlineliving.com" style="color:inherit;text-decoration:underline">Info@broadlineliving.com</a> or call <a href="tel:+19297372160" style="color:inherit;text-decoration:underline">(929) 737-2160</a>.</div></div>';
+        '<div class="bk-msg info">Questions in the meantime? Email <a href="mailto:Info@broadlineliving.com" style="color:inherit;text-decoration:underline">Info@broadlineliving.com</a> or call <a href="tel:+19148268575" style="color:inherit;text-decoration:underline">(914) 826-8575</a>.</div></div>';
       return;
     }
 
@@ -444,7 +444,7 @@
         '<div class="bk-msg info">Send us the dates you have in mind and we\'ll come back with availability and a price.</div>' +
         '<button type="button" class="bk-cta" data-act="inquire">Inquire about this home</button>' +
         '<div class="bk-msg info">Prefer to talk? Email <a href="mailto:Info@broadlineliving.com" style="color:inherit;text-decoration:underline">Info@broadlineliving.com</a> ' +
-        'or call <a href="tel:+19297372160" style="color:inherit;text-decoration:underline">(929) 737-2160</a>.</div>' +
+        'or call <a href="tel:+19148268575" style="color:inherit;text-decoration:underline">(914) 826-8575</a>.</div>' +
         '</div>';
       var iq = this.el.querySelector('[data-act="inquire"]');
       if (iq) iq.addEventListener('click', function () { self.showApplyForm(); });
