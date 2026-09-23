@@ -124,13 +124,15 @@
   <a href="availability.html" class="m-cta">View Availability</a>
 </div>
 <section class="hero">
-  <video id="hero-vid" autoplay muted loop playsinline preload="auto" poster="hero-poster.jpg"><source id="hero-src" src="219131.mp4" type="video/mp4"></video>
+  <video id="hero-vid" autoplay muted loop playsinline preload="metadata" poster="hero-poster.jpg"><source id="hero-src" type="video/mp4"></video>
   <script>
     var v=document.getElementById('hero-vid');
-    if(window.innerWidth<=768){
-      document.getElementById('hero-src').src='219131-mobile.mp4';
-      v.load();
-    }
+    /* The source is set here, not in the markup. With src in the HTML the browser
+       starts fetching the 8 MB desktop file on parse, so a phone paid for part of
+       it before the swap ran. Assigning it here means exactly one file is ever
+       fetched: 1.4 MB on mobile, 8 MB on desktop. */
+    document.getElementById('hero-src').src = window.innerWidth<=768 ? '219131-mobile.mp4' : '219131.mp4';
+    v.load();
     v.muted=true;
     function tryPlay(){v.play().catch(function(){});}
     tryPlay();
@@ -170,7 +172,7 @@
   <div class="wrap">
     <div class="section-head"><p class="eyebrow">What We Do</p><h2>Move in. Settle in. Live.</h2></div>
     <div class="what-grid">
-      <div class="what-photo"><img src="home-move.jpg" alt="Family moving into a furnished Broadline apartment"></div>
+      <div class="what-photo"><img src="home-move.jpg" alt="Family moving into a furnished Broadline apartment" loading="lazy" decoding="async"></div>
       <div class="what-list">
         <div class="what-item"><h3>Hand-picked Apartments</h3><p>We personally select every property for quality, location, and design.</p></div>
         <div class="what-item"><h3>Move-in Ready</h3><p>Furnished, stocked, and cleaned so you can settle in immediately.</p></div>
@@ -184,16 +186,16 @@
   <div class="wrap">
     <div class="section-head"><p class="eyebrow">Featured Homes</p><h2>Across leading city neighborhoods</h2></div>
     <div class="grid3">
-      <a class="pcard" href="aurora-2301.html"><div class="ph" style="background-image:url('the-aurora-2301-git/aurora-2301-1.jpg');background-size:cover;background-position:center;border-radius:0;border:none;border-bottom:1px solid var(--line);min-height:230px"></div><div class="body"><h3>The Aurora</h3><p class="desc">Bright corner studio on a high floor in prime Murray Hill, with a gym and 24/7 concierge.</p><div class="meta"><span>Studio</span><span>1 Bath</span><span>Murray Hill</span></div></div></a>
-      <a class="pcard" href="thompson-b.html"><div class="ph" style="background-image:url('59-thompson-street-B-git/59thomp-B-1.jpg');background-size:cover;background-position:center;border-radius:0;border:none;border-bottom:1px solid var(--line);min-height:230px"></div><div class="body"><h3>59 Thompson Street</h3><p class="desc">Fully furnished studio on a prime Soho block, steps from the city's best dining and shopping.</p><div class="meta"><span>Studio</span><span>1 Bath</span><span>Soho</span></div></div></a>
-      <a class="pcard" href="sheridan-10a.html"><div class="ph" style="background-image:url('10-sheridan-square-10A-git/sheridan-10A-1.jpg');background-size:cover;background-position:center;border-radius:0;border:none;border-bottom:1px solid var(--line);min-height:230px"></div><div class="body"><h3>The Shenandoah</h3><p class="desc">A light-filled one-bedroom with a dedicated workspace, in a boutique doorman building on Sheridan Square.</p><div class="meta"><span>1 Bed</span><span>1 Bath</span><span>West Village</span></div></div></a>
+      <a class="pcard" href="aurora-2301.html"><div class="ph" style="background-image:url('the-aurora-2301-git/aurora-2301-1-card.jpg');background-size:cover;background-position:center;border-radius:0;border:none;border-bottom:1px solid var(--line);min-height:230px"></div><div class="body"><h3>The Aurora</h3><p class="desc">Bright corner studio on a high floor in prime Murray Hill, with a gym and 24/7 concierge.</p><div class="meta"><span>Studio</span><span>1 Bath</span><span>Murray Hill</span></div></div></a>
+      <a class="pcard" href="thompson-b.html"><div class="ph" style="background-image:url('59-thompson-street-B-git/59thomp-B-1-card.jpg');background-size:cover;background-position:center;border-radius:0;border:none;border-bottom:1px solid var(--line);min-height:230px"></div><div class="body"><h3>59 Thompson Street</h3><p class="desc">Fully furnished studio on a prime Soho block, steps from the city's best dining and shopping.</p><div class="meta"><span>Studio</span><span>1 Bath</span><span>Soho</span></div></div></a>
+      <a class="pcard" href="sheridan-10a.html"><div class="ph" style="background-image:url('10-sheridan-square-10A-git/sheridan-10A-1-card.jpg');background-size:cover;background-position:center;border-radius:0;border:none;border-bottom:1px solid var(--line);min-height:230px"></div><div class="body"><h3>The Shenandoah</h3><p class="desc">A light-filled one-bedroom with a dedicated workspace, in a boutique doorman building on Sheridan Square.</p><div class="meta"><span>1 Bed</span><span>1 Bath</span><span>West Village</span></div></div></a>
     </div>
     <div style="text-align:center;margin-top:46px"><a href="availability.html" class="btn btn-ghost">View All Availability</a></div>
   </div>
 </section>
 <section class="landlord-cta">
   <div class="wrap lc-grid">
-    <div class="lc-photo"><img src="landlord-home.jpg" alt="New York City residential buildings"></div>
+    <div class="lc-photo"><img src="landlord-home.jpg" alt="New York City residential buildings" loading="lazy" decoding="async"></div>
     <div>
       <p class="eyebrow">For Landlords</p>
       <h2>Are You a Landlord?</h2>
