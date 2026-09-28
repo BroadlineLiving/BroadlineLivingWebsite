@@ -238,22 +238,36 @@
 </script>
 
 <script>
-function toggleMenu(){
-  var m=document.getElementById('mobile-menu');
-  var b=document.getElementById('burger-icon');
-  var open=m.classList.contains('open');
-  m.classList.toggle('open',!open);
-  document.body.style.overflow=open?'':'hidden';
-  b.innerHTML=open
-    ?'<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>'
-    :'<line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/>';
+var BURGER_BARS='<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>';
+var BURGER_X='<line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/>';
+function menuIsOpen(){
+  return document.getElementById('mobile-menu').classList.contains('open');
 }
+/* One place that moves the menu between states, so the panel, the scroll lock
+   and the burger icon can never drift apart from each other. */
+function setMenu(open){
+  document.getElementById('mobile-menu').classList.toggle('open',open);
+  document.body.classList.toggle('menu-open',open);
+  document.getElementById('burger-icon').innerHTML=open?BURGER_X:BURGER_BARS;
+}
+function toggleMenu(){ setMenu(!menuIsOpen()); }
 // Close menu on nav link tap
 document.querySelectorAll('.mobile-menu a').forEach(function(a){
-  a.addEventListener('click',function(){
-    document.getElementById('mobile-menu').classList.remove('open');
-    document.body.style.overflow='';
-  });
+  a.addEventListener('click',function(){ setMenu(false); });
+});
+/* Past 1024px the burger is display:none, so an open menu would have no way to
+   be closed. Rotating a phone to landscape crosses that line on the larger
+   handsets. Only act when our own menu is open — the booking modal and the
+   lightbox manage the same scroll lock and must not be stepped on. */
+var wideView=window.matchMedia('(min-width:1025px)');
+function closeMenuIfWide(){ if(wideView.matches && menuIsOpen()) setMenu(false); }
+window.addEventListener('resize',closeMenuIfWide);
+if(wideView.addEventListener) wideView.addEventListener('change',closeMenuIfWide);
+else if(wideView.addListener) wideView.addListener(closeMenuIfWide);  // Safari < 14
+/* Safari serves a back-navigation from the bfcache with the old DOM intact,
+   open menu and all. */
+window.addEventListener('pageshow',function(e){
+  if(e.persisted && menuIsOpen()) setMenu(false);
 });
 </script>
 <script src="units-config.js"></script>

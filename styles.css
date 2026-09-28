@@ -81,10 +81,34 @@ footer a:hover{color:#3fe0d0}
 .page-hero h1{font-family:var(--display);font-size:clamp(42px,6vw,72px);font-weight:500;letter-spacing:.01em;margin-top:14px}
 .page-hero p{max-width:54ch;margin:20px auto 0;color:var(--ink-soft);font-size:17px}
 
-@media(max-width:900px){
-  .wrap{padding:0 20px}
+/* The burger is the only control that closes the mobile menu, and it only
+   exists below 1024px. Above that the overlay must never be able to paint —
+   otherwise a phone rotated to landscape (a Pro Max is 932px wide) is left
+   with a near-white sheet over the page and nothing to dismiss it with. */
+@media(min-width:1025px){
+  .mobile-menu,.mobile-menu.open{display:none}
+}
+/* The scroll lock is a class rather than an inline style so that it, too, stops
+   applying above the breakpoint. Menu state can then never strand the page:
+   even with no resize event at all, a wide viewport both hides the panel and
+   releases the scroll. The booking modal and lightbox set body.style.overflow
+   directly and are unaffected by this. */
+@media(max-width:1024px){
+  body.menu-open{overflow:hidden}
+}
+
+/* The desktop nav needs ~980px before the links stop wrapping under the logo,
+   but it used to be shown from 901px up — so 901-980px rendered a broken
+   header, which is the band a large phone lands in when rotated to landscape.
+   The burger now covers everything up to 1024px, where the full nav fits with
+   room to spare. It is the breakpoint the two menu guards above key off. */
+@media(max-width:1024px){
   nav ul,.nav-cta{display:none}
   .burger{display:flex;align-items:center;justify-content:center}
+}
+
+@media(max-width:900px){
+  .wrap{padding:0 20px}
   .foot-grid{grid-template-columns:1fr 1fr;gap:36px}
   .section-head{margin-bottom:40px}
 }
