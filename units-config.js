@@ -149,6 +149,13 @@ const BROADLINE_UNITS = {
     rooms: 1,                    // studio
     applicationPropertyId: "4c3e9377-42ad-482c-8ace-c5a6ff5933cc"
   },
+  "park-row-17f": {
+    name: "15 Park Row",
+    unitLabel: "Unit 17F",
+    ruPropertyId: "6278876",
+    rooms: 2,                    // 1BR
+    applicationPropertyId: "aeb0385f-589c-4085-b328-bec433564e13"
+  },
   "lawrence-2401": {
     name: "Lawrence Tower",
     unitLabel: "Unit 2401",
