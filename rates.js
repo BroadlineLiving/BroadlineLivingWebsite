@@ -93,13 +93,25 @@
     if (!ruPropertyId) return Promise.resolve([]);
     if (_cache[ruPropertyId]) return Promise.resolve(_cache[ruPropertyId]);
 
-    var url = SUPABASE_URL + '/rest/v1/published_rates' +
-      '?select=date_from,date_to,nightly,min_nights' +
-      '&ru_property_id=eq.' + encodeURIComponent(ruPropertyId) +
-      '&order=date_from';
+    var BASE_COLS = 'date_from,date_to,nightly,min_nights';
+    var RISK_COLS = BASE_COLS + ',end_risk_monthly';
 
-    return fetch(url, {
-      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + SUPABASE_ANON }
+    function get(cols) {
+      return fetch(SUPABASE_URL + '/rest/v1/published_rates' +
+        '?select=' + cols +
+        '&ru_property_id=eq.' + encodeURIComponent(ruPropertyId) +
+        '&order=date_from', {
+        headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + SUPABASE_ANON }
+      });
+    }
+
+    /* end_risk_monthly is newer than this file. Asking for a column that does
+       not exist yet is a hard 400 from PostgREST — it does not come back null —
+       so this site deployed ahead of the migration would price nothing at all.
+       Fall back to the columns that have always been there. Once the column
+       exists the first request succeeds and the fallback never runs again. */
+    return get(RISK_COLS).then(function (r) {
+      return r.status === 400 ? get(BASE_COLS) : r;
     }).then(function (r) {
       if (!r.ok) throw new Error('rates ' + r.status);
       return r.json();
@@ -109,6 +121,11 @@
           from: parseDate(x.date_from),
           to: parseDate(x.date_to),          // inclusive last night
           nightly: parseFloat(x.nightly),
+          /* Surcharge, per month of stay, for a stay that ENDS in this block's
+             month — the empty nights that ending is expected to create. Null
+             until the engine publishes it, and null is simply no surcharge, so
+             this file behaves exactly as before against today's rows. */
+          endRiskMonthly: (x.end_risk_monthly == null ? null : parseFloat(x.end_risk_monthly)),
           minNights: parseInt(x.min_nights, 10) || 30
         };
       }).filter(function (x) { return x.from && x.to && isFinite(x.nightly); });
@@ -222,8 +239,29 @@
     return LOS_DISCOUNT[12];
   }
 
-  var GAP_LIMIT_DAYS = 5;
-  var BURN_RECOVERY_PCT = 0.5;
+  /* Two tiers, because the two kinds of empty night are not the same thing.
+
+     The first few nights after a checkout are turnover — cleaning, inspection,
+     the slack between any two bookings. You would lose most of them whoever
+     moved in, so the guest carries half.
+
+     Past that it is inventory you are holding for this guest specifically, and
+     the minimum stay is 30 nights, so you cannot sell a 9-day hole to anybody.
+     That is close to a total loss and the guest carries 85% of it.
+
+     This is the dial for how hard a late move-in is pushed. Raising
+     GAP_RATE_HARD steers guests to the open date harder; lowering it books more
+     late starts at a worse yield. */
+  var GAP_SOFT_NIGHTS  = 5;
+  var GAP_RATE_SOFT    = 0.50;
+  var GAP_RATE_HARD    = 0.85;
+
+  /* We will quote any gap up to this. Past it the charge is most of a month's
+     rent and the number stops being a price and starts being a negotiation —
+     the UI hands those to the inquiry form. The old limit was 5 days, which
+     also meant the site refused to price perfectly ordinary late starts. The
+     quote tool has no such limit: an operator can see any number. */
+  var GAP_LIMIT_DAYS = 30;
 
   /* ---- Payment options ----------------------------------------------------
      Pay the whole stay at signing, or pay monthly for 5% more on the rate.
@@ -238,12 +276,12 @@
   function burnCostFor(rates, availableDate, moveIn) {
     if (!availableDate || moveIn <= availableDate) return { days: 0, cost: 0 };
     var days = nightsBetween(availableDate, moveIn);
-    var cost = 0;
-    for (var d = new Date(availableDate); d < moveIn; d = addDays(d, 1)) {
+    var cost = 0, i = 0;
+    for (var d = new Date(availableDate); d < moveIn; d = addDays(d, 1), i++) {
       var r = rateOn(rates, d);
       // No published rate for a burn night: skip it rather than guess. Under-
       // charging is better than inventing a number for a date we can't price.
-      if (r) cost += r.nightly * BURN_RECOVERY_PCT;
+      if (r) cost += r.nightly * (i < GAP_SOFT_NIGHTS ? GAP_RATE_SOFT : GAP_RATE_HARD);
     }
     return { days: days, cost: cost };
   }
@@ -288,11 +326,32 @@
     /* Vacancy gap. Treated as rent — it is money paid to hold the home — so
        it sits inside the taxable base and lifts the effective nightly, which
        is what makes "move in when it opens" genuinely cheaper. */
+    /* End-of-stay re-let risk.
+
+       A stay has ONE ending, so this is charged once — looked up from the block
+       covering the last night, and multiplied by the length of the stay because
+       it is published per month of stay.
+
+       It used to be baked into every published nightly, which charged it once
+       per month the stay spanned: six end-of-stay charges for one ending, and
+       about $2,800 too much on a six-month stay that ended in May. The engine
+       now publishes the clean rate plus this figure, and it is applied here.
+
+       Only dead endings carry a charge. A stay handing the home back in a
+       strong re-let month publishes zero here and pays nothing — it does not
+       earn a discount either. */
+    var lastNight = addDays(moveOut, -1);
+    var endBlock = rateOn(rates, lastNight);
+    var endRiskMonthly = (endBlock && endBlock.endRiskMonthly) || 0;
+    var endRiskTotal = endRiskMonthly * (nights / RATE_NIGHTS_PER_MONTH);
+
     /* Long-stay discount, before the gap charge so the gap is never discounted
        — same order the engine applies them in. */
     var losPct = losDiscountPct(nights / RATE_NIGHTS_PER_MONTH);
     var rentBeforeLos = rentTotal;
     rentTotal = rentTotal * (1 - losPct / 100);
+
+    rentTotal += endRiskTotal;
 
     var burn = burnCostFor(rates, avail, moveIn);
     var rentPlusBurn = rentTotal + burn.cost;
@@ -321,7 +380,9 @@
          just quietly charging less. */
       rentBeforeLos: Math.round(rentBeforeLos),
       losPct: Math.round(losPct * 100) / 100,
-      losSaving: Math.round(rentBeforeLos - rentTotal),
+      losSaving: Math.round(rentBeforeLos - (rentBeforeLos * (1 - losPct / 100))),
+      endRiskTotal: Math.round(endRiskTotal),
+      endRiskMonthly: Math.round(endRiskMonthly),
       burnDays: burn.days,
       burnCost: Math.round(burn.cost),
       tax: {
