@@ -187,6 +187,41 @@
      in use (~20-110%), 85% of base lands near 0.45-0.57 of the published
      nightly, so 0.5 approximates the old behaviour. Tune this one number if
      you want gaps to hurt more or less. */
+  /* ---- Length-of-stay discount -------------------------------------------
+     published_rates carries ONE rate per month per unit, and the engine builds
+     each of those blocks by pricing a 30-night stay — so every published
+     nightly is a one-month rate with the one-month LOS tier (0%) already in it.
+     Without this, a twelve-month booking paid the one-month rate on every
+     night: ~9% above what the engine would actually sign, and the longer the
+     stay the worse it got.
+
+     Anchors and the log interpolation between them are a copy of
+     losDiscountPct() in the revenue engine and MUST match CFG.losDiscount
+     there. They are two copies of one rule, which is the same arrangement that
+     let the discount go missing here in the first place — the fix is to publish
+     these alongside the rates so both sides read one source. Until then, if you
+     change them in the engine, change them here in the same commit.
+
+     Applied to rent only. The vacancy-gap charge is added afterwards and is NOT
+     discounted, matching the engine's order of operations. */
+  var LOS_DISCOUNT = { 1: 0, 3: 4, 6: 5, 12: 8 };
+
+  function losDiscountPct(months) {
+    var m = Math.max(1, months);
+    if (m >= 12) return LOS_DISCOUNT[12];
+    if (m <= 1) return LOS_DISCOUNT[1];
+    var anchors = [[1, LOS_DISCOUNT[1]], [3, LOS_DISCOUNT[3]], [6, LOS_DISCOUNT[6]], [12, LOS_DISCOUNT[12]]];
+    for (var i = 0; i < anchors.length - 1; i++) {
+      var m1 = anchors[i][0], d1 = anchors[i][1];
+      var m2 = anchors[i + 1][0], d2 = anchors[i + 1][1];
+      if (m >= m1 && m <= m2) {
+        var t = (Math.log(m) - Math.log(m1)) / (Math.log(m2) - Math.log(m1));
+        return d1 + t * (d2 - d1);
+      }
+    }
+    return LOS_DISCOUNT[12];
+  }
+
   var GAP_LIMIT_DAYS = 5;
   var BURN_RECOVERY_PCT = 0.5;
 
@@ -253,6 +288,12 @@
     /* Vacancy gap. Treated as rent — it is money paid to hold the home — so
        it sits inside the taxable base and lifts the effective nightly, which
        is what makes "move in when it opens" genuinely cheaper. */
+    /* Long-stay discount, before the gap charge so the gap is never discounted
+       — same order the engine applies them in. */
+    var losPct = losDiscountPct(nights / RATE_NIGHTS_PER_MONTH);
+    var rentBeforeLos = rentTotal;
+    rentTotal = rentTotal * (1 - losPct / 100);
+
     var burn = burnCostFor(rates, avail, moveIn);
     var rentPlusBurn = rentTotal + burn.cost;
 
@@ -275,6 +316,12 @@
          like no saving at all. */
       monthlyAllIn: Math.round((rentPlusBurn + tax.total) / months),
       rentTotal: Math.round(rentTotal),
+      /* What the stay would have cost at the one-month rate, and what the long
+         stay saves off it. Exposed so the UI can show the discount rather than
+         just quietly charging less. */
+      rentBeforeLos: Math.round(rentBeforeLos),
+      losPct: Math.round(losPct * 100) / 100,
+      losSaving: Math.round(rentBeforeLos - rentTotal),
       burnDays: burn.days,
       burnCost: Math.round(burn.cost),
       tax: {
