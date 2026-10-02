@@ -55,6 +55,26 @@ async function fetchBusyRanges(ruApartmentId) {
   }
 }
 
+/* Busy ranges for a home that has no iCal feed — a direct let we hold for an
+   owner outside Rentals United. There is no live calendar to read, so the only
+   two things that can block a date are the opening date and whatever has been
+   blocked by hand in units-config.
+
+   Everything before `availableFrom` is one long busy range, which means
+   earliestAvailable() lands on the opening date by itself and the calendar
+   greys out the run-up without any special-casing further up the stack. */
+function directBusyRanges(directLet) {
+  if (!directLet) return [];
+  const out = [];
+  if (directLet.availableFrom) {
+    out.push({ start: '2000-01-01', end: directLet.availableFrom });
+  }
+  (directLet.blocked || []).forEach(b => {
+    if (b && b.start && b.end) out.push({ start: b.start, end: b.end });
+  });
+  return out;
+}
+
 function isDateBusy(date, busyRanges) {
   const t = date.getTime();
   return busyRanges.some(r => t >= dateFromISO(r.start).getTime() && t < dateFromISO(r.end).getTime());
@@ -87,6 +107,7 @@ function earliestAvailable(busyRanges, minNights = 30) {
 if (typeof window !== 'undefined') {
   window.BroadlineAvailability = {
     fetchBusyRanges,
+    directBusyRanges,
     isDateBusy,
     earliestAvailable,
     dateFromISO

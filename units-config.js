@@ -30,11 +30,41 @@
                            back to this on its own when a home is fully
                            booked, has no published rates, or its calendar
                            feed is down.
+     directLet             Optional. Set for a home that is NOT on Rentals
+                           United and so has no live calendar and no published
+                           rates — see the DIRECT LETS note below. Mutually
+                           exclusive with ruPropertyId.
      applicationPropertyId Property id in the rental-application app.
                            Guests are sent to
                            <APP>/?property=<applicationPropertyId>.
                            null = not wired up yet; the unit shows
                            "Inquire" instead of an apply button.
+
+   DIRECT LETS (no Rentals United)
+   A `directLet` block is the one place a rate may appear in this file, and
+   only ever the FINAL GUEST-FACING NIGHTLY. That number is on the page
+   anyway; it reveals nothing. What must never appear here is how it was
+   built — the owner's figure, the split, the margin. Those stay out of the
+   browser exactly as they do for every other home.
+
+   Fields:
+     nightly            final guest-facing nightly, before any LOS discount
+     minNights          minimum stay
+     availableFrom      ISO date; everything before it is blocked out
+     coverThroughMonths how far past availableFrom we will quote (default 24)
+     noOccupancyTax     true for homes outside New York City, where the NYC
+                        hotel room occupancy tax simply does not apply
+     gapRate            fraction of the nightly charged for each empty night
+                        between the home opening and the move-in. Overrides
+                        the site's usual two-tier 50%/85% split with one flat
+                        rate, because a home we are trialling for an owner is
+                        not carrying the same cost of an empty night as one we
+                        hold a lease on. Omit to use the site default.
+     bookWindowDays     how far past the opening date a guest may still apply
+                        instantly. Omit to use the site default (5).
+     blocked            [{start,end}] ISO ranges to block by hand. THERE IS NO
+                        LIVE CALENDAR for these homes — if one gets booked,
+                        add the range here or the site will keep selling it.
    ============================================================ */
 
 /* Rental application app. The apply link is a PUBLIC route — no token, no
@@ -169,6 +199,28 @@ const BROADLINE_UNITS = {
     ruPropertyId: "5676646",
     rooms: 2,                    // 1BR
     applicationPropertyId: "45b02598-f048-40ba-a62c-24411f0d9dc7"
+  },
+  /* 314 28th Street, Apt 2 — Union City, NJ. Let directly for the owner, not
+     through Rentals United: no iCal feed, no published rates, no Airbnb
+     listing of ours. Priced from a flat nightly below, with the standard
+     length-of-stay discount still applied on top. New Jersey, so the NYC
+     occupancy tax does not apply and no tax line is shown. */
+  "union-city-2": {
+    name: "314 28th Street",
+    unitLabel: "Apartment 2",
+    ruPropertyId: null,
+    rooms: 4,                    // 3BR — unused here, there is no room tax
+    applicationPropertyId: "9d36e76c-ca5d-4e69-877a-3f70de96c8c4",
+    directLet: {
+      nightly: 283.3333,
+      minNights: 30,
+      availableFrom: "2026-10-08",
+      coverThroughMonths: 24,
+      noOccupancyTax: true,
+      gapRate: 0.25,
+      bookWindowDays: 10,
+      blocked: []
+    }
   }
 };
 

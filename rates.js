@@ -68,7 +68,15 @@
   var PER_ROOM_NIGHT = 2.00;
   var TAX_EXEMPT_NIGHTS = 180;
 
-  function taxFor(rentTotal, nights, rooms) {
+  /* `noTax` is for homes outside New York City — a New Jersey direct let has
+     no NYC occupancy tax to charge, and `exempt` is deliberately NOT reused
+     for it: exempt means "this stay crossed 180 nights and saved the tax",
+     which the UI advertises. There is no saving to advertise when the tax
+     never applied. `none` says that instead, and the UI drops the line. */
+  function taxFor(rentTotal, nights, rooms, noTax) {
+    if (noTax) {
+      return { pct: 0, perRoom: 0, total: 0, exempt: false, none: true, wouldHaveBeen: 0 };
+    }
     var pct = rentTotal * OCCUPANCY_PCT;
     var perRoom = PER_ROOM_NIGHT * (rooms || 1) * nights;
     var full = pct + perRoom;
@@ -118,6 +126,39 @@
       console.error('Published rates unavailable for', ruPropertyId, e);
       return null;
     });
+  }
+
+  /* ---- Direct lets (not on Rentals United) -------------------------------
+     A home we let for an owner directly has no engine-published curve and no
+     iCal feed. Its rate is one flat nightly declared in units-config, which
+     this turns into the same row shape the published table produces, so every
+     downstream path — quoting, the LOS discount, the minimum stay, coverage
+     bounds — is the ordinary one rather than a parallel code path.
+
+     Nothing here is fetched, so it resolves synchronously. */
+  function directRates(d) {
+    if (!d || !isFinite(parseFloat(d.nightly))) return [];
+    var from = parseDate(d.availableFrom);
+    if (!from) return [];
+    var to = parseDate(d.through);
+    if (!to) {
+      to = new Date(from);
+      to.setMonth(to.getMonth() + (d.coverThroughMonths || 24));
+    }
+    return [{
+      from: from,
+      to: to,
+      nightly: parseFloat(d.nightly),
+      minNights: parseInt(d.minNights, 10) || 30
+    }];
+  }
+
+  /* The one entry point callers should use: hands back whichever source this
+     unit prices from. */
+  function ratesFor(unit) {
+    if (!unit) return Promise.resolve([]);
+    if (unit.directLet) return Promise.resolve(directRates(unit.directLet));
+    return fetchRates(unit.ruPropertyId);
   }
 
   function rateOn(rates, date) {
@@ -256,7 +297,12 @@
      guest hands over one month plus the deposit rather than the full term. */
   var INSTALLMENT_UPLIFT = 0.05;
 
-  function burnCostFor(rates, availableDate, moveIn) {
+  /* `flatRate` collapses the two tiers into one rate for every empty night.
+     A home we let directly for an owner does not cost us a lease payment while
+     it sits, so the hard tier — which exists to recover rent we are paying
+     anyway — would be charging for a loss we are not taking. Pass null to use
+     the normal 50%/85% split. */
+  function burnCostFor(rates, availableDate, moveIn, flatRate) {
     if (!availableDate || moveIn <= availableDate) return { days: 0, cost: 0 };
     var days = nightsBetween(availableDate, moveIn);
     var cost = 0, i = 0;
@@ -264,7 +310,10 @@
       var r = rateOn(rates, d);
       // No published rate for a burn night: skip it rather than guess. Under-
       // charging is better than inventing a number for a date we can't price.
-      if (r) cost += r.nightly * (i < GAP_SOFT_NIGHTS ? GAP_RATE_SOFT : GAP_RATE_HARD);
+      if (!r) continue;
+      var pct = (flatRate != null) ? flatRate
+                                   : (i < GAP_SOFT_NIGHTS ? GAP_RATE_SOFT : GAP_RATE_HARD);
+      cost += r.nightly * pct;
     }
     return { days: days, cost: cost };
   }
@@ -315,11 +364,11 @@
     var rentBeforeLos = rentTotal;
     rentTotal = rentTotal * (1 - losPct / 100);
 
-    var burn = burnCostFor(rates, avail, moveIn);
+    var burn = burnCostFor(rates, avail, moveIn, opts.gapRate != null ? opts.gapRate : null);
     var rentPlusBurn = rentTotal + burn.cost;
 
     var avgNightly = rentPlusBurn / nights;
-    var tax = taxFor(rentPlusBurn, nights, rooms);
+    var tax = taxFor(rentPlusBurn, nights, rooms, opts.noTax);
     var monthlyRate = Math.round(avgNightly * RATE_NIGHTS_PER_MONTH);
     var deposit = depositFor(nights, monthlyRate);
     var total = Math.round(rentPlusBurn + tax.total);
@@ -350,6 +399,9 @@
         perRoomNight: Math.round(tax.perRoom),
         total: Math.round(tax.total),
         exempt: tax.exempt,
+        /* true = this home is not in a taxing jurisdiction at all, so the UI
+           shows no tax line rather than a $0 one. */
+        none: tax.none === true,
         wouldHaveBeen: Math.round(tax.wouldHaveBeen),
         // Per month, so it can sit next to a per-month rent saving.
         perMonth: Math.round(tax.total / months),
@@ -384,6 +436,7 @@
         surcharge: 0,
         taxTotal: tx,
         exempt: tax.exempt,
+        none: tax.none === true,
         deposit: deposit,
         total: rent + tx,
         atSigning: rent + tx + deposit,
@@ -394,7 +447,7 @@
       payMonthly: (function () {
         var surcharge = rentPlusBurn * INSTALLMENT_UPLIFT;
         var chargeableRent = rentPlusBurn + surcharge;
-        var upTax = taxFor(chargeableRent, nights, rooms);
+        var upTax = taxFor(chargeableRent, nights, rooms, opts.noTax);
         var installments = Math.max(1, Math.round(months));
         // Rent + surcharge is what gets spread. Tax never is.
         var rentR = Math.round(rentPlusBurn);
@@ -414,6 +467,7 @@
           surcharge: surR,
           taxTotal: taxR,
           exempt: upTax.exempt,
+          none: upTax.none === true,
           deposit: deposit,
           total: upTotal,
           installments: installments,
@@ -434,6 +488,8 @@
   if (typeof window !== 'undefined') {
     window.BroadlineRates = {
       fetchRates: fetchRates,
+      ratesFor: ratesFor,
+      directRates: directRates,
       quote: quote,
       coverage: coverage,
       rateOn: rateOn,

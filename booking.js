@@ -97,10 +97,16 @@
     this.render();
     /* Two independent lookups: RU's iCal for what's booked, Supabase for what
        it costs. Both must land before a quote is possible, so wait on both
-       rather than rendering a price against half-loaded state. */
+       rather than rendering a price against half-loaded state.
+
+       A direct let has neither — no feed and no published curve — so both
+       sides come from units-config and resolve immediately. Same shapes, so
+       everything downstream is unchanged. */
+    var direct = this.unit.directLet;
     Promise.all([
-      window.BroadlineAvailability.fetchBusyRanges(this.unit.ruPropertyId),
-      window.BroadlineRates.fetchRates(this.unit.ruPropertyId)
+      direct ? Promise.resolve(window.BroadlineAvailability.directBusyRanges(direct))
+             : window.BroadlineAvailability.fetchBusyRanges(this.unit.ruPropertyId),
+      window.BroadlineRates.ratesFor(this.unit)
     ]).then(function (res) {
       var ranges = res[0], rates = res[1];
       if (ranges === null) { self.loadFailed = true; self.busy = []; }
@@ -195,9 +201,19 @@
   BookingWidget.prototype.quoteFor = function (moveIn, moveOut) {
     if (!this.ratesLoaded) return { ok: false, reason: 'loading' };
     /* availableDate drives both the vacancy-gap charge and the refusal to
-       quote too far past the opening. */
-    return window.BroadlineRates.quote(this.rates, moveIn, moveOut, this.unit.rooms,
-      { availableDate: this.earliest || null });
+       quote too far past the opening. `earliest` is already the later of today
+       and the home's opening date, so a direct let whose opening has passed
+       stops charging a gap that stretches back months — it measures from now,
+       which is when the empty nights actually start costing anybody anything.
+
+       gapRate lets a home override the usual two-tier split with one flat
+       rate; see units-config. */
+    var direct = this.unit.directLet;
+    return window.BroadlineRates.quote(this.rates, moveIn, moveOut, this.unit.rooms, {
+      availableDate: this.earliest || null,
+      gapRate: direct && direct.gapRate != null ? direct.gapRate : null,
+      noTax: !!(direct && direct.noOccupancyTax)
+    });
   };
   BookingWidget.prototype.quote = function () {
     if (!this.moveIn || !this.moveOut) return null;
@@ -208,6 +224,12 @@
      to allow a self-serve application. If availability never loaded we don't
      know the open date, so we fail closed to "inquire" rather than opening the
      apply flow on an assumption. */
+  /* How far past the opening this home still takes an instant application.
+     Most homes use the site-wide figure; a home can widen or narrow it. */
+  BookingWidget.prototype.bookWindowDays = function () {
+    var d = this.unit.directLet;
+    return (d && d.bookWindowDays != null) ? d.bookWindowDays : BOOK_WINDOW_DAYS;
+  };
   BookingWidget.prototype.withinBookingWindow = function () {
     if (!this.moveIn || !this.earliest) return false;
     var slack = nightsBetween(this.earliest, this.moveIn);
@@ -216,7 +238,7 @@
        had already blocked such a date, which it hadn't. Reject it explicitly
        rather than trusting a sibling component to have done it. */
     if (slack < 0) return false;
-    return slack <= BOOK_WINDOW_DAYS;
+    return slack <= this.bookWindowDays();
   };
 
   /* Why this home can't be booked from the page, or null when it can.
@@ -454,7 +476,10 @@
     var h = '<div class="bk-card' + ((this.moveIn && this.moveOut && !this.calOpen) ? ' bk-cal-collapsed' : '') + '">';
     h += '<div class="bk-eyebrow">Check availability</div>';
     h += '<h3>Reserve your dates</h3>';
-    h += '<p class="bk-sub">Live availability and instant pricing. One month minimum.</p>';
+    h += '<p class="bk-sub">' +
+         (u.directLet ? 'Instant pricing. One month minimum.'
+                      : 'Live availability and instant pricing. One month minimum.') +
+         '</p>';
 
     if (loading) {
       h += '<div class="bk-status"><span class="dot"></span><span>Checking live availability…</span></div>';
@@ -599,7 +624,14 @@
         h += '<div class="bk-line"><span>Installment surcharge (' + q.payMonthly.upliftPct + '%)</span><span>' +
              fmtMoney(v.surcharge) + '</span></div>';
       }
-      if (v.exempt) {
+      /* `none` means this home is not in a taxing jurisdiction at all. Showing
+         "NYC taxes — None" on a New Jersey home would raise a question rather
+         than answer one, so the line is dropped entirely. `exempt` is the
+         different case: the tax applies to this home but this stay crossed 180
+         nights, which is worth saying out loud. */
+      if (v.none) {
+        /* no tax line */
+      } else if (v.exempt) {
         h += '<div class="bk-line"><span>NYC taxes</span><span>None</span></div>';
       } else {
         h += '<div class="bk-line"><span>NYC taxes</span><span>' + fmtMoney(v.taxTotal) + '</span></div>';
@@ -611,8 +643,10 @@
         /* Say plainly that the tax is not spread — it's the whole point of the
            split and the thing a guest would otherwise be surprised by. */
         h += '<div class="bk-line note"><span>' + fmtMoney(v.atSigning) + ' at signing &mdash; first rent payment of ' +
-             fmtMoney(v.rentPerInstallment) + ', all ' + (v.exempt ? '' : fmtMoney(v.taxTotal) + ' ') +
-             'taxes, and the deposit. Then ' + (v.installments - 1) + ' rent payment' +
+             fmtMoney(v.rentPerInstallment) +
+             (v.none ? ' and the deposit. '
+                     : ', all ' + (v.exempt ? '' : fmtMoney(v.taxTotal) + ' ') + 'taxes, and the deposit. ') +
+             'Then ' + (v.installments - 1) + ' rent payment' +
              (v.installments - 1 === 1 ? '' : 's') + ' of ' + fmtMoney(v.rentPerInstallment) +
              '.</span><span></span></div>';
       } else {
@@ -705,7 +739,7 @@
       h += '<div class="bk-msg warn" style="margin-bottom:10px;">' +
            '<strong>These dates can\'t be booked instantly.</strong><br>' +
            'This home frees up on ' + fmtShort(this.earliest) + ', and your move-in is ' + daysOut +
-           ' days after that. We only take instant applications within ' + BOOK_WINDOW_DAYS +
+           ' days after that. We only take instant applications within ' + this.bookWindowDays() +
            ' days of a home opening, so we\'ll need to confirm these dates with you first. ' +
            'Send us your details below and we\'ll come back to you with your application link.' +
            '</div>';
@@ -963,6 +997,7 @@
        the home can be offered at all. Say which in the subject. */
     body.append('_subject', (dated ? 'APPLICATION REQUEST: ' : 'INQUIRY: ') + u.name + ' ' + u.unitLabel);
     body.append('property', u.name + ' ' + u.unitLabel);
+    if (u.directLet) body.append('lead_type', 'Direct let — no live calendar, confirm dates by hand');
     body.append('name', data.name);
     body.append('email', data.email);
     body.append('phone', data.phone || '');
@@ -1072,7 +1107,13 @@
       if (!u) { badge.style.display = 'none'; return Promise.resolve(); }
       badge.className = 'avail-badge loading';
       badge.innerHTML = '<span class="dot"></span>Checking…';
-      return window.BroadlineAvailability.fetchBusyRanges(u.ruPropertyId).then(function (ranges) {
+      /* A direct let has no iCal feed to check. Its opening date and any
+         hand-entered blocks are the whole picture, and they resolve without a
+         request — so the badge is as real as any other, it just isn't live. */
+      var ranges$ = u.directLet
+        ? Promise.resolve(window.BroadlineAvailability.directBusyRanges(u.directLet))
+        : window.BroadlineAvailability.fetchBusyRanges(u.ruPropertyId);
+      return ranges$.then(function (ranges) {
         // null = the feed failed. Don't claim "fully booked" off a network
         // error; hide the badge and let the card sort with the undated ones.
         if (ranges === null) {
