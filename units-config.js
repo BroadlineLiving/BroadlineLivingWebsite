@@ -207,7 +207,7 @@ const BROADLINE_UNITS = {
      occupancy tax does not apply and no tax line is shown. */
   "union-city-2": {
     name: "314 28th Street",
-    unitLabel: "Apartment 2",
+    unitLabel: "Unit 2",
     ruPropertyId: null,
     rooms: 4,                    // 3BR — unused here, there is no room tax
     applicationPropertyId: "9d36e76c-ca5d-4e69-877a-3f70de96c8c4",
