@@ -1182,10 +1182,23 @@
      one home that is no use. */
   var DATE_SEARCH = { moveIn: null, moveOut: null };
 
-  var FIT_FREE      = 0;        // opens in time, whole stay free
-  var FIT_PART      = 1e7;      // opens in time, part of the stay is booked
-  var FIT_LATE      = 2e7;      // opens after the move-in
-  var FIT_NONE      = 3e7;      // fully booked / no calendar
+  /* Scored on one axis: how far the opening date is from the requested
+     move-in, with days of WAITING weighted more heavily than days a home has
+     already been free. A home that opens after the move-in cannot take the
+     guest on the day they asked for, so it should not beat one that can purely
+     by being nearer on a calendar — but a single day late is still a better
+     answer than a home that came free a fortnight ago.
+
+     LATE_WEIGHT 3 is what satisfies both ends of that:
+       1 day late  (3)  beats  14 days early (14)
+       29 days late (87) loses to 32 days early (32)
+
+     A home that opens in time but has something booked inside the requested
+     range cannot take the stay whole, so it drops below everything that can,
+     while still ranking above homes with no usable calendar at all. */
+  var LATE_WEIGHT  = 3;
+  var PART_PENALTY = 1e6;
+  var FIT_NONE     = 1e7;
 
   function rangeFreeIn(ranges, from, to) {
     for (var d = new Date(from); d < to; d = addDays(d, 1)) {
@@ -1204,41 +1217,32 @@
       var info = CARD_AVAIL.get(card);
       if (!info) return;
 
-      // No dates entered: back to the plain "when does it open" view.
-      if (!moveIn) {
-        if (info.tier) { ranks.set(card, info.tier); if (info.tier === TIER_FULLY_BOOKED) { badge.className='avail-badge'; badge.innerHTML='<span class="dot"></span>Fully booked'; } }
-        else { paintBadge(badge, info.earliest); ranks.set(card, info.earliest.getTime()); }
-        return;
+      /* The badge always states the real date the home opens. Searching by
+         dates changes the ORDER of the cards, never what the badge says — the
+         opening date is the fact a guest is actually shopping on, and swapping
+         it for a phrase about their search took the one hard number off the
+         card. */
+      if (info.tier === TIER_FULLY_BOOKED) {
+        badge.className = 'avail-badge';
+        badge.innerHTML = '<span class="dot"></span>Fully booked';
+      } else if (info.earliest) {
+        paintBadge(badge, info.earliest);
       }
 
+      if (!moveIn) {
+        ranks.set(card, info.tier ? info.tier : info.earliest.getTime());
+        return;
+      }
       if (info.tier || !info.earliest) { ranks.set(card, FIT_NONE); return; }
 
-      var e = info.earliest;
-      var gap = nightsBetween(e, moveIn);        // >0 = opens before the move-in
-
-      if (gap < 0) {
-        // Opens after they want to move in.
-        var late = -gap;
-        badge.className = 'avail-badge';
-        badge.innerHTML = '<span class="dot"></span>Opens ' + fmtShort(e) + ' &middot; ' +
-                          late + ' day' + (late === 1 ? '' : 's') + ' after your date';
-        ranks.set(card, FIT_LATE + late);
-        return;
+      var gap = nightsBetween(info.earliest, moveIn);   // >0 = opens before the move-in
+      var score = gap >= 0 ? gap : (-gap) * LATE_WEIGHT;
+      /* Only meaningful once a home can actually open in time; a late opening
+         is already ranked on the wait. */
+      if (gap >= 0 && moveOut && !rangeFreeIn(info.ranges || [], moveIn, moveOut)) {
+        score += PART_PENALTY;
       }
-
-      var fits = !moveOut || rangeFreeIn(info.ranges || [], moveIn, moveOut);
-      if (!fits) {
-        badge.className = 'avail-badge';
-        badge.innerHTML = '<span class="dot"></span>Opens ' + fmtShort(e) + ' &middot; not free for your whole stay';
-        ranks.set(card, FIT_PART + gap);
-        return;
-      }
-
-      badge.className = 'avail-badge now';
-      badge.innerHTML = '<span class="dot"></span>' + (gap === 0
-        ? 'Opens exactly on your date'
-        : 'Ready for you &middot; opens ' + gap + ' day' + (gap === 1 ? '' : 's') + ' before');
-      ranks.set(card, FIT_FREE + gap);
+      ranks.set(card, score);
     });
 
     sortCardsByAvailability(ranks);

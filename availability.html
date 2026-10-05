@@ -31,16 +31,27 @@
   .filters{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;padding:24px 0 40px;border-bottom:1px solid var(--line)}
   .filters select,.filters input{background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:13px 18px;border-radius:2px;font-family:inherit;font-size:14px;min-width:180px}
   .filters select:focus,.filters input:focus{outline:none;border-color:var(--cyan)}
-  .date-search{padding:0 0 30px;border-bottom:1px solid var(--line);margin-bottom:4px}
-  .ds-row{display:flex;gap:14px;align-items:flex-end;justify-content:center;flex-wrap:wrap}
-  .ds-field{display:flex;flex-direction:column;gap:6px}
-  .ds-field span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
-  .ds-field input{background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:12px 16px;border-radius:2px;font-family:inherit;font-size:14px;min-width:180px}
-  .ds-field input:focus{outline:none;border-color:var(--cyan)}
-  .ds-clear{background:none;border:1px solid var(--line);color:var(--ink-soft);padding:12px 18px;border-radius:2px;font-family:inherit;font-size:13px;cursor:pointer;transition:all .2s}
-  .ds-clear:hover{border-color:var(--cyan);color:var(--cyan)}
-  .ds-note{text-align:center;font-size:13px;color:var(--ink-soft);margin-top:14px}
-  .ds-note.warn{color:#9a6a00}
+  .date-search{display:flex;justify-content:center;padding:0 0 30px;border-bottom:1px solid var(--line);margin-bottom:4px}
+  .ds-picker{position:relative;z-index:1200;display:flex;align-items:center;gap:8px}
+  .ds-trigger{display:inline-flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:13px 22px;border-radius:2px;font-family:inherit;font-size:14px;cursor:pointer;transition:all .2s}
+  .ds-trigger svg{width:17px;height:17px;flex:none;color:var(--cyan)}
+  .ds-trigger:hover,.ds-trigger[aria-expanded="true"]{border-color:var(--cyan)}
+  .ds-x{background:none;border:1px solid var(--line);color:var(--ink-soft);width:38px;height:44px;border-radius:2px;cursor:pointer;font-size:13px;transition:all .2s}
+  .ds-x:hover{border-color:var(--cyan);color:var(--cyan)}
+  .ds-pop{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);z-index:1;background:var(--surface);border:1px solid var(--line);border-radius:3px;box-shadow:0 18px 46px rgba(16,32,46,.14);padding:16px;width:304px}
+  .ds-pop-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .ds-pop-head span{font-size:14px;font-weight:500}
+  .ds-nav{background:none;border:1px solid var(--line);color:var(--ink);width:28px;height:28px;border-radius:2px;cursor:pointer;font-size:15px;line-height:1}
+  .ds-nav:hover{border-color:var(--cyan);color:var(--cyan)}
+  .ds-dow,.ds-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .ds-dow span{text-align:center;font-size:10px;color:var(--ink-soft);padding-bottom:6px}
+  .ds-day{height:34px;border:none;background:none;font-family:inherit;font-size:13px;color:var(--ink);cursor:pointer;border-radius:2px}
+  .ds-day:hover:not(:disabled){background:var(--bg-2)}
+  .ds-day:disabled{color:var(--line);cursor:default}
+  .ds-day.sel{background:var(--cyan);color:#fff}
+  .ds-day.in{background:rgba(26,167,196,.12)}
+  .ds-pop-foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-soft)}
+  .ds-pop-foot button{background:none;border:none;color:var(--cyan);font-family:inherit;font-size:11.5px;cursor:pointer;padding:0}
 
   .results{padding:40px 0 96px;display:grid;grid-template-columns:1.7fr 1fr;gap:36px;align-items:start}
   .listings{display:grid;grid-template-columns:1fr 1fr;gap:20px}
@@ -104,9 +115,9 @@
   .page-hero{padding:50px 0 20px}
   .filters{gap:10px;padding:18px 0 28px}
   .filters select,.filters input{min-width:0;width:100%;font-size:15px}
-  .ds-row{flex-direction:column;align-items:stretch;gap:12px}
-  .ds-field input{min-width:0;width:100%;font-size:15px}
-  .ds-clear{width:100%}
+  .ds-picker{width:100%}
+  .ds-trigger{flex:1;justify-content:center;font-size:15px}
+  .ds-pop{width:min(304px,calc(100vw - 40px))}
   .results{padding:24px 0 60px;gap:20px}
   .listings{grid-template-columns:1fr;gap:14px}
   .map-col{height:300px}
@@ -134,12 +145,23 @@
     <input id="filter-search" type="text" placeholder="Search by address...">
   </div>
   <div class="date-search">
-    <div class="ds-row">
-      <label class="ds-field"><span>Move-in</span><input id="filter-movein" type="date"></label>
-      <label class="ds-field"><span>Move-out</span><input id="filter-moveout" type="date"></label>
-      <button type="button" id="filter-dates-clear" class="ds-clear" hidden>Clear dates</button>
+    <div class="ds-picker">
+      <button type="button" id="ds-trigger" class="ds-trigger" aria-haspopup="dialog" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        <span id="ds-label">Select your dates</span>
+      </button>
+      <button type="button" id="ds-x" class="ds-x" hidden aria-label="Clear dates">&#10005;</button>
+      <div class="ds-pop" id="ds-pop" hidden role="dialog" aria-label="Choose your dates">
+        <div class="ds-pop-head">
+          <button type="button" class="ds-nav" data-nav="prev" aria-label="Previous month">&#8249;</button>
+          <span id="ds-month"></span>
+          <button type="button" class="ds-nav" data-nav="next" aria-label="Next month">&#8250;</button>
+        </div>
+        <div class="ds-dow"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+        <div class="ds-grid" id="ds-grid"></div>
+        <div class="ds-pop-foot"><span id="ds-hint">Pick your move-in</span><button type="button" id="ds-reset">Clear</button></div>
+      </div>
     </div>
-    <p class="ds-note" id="ds-note">Enter your dates and we'll put the homes that open closest to your move-in first.</p>
   </div>
 </div>
 
@@ -360,52 +382,93 @@
     });
   }
   /* ---- search by dates ----------------------------------------------------
-     Ranking lives in booking.js, next to the availability data it needs. This
-     only collects the dates, keeps the two inputs honest about each other, and
-     says when a range is too short to book. */
-  const miEl = document.getElementById('filter-movein');
-  const moEl = document.getElementById('filter-moveout');
-  const dsClear = document.getElementById('filter-dates-clear');
-  const dsNote = document.getElementById('ds-note');
+     One button, one calendar, pick a range. Ranking lives in booking.js, next
+     to the availability data it needs; this only collects the two dates.
 
-  // Nobody can move in yesterday.
-  const todayISO = new Date().toISOString().slice(0, 10);
-  miEl.min = todayISO;
-  moEl.min = todayISO;
+     A hand-rolled grid rather than two <input type="date">: those render as
+     two separate OS pickers with no notion of a range, so a guest could set a
+     move-out before their move-in and had to open two calendars to say one
+     thing. */
+  const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dsTrigger = document.getElementById('ds-trigger');
+  const dsPop = document.getElementById('ds-pop');
+  const dsGrid = document.getElementById('ds-grid');
+  const dsLabel = document.getElementById('ds-label');
+  const dsMonth = document.getElementById('ds-month');
+  const dsHint = document.getElementById('ds-hint');
+  const dsX = document.getElementById('ds-x');
 
-  function runDateSearch() {
-    // A move-out before the move-in is a typo, not a query: clear it rather
-    // than silently ranking on a range that cannot exist.
-    if (miEl.value) moEl.min = miEl.value;
-    if (miEl.value && moEl.value && moEl.value <= miEl.value) moEl.value = '';
+  const dsToday = (() => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); })();
+  let dsIn = null, dsOut = null;
+  let dsView = new Date(dsToday.getFullYear(), dsToday.getMonth(), 1);
 
-    const any = !!(miEl.value || moEl.value);
-    dsClear.hidden = !any;
+  const dsISO = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  const dsShort = d => MONTHS_FULL[d.getMonth()].slice(0,3) + ' ' + d.getDate();
+  const dsSame = (a,b) => a && b && a.getTime() === b.getTime();
 
-    if (!window.BroadlineBooking || !window.BroadlineBooking.searchByDates) return;
-    const r = window.BroadlineBooking.searchByDates(miEl.value, moEl.value);
+  function dsRender() {
+    dsMonth.textContent = MONTHS_FULL[dsView.getMonth()] + ' ' + dsView.getFullYear();
+    const first = new Date(dsView.getFullYear(), dsView.getMonth(), 1);
+    const days = new Date(dsView.getFullYear(), dsView.getMonth()+1, 0).getDate();
+    let h = '';
+    for (let i = 0; i < first.getDay(); i++) h += '<span></span>';
+    for (let d = 1; d <= days; d++) {
+      const date = new Date(dsView.getFullYear(), dsView.getMonth(), d);
+      const past = date < dsToday;
+      const sel = dsSame(date, dsIn) || dsSame(date, dsOut);
+      const inRange = dsIn && dsOut && date > dsIn && date < dsOut;
+      h += '<button type="button" class="ds-day' + (sel ? ' sel' : inRange ? ' in' : '') + '"' +
+           (past ? ' disabled' : ' data-d="' + dsISO(date) + '"') + '>' + d + '</button>';
+    }
+    dsGrid.innerHTML = h;
+    dsGrid.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => dsPick(b.dataset.d)));
+    dsHint.textContent = !dsIn ? 'Pick your move-in' : !dsOut ? 'Now pick your move-out' : '1 month minimum';
+  }
 
-    if (!miEl.value) {
-      dsNote.className = 'ds-note';
-      dsNote.textContent = "Enter your dates and we'll put the homes that open closest to your move-in first.";
-    } else if (r.nights && r.nights < r.minNights) {
-      dsNote.className = 'ds-note warn';
-      dsNote.textContent = 'Our minimum stay is ' + r.minNights + ' nights — yours is ' + r.nights +
-                           '. Homes are still ranked by your move-in date, but none can be booked for that length.';
-    } else {
-      dsNote.className = 'ds-note';
-      dsNote.textContent = r.nights
-        ? 'Showing homes that can take ' + r.nights + ' nights from your move-in, closest opening first.'
-        : 'Showing homes closest to your move-in date first.';
+  function dsPick(iso) {
+    const p = iso.split('-').map(Number);
+    const d = new Date(p[0], p[1]-1, p[2]);
+    /* A second click before the move-in is someone restarting, not choosing a
+       move-out — treat it as a new move-in rather than refusing it. */
+    if (!dsIn || dsOut || d <= dsIn) { dsIn = d; dsOut = null; }
+    else { dsOut = d; }
+    dsRender();
+    dsSync();
+    if (dsIn && dsOut) dsClose();
+  }
+
+  function dsSync() {
+    dsLabel.textContent = dsIn
+      ? dsShort(dsIn) + (dsOut ? ' \u2013 ' + dsShort(dsOut) : ' \u2013 \u2026')
+      : 'Select your dates';
+    dsX.hidden = !dsIn;
+    if (window.BroadlineBooking && window.BroadlineBooking.searchByDates) {
+      window.BroadlineBooking.searchByDates(dsIn ? dsISO(dsIn) : '', dsOut ? dsISO(dsOut) : '');
     }
   }
 
-  miEl.addEventListener('change', runDateSearch);
-  moEl.addEventListener('change', runDateSearch);
-  dsClear.addEventListener('click', function () {
-    miEl.value = ''; moEl.value = ''; moEl.min = todayISO;
-    runDateSearch();
+  function dsOpen() {
+    if (dsIn) dsView = new Date(dsIn.getFullYear(), dsIn.getMonth(), 1);
+    dsRender();
+    dsPop.hidden = false;
+    dsTrigger.setAttribute('aria-expanded', 'true');
+  }
+  function dsClose() {
+    dsPop.hidden = true;
+    dsTrigger.setAttribute('aria-expanded', 'false');
+  }
+
+  dsTrigger.addEventListener('click', () => dsPop.hidden ? dsOpen() : dsClose());
+  dsPop.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => {
+    dsView = new Date(dsView.getFullYear(), dsView.getMonth() + (b.dataset.nav === 'next' ? 1 : -1), 1);
+    dsRender();
+  }));
+  document.getElementById('ds-reset').addEventListener('click', () => { dsIn = dsOut = null; dsRender(); dsSync(); });
+  dsX.addEventListener('click', () => { dsIn = dsOut = null; dsSync(); dsClose(); });
+  document.addEventListener('click', e => {
+    if (!dsPop.hidden && !dsPop.contains(e.target) && e.target !== dsTrigger && !dsTrigger.contains(e.target)) dsClose();
   });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !dsPop.hidden) dsClose(); });
 
   document.getElementById('filter-hood').addEventListener('change', applyFilters);
   document.getElementById('filter-beds').addEventListener('change', applyFilters);
