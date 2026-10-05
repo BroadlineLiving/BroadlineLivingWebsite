@@ -513,7 +513,10 @@
         h += '<button type="button" class="bk-linkbtn" data-act="restore">&#8249; Back to ' +
              fmtShort(this.prevSelection.moveIn) + ' &ndash; ' + fmtShort(this.prevSelection.moveOut) + '</button>';
       }
-      if (this.moveIn) h += '<button type="button" class="bk-linkbtn" data-act="clear">Clear dates</button>';
+      if (this.moveIn) h += '<button type="button" class="bk-clearbtn" data-act="clear">' +
+           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' +
+           '<line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>' +
+           'Clear dates</button>';
       h += '</div>';
     }
 
@@ -1096,9 +1099,17 @@
     cards.forEach(function (c) { grid.appendChild(c); });
   }
 
+  /* What the badge hydration learned about each card, kept so the date search
+     can re-rank without going back to the network. One entry per card:
+       earliest  Date the home next opens for a MIN_NIGHTS stay, or null
+       ranges    its busy ranges, for checking a requested stay actually fits
+       tier      TIER_* when there is no usable calendar at all */
+  var CARD_AVAIL = new Map();
+
   function hydrateBadges() {
     var badges = Array.prototype.slice.call(document.querySelectorAll('[data-avail-badge]'));
     var ranks = new Map();
+    CARD_AVAIL.clear();
 
     var jobs = badges.map(function (badge) {
       var key = badge.dataset.availBadge;
@@ -1118,26 +1129,136 @@
         // error; hide the badge and let the card sort with the undated ones.
         if (ranges === null) {
           badge.style.display = 'none';
-          if (card) ranks.set(card, TIER_NO_CALENDAR);
+          if (card) { ranks.set(card, TIER_NO_CALENDAR); CARD_AVAIL.set(card, { tier: TIER_NO_CALENDAR }); }
           return;
         }
         var e = window.BroadlineAvailability.earliestAvailable(ranges, MIN_NIGHTS);
         if (!e) {
           badge.className = 'avail-badge';
           badge.innerHTML = '<span class="dot"></span>Fully booked';
-          if (card) ranks.set(card, TIER_FULLY_BOOKED);
+          if (card) { ranks.set(card, TIER_FULLY_BOOKED); CARD_AVAIL.set(card, { tier: TIER_FULLY_BOOKED, ranges: ranges }); }
           return;
         }
-        if (e <= todayMid()) { badge.className = 'avail-badge now'; badge.innerHTML = '<span class="dot"></span>Available now'; }
-        else { badge.className = 'avail-badge soon'; badge.innerHTML = '<span class="dot"></span>Available ' + fmtShort(e); }
+        if (card) CARD_AVAIL.set(card, { earliest: e, ranges: ranges });
+        paintBadge(badge, e);
         if (card) ranks.set(card, e.getTime());
       });
     });
 
-    Promise.all(jobs).then(function () { sortCardsByAvailability(ranks); });
+    Promise.all(jobs).then(function () {
+      sortCardsByAvailability(ranks);
+      /* Dates may already be filled in — a guest who set them, then changed a
+         neighbourhood filter, or came back to a page the browser restored. */
+      if (DATE_SEARCH.moveIn) applyDateSearch();
+    });
   }
 
-  window.BroadlineBooking = { mount: mount, openModal: openModal, closeModal: closeModal, hydrateBadges: hydrateBadges };
+  /* The badge with no dates in play: just when the home opens. */
+  function paintBadge(badge, e) {
+    if (e <= todayMid()) {
+      badge.className = 'avail-badge now';
+      badge.innerHTML = '<span class="dot"></span>Available now';
+    } else {
+      badge.className = 'avail-badge soon';
+      badge.innerHTML = '<span class="dot"></span>Available ' + fmtShort(e);
+    }
+  }
+
+  /* ---------- search by the dates a guest actually needs ------------------
+     Ranking, in order:
+
+       1. Opens ON OR BEFORE the move-in AND free for the whole stay.
+          Sorted by how close the opening is — a home opening two days before
+          is a better answer than one that has been sitting empty a month.
+       2. Opens on or before the move-in, but something is booked inside the
+          requested range. Still worth showing; it cannot take the stay whole.
+       3. Opens AFTER the move-in. It cannot house them on the day they asked
+          for, so it sits below every home that can, ordered by how soon.
+       4. Fully booked, or no live calendar.
+
+     A home that opens after the requested date is NOT ranked by raw distance.
+     Nov 5 is closer to Oct 7 than Sep 5 is, but Sep 5 can actually take the
+     booking and Nov 5 cannot, so measuring absolute distance would promote the
+     one home that is no use. */
+  var DATE_SEARCH = { moveIn: null, moveOut: null };
+
+  var FIT_FREE      = 0;        // opens in time, whole stay free
+  var FIT_PART      = 1e7;      // opens in time, part of the stay is booked
+  var FIT_LATE      = 2e7;      // opens after the move-in
+  var FIT_NONE      = 3e7;      // fully booked / no calendar
+
+  function rangeFreeIn(ranges, from, to) {
+    for (var d = new Date(from); d < to; d = addDays(d, 1)) {
+      if (window.BroadlineAvailability.isDateBusy(d, ranges)) return false;
+    }
+    return true;
+  }
+
+  function applyDateSearch() {
+    var moveIn = DATE_SEARCH.moveIn, moveOut = DATE_SEARCH.moveOut;
+    var ranks = new Map();
+
+    document.querySelectorAll('[data-avail-badge]').forEach(function (badge) {
+      var card = badge.closest ? badge.closest('.pcard') : null;
+      if (!card) return;
+      var info = CARD_AVAIL.get(card);
+      if (!info) return;
+
+      // No dates entered: back to the plain "when does it open" view.
+      if (!moveIn) {
+        if (info.tier) { ranks.set(card, info.tier); if (info.tier === TIER_FULLY_BOOKED) { badge.className='avail-badge'; badge.innerHTML='<span class="dot"></span>Fully booked'; } }
+        else { paintBadge(badge, info.earliest); ranks.set(card, info.earliest.getTime()); }
+        return;
+      }
+
+      if (info.tier || !info.earliest) { ranks.set(card, FIT_NONE); return; }
+
+      var e = info.earliest;
+      var gap = nightsBetween(e, moveIn);        // >0 = opens before the move-in
+
+      if (gap < 0) {
+        // Opens after they want to move in.
+        var late = -gap;
+        badge.className = 'avail-badge';
+        badge.innerHTML = '<span class="dot"></span>Opens ' + fmtShort(e) + ' &middot; ' +
+                          late + ' day' + (late === 1 ? '' : 's') + ' after your date';
+        ranks.set(card, FIT_LATE + late);
+        return;
+      }
+
+      var fits = !moveOut || rangeFreeIn(info.ranges || [], moveIn, moveOut);
+      if (!fits) {
+        badge.className = 'avail-badge';
+        badge.innerHTML = '<span class="dot"></span>Opens ' + fmtShort(e) + ' &middot; not free for your whole stay';
+        ranks.set(card, FIT_PART + gap);
+        return;
+      }
+
+      badge.className = 'avail-badge now';
+      badge.innerHTML = '<span class="dot"></span>' + (gap === 0
+        ? 'Opens exactly on your date'
+        : 'Ready for you &middot; opens ' + gap + ' day' + (gap === 1 ? '' : 's') + ' before');
+      ranks.set(card, FIT_FREE + gap);
+    });
+
+    sortCardsByAvailability(ranks);
+  }
+
+  /* Called by availability.html when either date input changes. ISO strings or
+     empty; an end before the start is ignored rather than ranked on. */
+  function searchByDates(moveInISO, moveOutISO) {
+    var mi = moveInISO ? window.BroadlineRates.parseDate(moveInISO) : null;
+    var mo = moveOutISO ? window.BroadlineRates.parseDate(moveOutISO) : null;
+    DATE_SEARCH.moveIn = mi;
+    DATE_SEARCH.moveOut = (mi && mo && mo > mi) ? mo : null;
+    applyDateSearch();
+    return {
+      nights: DATE_SEARCH.moveOut ? nightsBetween(mi, DATE_SEARCH.moveOut) : null,
+      minNights: MIN_NIGHTS
+    };
+  }
+
+  window.BroadlineBooking = { mount: mount, openModal: openModal, closeModal: closeModal, hydrateBadges: hydrateBadges, searchByDates: searchByDates };
 
   document.addEventListener('DOMContentLoaded', function () {
     var inline = document.getElementById('booking-widget');

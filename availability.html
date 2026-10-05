@@ -31,6 +31,16 @@
   .filters{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;padding:24px 0 40px;border-bottom:1px solid var(--line)}
   .filters select,.filters input{background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:13px 18px;border-radius:2px;font-family:inherit;font-size:14px;min-width:180px}
   .filters select:focus,.filters input:focus{outline:none;border-color:var(--cyan)}
+  .date-search{padding:0 0 30px;border-bottom:1px solid var(--line);margin-bottom:4px}
+  .ds-row{display:flex;gap:14px;align-items:flex-end;justify-content:center;flex-wrap:wrap}
+  .ds-field{display:flex;flex-direction:column;gap:6px}
+  .ds-field span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+  .ds-field input{background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:12px 16px;border-radius:2px;font-family:inherit;font-size:14px;min-width:180px}
+  .ds-field input:focus{outline:none;border-color:var(--cyan)}
+  .ds-clear{background:none;border:1px solid var(--line);color:var(--ink-soft);padding:12px 18px;border-radius:2px;font-family:inherit;font-size:13px;cursor:pointer;transition:all .2s}
+  .ds-clear:hover{border-color:var(--cyan);color:var(--cyan)}
+  .ds-note{text-align:center;font-size:13px;color:var(--ink-soft);margin-top:14px}
+  .ds-note.warn{color:#9a6a00}
 
   .results{padding:40px 0 96px;display:grid;grid-template-columns:1.7fr 1fr;gap:36px;align-items:start}
   .listings{display:grid;grid-template-columns:1fr 1fr;gap:20px}
@@ -94,6 +104,9 @@
   .page-hero{padding:50px 0 20px}
   .filters{gap:10px;padding:18px 0 28px}
   .filters select,.filters input{min-width:0;width:100%;font-size:15px}
+  .ds-row{flex-direction:column;align-items:stretch;gap:12px}
+  .ds-field input{min-width:0;width:100%;font-size:15px}
+  .ds-clear{width:100%}
   .results{padding:24px 0 60px;gap:20px}
   .listings{grid-template-columns:1fr;gap:14px}
   .map-col{height:300px}
@@ -119,6 +132,14 @@
     <select id="filter-hood"><option value="">All Neighborhoods</option><option>Murray Hill</option><option>Soho</option><option>Kips Bay</option><option>Morningside Heights</option><option>Clinton Hill</option><option>Downtown Brooklyn</option><option>Nolita</option><option>Midtown South</option><option>West Village</option><option>Lower East Side</option><option>Financial District</option><option>Union City</option></select>
     <select id="filter-beds"><option value="">All Bedrooms</option><option value="Studio">Studio</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
     <input id="filter-search" type="text" placeholder="Search by address...">
+  </div>
+  <div class="date-search">
+    <div class="ds-row">
+      <label class="ds-field"><span>Move-in</span><input id="filter-movein" type="date"></label>
+      <label class="ds-field"><span>Move-out</span><input id="filter-moveout" type="date"></label>
+      <button type="button" id="filter-dates-clear" class="ds-clear" hidden>Clear dates</button>
+    </div>
+    <p class="ds-note" id="ds-note">Enter your dates and we'll put the homes that open closest to your move-in first.</p>
   </div>
 </div>
 
@@ -338,6 +359,54 @@
       card.style.display = (matchH && matchB && matchS) ? '' : 'none';
     });
   }
+  /* ---- search by dates ----------------------------------------------------
+     Ranking lives in booking.js, next to the availability data it needs. This
+     only collects the dates, keeps the two inputs honest about each other, and
+     says when a range is too short to book. */
+  const miEl = document.getElementById('filter-movein');
+  const moEl = document.getElementById('filter-moveout');
+  const dsClear = document.getElementById('filter-dates-clear');
+  const dsNote = document.getElementById('ds-note');
+
+  // Nobody can move in yesterday.
+  const todayISO = new Date().toISOString().slice(0, 10);
+  miEl.min = todayISO;
+  moEl.min = todayISO;
+
+  function runDateSearch() {
+    // A move-out before the move-in is a typo, not a query: clear it rather
+    // than silently ranking on a range that cannot exist.
+    if (miEl.value) moEl.min = miEl.value;
+    if (miEl.value && moEl.value && moEl.value <= miEl.value) moEl.value = '';
+
+    const any = !!(miEl.value || moEl.value);
+    dsClear.hidden = !any;
+
+    if (!window.BroadlineBooking || !window.BroadlineBooking.searchByDates) return;
+    const r = window.BroadlineBooking.searchByDates(miEl.value, moEl.value);
+
+    if (!miEl.value) {
+      dsNote.className = 'ds-note';
+      dsNote.textContent = "Enter your dates and we'll put the homes that open closest to your move-in first.";
+    } else if (r.nights && r.nights < r.minNights) {
+      dsNote.className = 'ds-note warn';
+      dsNote.textContent = 'Our minimum stay is ' + r.minNights + ' nights — yours is ' + r.nights +
+                           '. Homes are still ranked by your move-in date, but none can be booked for that length.';
+    } else {
+      dsNote.className = 'ds-note';
+      dsNote.textContent = r.nights
+        ? 'Showing homes that can take ' + r.nights + ' nights from your move-in, closest opening first.'
+        : 'Showing homes closest to your move-in date first.';
+    }
+  }
+
+  miEl.addEventListener('change', runDateSearch);
+  moEl.addEventListener('change', runDateSearch);
+  dsClear.addEventListener('click', function () {
+    miEl.value = ''; moEl.value = ''; moEl.min = todayISO;
+    runDateSearch();
+  });
+
   document.getElementById('filter-hood').addEventListener('change', applyFilters);
   document.getElementById('filter-beds').addEventListener('change', applyFilters);
   document.getElementById('filter-search').addEventListener('input', applyFilters);

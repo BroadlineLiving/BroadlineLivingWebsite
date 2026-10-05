@@ -223,11 +223,20 @@
 
 /* Escape hatches under the date slots — undo a recommendation, or start over.
    Neither existed before; applying a suggestion was a one-way door. */
-.bk-reset-row{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0 2px}
+.bk-reset-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0 4px}
 .bk-linkbtn{background:none;border:none;padding:0;font:inherit;font-size:12px;
   color:var(--bk-accent,#1aa7c4);cursor:pointer;text-decoration:underline;
   -webkit-tap-highlight-color:transparent}
 .bk-linkbtn:hover{opacity:.75}
+/* Clearing the dates is a real action and used to read as a caption. Give it an
+   outline and an icon so it looks like something you can press. */
+.bk-clearbtn{display:inline-flex;align-items:center;gap:7px;background:var(--surface);
+  border:1px solid var(--line);color:var(--ink);padding:9px 15px;border-radius:3px;
+  font:inherit;font-size:12.5px;letter-spacing:.02em;cursor:pointer;transition:all .18s}
+.bk-clearbtn svg{width:13px;height:13px;flex:none;opacity:.7}
+.bk-clearbtn:hover{border-color:var(--teal);color:var(--teal);background:rgba(26,167,196,.05)}
+.bk-clearbtn:hover svg{opacity:1}
+.bk-clearbtn:active{transform:translateY(1px)}
 
 /* Tax saving on a recommendation card. Distinct from the rent saving so the
    two read as separate wins rather than one number the guest has to unpick. */
