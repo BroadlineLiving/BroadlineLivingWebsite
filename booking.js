@@ -1180,35 +1180,20 @@
      Nov 5 is closer to Oct 7 than Sep 5 is, but Sep 5 can actually take the
      booking and Nov 5 cannot, so measuring absolute distance would promote the
      one home that is no use. */
-  var DATE_SEARCH = { moveIn: null, moveOut: null };
+  var DATE_SEARCH = { moveIn: null };
 
-  /* Scored on one axis: how far the opening date is from the requested
-     move-in, with days of WAITING weighted more heavily than days a home has
-     already been free. A home that opens after the move-in cannot take the
-     guest on the day they asked for, so it should not beat one that can purely
-     by being nearer on a calendar — but a single day late is still a better
-     answer than a home that came free a fortnight ago.
+  /* Scored on distance from the requested move-in, in either direction. The
+     home that opens ON the date comes first, then whichever opens nearest it,
+     whether that is before or after.
 
-     LATE_WEIGHT 3 is what satisfies both ends of that:
-       1 day late  (3)  beats  14 days early (14)
-       29 days late (87) loses to 32 days early (32)
-
-     A home that opens in time but has something booked inside the requested
-     range cannot take the stay whole, so it drops below everything that can,
-     while still ranking above homes with no usable calendar at all. */
-  var LATE_WEIGHT  = 3;
-  var PART_PENALTY = 1e6;
-  var FIT_NONE     = 1e7;
-
-  function rangeFreeIn(ranges, from, to) {
-    for (var d = new Date(from); d < to; d = addDays(d, 1)) {
-      if (window.BroadlineAvailability.isDateBusy(d, ranges)) return false;
-    }
-    return true;
-  }
+     Earlier this weighted days of waiting more heavily than days a home had
+     already been free, so a home opening after the move-in could never beat
+     one opening before it. That is gone: a day late and a day early are now
+     the same distance. */
+  var FIT_NONE = 1e7;
 
   function applyDateSearch() {
-    var moveIn = DATE_SEARCH.moveIn, moveOut = DATE_SEARCH.moveOut;
+    var moveIn = DATE_SEARCH.moveIn;
     var ranks = new Map();
 
     document.querySelectorAll('[data-avail-badge]').forEach(function (badge) {
@@ -1235,31 +1220,17 @@
       }
       if (info.tier || !info.earliest) { ranks.set(card, FIT_NONE); return; }
 
-      var gap = nightsBetween(info.earliest, moveIn);   // >0 = opens before the move-in
-      var score = gap >= 0 ? gap : (-gap) * LATE_WEIGHT;
-      /* Only meaningful once a home can actually open in time; a late opening
-         is already ranked on the wait. */
-      if (gap >= 0 && moveOut && !rangeFreeIn(info.ranges || [], moveIn, moveOut)) {
-        score += PART_PENALTY;
-      }
-      ranks.set(card, score);
+      ranks.set(card, Math.abs(nightsBetween(info.earliest, moveIn)));
     });
 
     sortCardsByAvailability(ranks);
   }
 
-  /* Called by availability.html when either date input changes. ISO strings or
-     empty; an end before the start is ignored rather than ranked on. */
-  function searchByDates(moveInISO, moveOutISO) {
-    var mi = moveInISO ? window.BroadlineRates.parseDate(moveInISO) : null;
-    var mo = moveOutISO ? window.BroadlineRates.parseDate(moveOutISO) : null;
-    DATE_SEARCH.moveIn = mi;
-    DATE_SEARCH.moveOut = (mi && mo && mo > mi) ? mo : null;
+  /* Called by availability.html when the move-in date changes. An ISO string,
+     or empty to go back to listing by opening date. */
+  function searchByDates(moveInISO) {
+    DATE_SEARCH.moveIn = moveInISO ? window.BroadlineRates.parseDate(moveInISO) : null;
     applyDateSearch();
-    return {
-      nights: DATE_SEARCH.moveOut ? nightsBetween(mi, DATE_SEARCH.moveOut) : null,
-      minNights: MIN_NIGHTS
-    };
   }
 
   window.BroadlineBooking = { mount: mount, openModal: openModal, closeModal: closeModal, hydrateBadges: hydrateBadges, searchByDates: searchByDates };
