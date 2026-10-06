@@ -214,7 +214,7 @@ const BROADLINE_UNITS = {
     directLet: {
       nightly: 283.3333,
       minNights: 30,
-      availableFrom: "2026-10-08",
+      availableFrom: "2026-12-07",
       coverThroughMonths: 24,
       noOccupancyTax: true,
       gapRate: 0.25,
