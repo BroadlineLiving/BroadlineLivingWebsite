@@ -158,6 +158,27 @@ const BROADLINE_UNITS = {
     rooms: 3,                    // flex 2BR — living room + 2 bedrooms
     applicationPropertyId: "7b2dbc85-c78f-4f43-9ae6-20cb437c80cf"
   },
+  "atlas-12e": {
+    name: "Atlas New York",
+    unitLabel: "Unit 12E",
+    ruPropertyId: "6442281",
+    rooms: 2,                   // 1BR
+    applicationPropertyId: "c52539ae-3d56-4209-a82c-54f2c7fd9f96"
+  },
+  "atlas-12b": {
+    name: "Atlas New York",
+    unitLabel: "Unit 12B",
+    ruPropertyId: "6442498",
+    rooms: 3,                   // 2BR
+    applicationPropertyId: "077b0ea4-a827-4307-916a-7f4cb2b156c3"
+  },
+  "atlas-34b": {
+    name: "Atlas New York",
+    unitLabel: "Unit 34B",
+    ruPropertyId: "6442620",
+    rooms: 3,                   // 2BR
+    applicationPropertyId: "681301fd-d7a0-49c3-ba99-edd03f16eff3"
+  },
   "mott-4": {
     name: "223 Mott Street",
     unitLabel: "Unit 4",
