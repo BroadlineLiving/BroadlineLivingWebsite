@@ -141,7 +141,6 @@
   <div class="filters">
     <select id="filter-hood"><option value="">All Neighborhoods</option><option>Murray Hill</option><option>Soho</option><option>Kips Bay</option><option>Morningside Heights</option><option>Clinton Hill</option><option>Downtown Brooklyn</option><option>Nolita</option><option>Midtown South</option><option>West Village</option><option>Lower East Side</option><option>Financial District</option><option>Union City</option></select>
     <select id="filter-beds"><option value="">All Bedrooms</option><option value="Studio">Studio</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
-    <input id="filter-search" type="text" placeholder="Search by address...">
   </div>
   <div class="date-search">
     <div class="ds-picker">
@@ -377,15 +376,12 @@
   function applyFilters() {
     const h = document.getElementById('filter-hood').value.toLowerCase();
     const b = document.getElementById('filter-beds').value;
-    const s = document.getElementById('filter-search').value.toLowerCase();
     document.querySelectorAll('.pcard').forEach(card => {
       const hood = (card.dataset.hood || '').toLowerCase();
       const beds = card.dataset.beds;
-      const name = card.querySelector('.name').textContent.toLowerCase();
       const matchH = !h || hood === h;
       const matchB = !b || beds === b;
-      const matchS = !s || name.includes(s);
-      card.style.display = (matchH && matchB && matchS) ? '' : 'none';
+      card.style.display = (matchH && matchB) ? '' : 'none';
     });
   }
   /* ---- search by dates ----------------------------------------------------
@@ -470,7 +466,6 @@
 
   document.getElementById('filter-hood').addEventListener('change', applyFilters);
   document.getElementById('filter-beds').addEventListener('change', applyFilters);
-  document.getElementById('filter-search').addEventListener('input', applyFilters);
 </script>
 
 <script>
