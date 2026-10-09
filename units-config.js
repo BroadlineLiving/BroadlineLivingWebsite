@@ -144,6 +144,13 @@ const BROADLINE_UNITS = {
     rooms: 2,                    // 1BR
     applicationPropertyId: "cdf4538f-645b-411e-ae13-19bbf73603e6"
   },
+  "sheridan-10f": {
+    name: "The Shenandoah",
+    unitLabel: "Unit 10F",
+    ruPropertyId: "6494950",
+    rooms: 3,                    // 2BR
+    applicationPropertyId: "5b93324f-1276-4bf2-8e40-c0214602525f"
+  },
   "atlas-34h": {
     name: "Atlas New York",
     unitLabel: "Unit 34H",
