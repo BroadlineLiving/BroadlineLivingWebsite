@@ -771,6 +771,7 @@
          '<input type="hidden" name="_subject" value="Question: ' + esc(u.name) + ' ' + esc(u.unitLabel) + '">' +
          '<input type="hidden" name="property" value="' + esc(u.name) + ' ' + esc(u.unitLabel) + '">' +
          '<div class="field"><label>Email</label><input type="email" name="email" required></div>' +
+         '<div class="field"><label>Phone (optional)</label><input type="tel" name="phone" autocomplete="tel"></div>' +
          '<div class="field"><label>Message</label><textarea name="message" placeholder="How can we help?"></textarea></div>' +
          '<button type="submit">Contact us</button></form></div>';
 
