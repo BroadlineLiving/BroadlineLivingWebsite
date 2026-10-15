@@ -546,18 +546,21 @@ window.addEventListener('pageshow',function(e){
     var url = link.getAttribute('href');
     var cardSrc = (img.style.backgroundImage.match(/url\(["']?([^"')]+)/) || [])[1];
     var track = null, n = 1, idx = 0, built = null;
+    // Desktop loops like a snake: a copy of the last photo sits before the
+    // first and a copy of the first after the last, and when the track comes
+    // to rest on a copy it jumps, unseen, to the real one. Phones stop at the ends.
+    var off = touch ? 0 : 1, settle = null;
 
     var prev = document.createElement('button'), next = document.createElement('button'), dots = document.createElement('div');
     prev.type = next.type = 'button';
     prev.className = 'ph-btn ph-prev'; prev.setAttribute('aria-label', 'Previous photo'); prev.innerHTML = chev('M15 6l-6 6 6 6');
     next.className = 'ph-btn ph-next'; next.setAttribute('aria-label', 'Next photo'); next.innerHTML = chev('M9 6l6 6-6 6');
     dots.className = 'ph-dots';
-    prev.hidden = true;
+    prev.hidden = touch;
     img.append(prev, next, dots);
 
     function paint() {
-      prev.hidden = idx === 0;
-      next.hidden = idx >= n - 1;
+      if (touch) { prev.hidden = idx === 0; next.hidden = idx >= n - 1; }
       // at most 5 dots, a window that follows the current photo
       var lo = Math.max(0, Math.min(idx - 2, n - 5)), hi = Math.min(n, lo + 5), h = '';
       for (var k = lo; k < hi; k++) h += '<span' + (k === idx ? ' class="on"' : '') + '></span>';
@@ -570,13 +573,22 @@ window.addEventListener('pageshow',function(e){
         if (n < 2) { next.hidden = true; return; }
         track = document.createElement('div');
         track.className = 'ph-track';
-        track.innerHTML = srcs.map(function (src, i) {
-          return '<img src="' + src + '" alt="" draggable="false"' + (i > 1 ? ' loading="lazy"' : '') + '>';
+        var slides = off ? [srcs[n - 1]].concat(srcs, [srcs[0]]) : srcs;
+        track.innerHTML = slides.map(function (src, i) {
+          return '<img src="' + src + '" alt="" draggable="false"' + (i > off ? ' loading="lazy"' : '') + '>';
         }).join('');
         img.insertBefore(track, prev);
+        track.scrollLeft = off * track.clientWidth;
         track.addEventListener('scroll', function () {
-          var i = Math.round(track.scrollLeft / track.clientWidth);
+          var pos = Math.round(track.scrollLeft / track.clientWidth), i = ((pos - off) % n + n) % n;
           if (i !== idx) { idx = i; paint(); }
+          if (off) {
+            clearTimeout(settle);
+            settle = setTimeout(function () {   // at rest on a copy → jump to the real photo
+              var p = Math.round(track.scrollLeft / track.clientWidth);
+              if (p === 0 || p === n + 1) track.scrollLeft = (p === 0 ? n : 1) * track.clientWidth;
+            }, 120);
+          }
         }, { passive: true });
         paint();
       });
@@ -586,7 +598,12 @@ window.addEventListener('pageshow',function(e){
     function go(step) {
       build().then(function () {
         if (!track) return;
-        track.scrollTo({ left: Math.max(0, Math.min(n - 1, idx + step)) * track.clientWidth, behavior: 'smooth' });
+        if (off) {   // clicked before the jump off a copy happened: do it now
+          var p = Math.round(track.scrollLeft / track.clientWidth);
+          if (p === 0 || p === n + 1) { clearTimeout(settle); track.scrollLeft = (p === 0 ? n : 1) * track.clientWidth; }
+        }
+        var to = off ? idx + off + step : Math.max(0, Math.min(n - 1, idx + step));
+        track.scrollTo({ left: to * track.clientWidth, behavior: 'smooth' });
       });
     }
     function stop(e) { e.preventDefault(); e.stopPropagation(); }
