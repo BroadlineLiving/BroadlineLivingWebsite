@@ -122,6 +122,22 @@
   .map-col{height:300px}
   .pcard .name{font-size:19px}
 }
+  /* ---- card photo carousel, like Blueground ----
+     A native horizontal scroll-snap track: on phones the photo follows the
+     finger; on desktop the arrows slide the same track. */
+  .pcard .img{position:relative;overflow:hidden}
+  .ph-track{position:absolute;inset:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  .ph-track::-webkit-scrollbar{display:none}
+  .ph-track img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start;scroll-snap-stop:always;display:block;background:var(--bg-2)}
+  .ph-btn{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#10202e;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .2s;z-index:3;box-shadow:0 2px 8px rgba(16,32,46,.18);padding:0}
+  .ph-btn svg{width:16px;height:16px}
+  .ph-prev{left:10px}.ph-next{right:10px}
+  .pcard:hover .ph-btn,.ph-btn:focus-visible{opacity:1}
+  .ph-btn[hidden]{display:none}
+  .ph-dots{position:absolute;right:12px;bottom:12px;display:flex;gap:5px;z-index:3;pointer-events:none}
+  .ph-dots span{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55);transition:background .2s,transform .2s}
+  .ph-dots span.on{background:#fff;transform:scale(1.2)}
+  @media(hover:none){.ph-btn{display:none}}
 </style>
 </head>
 <body>
@@ -502,6 +518,83 @@ else if(wideView.addListener) wideView.addListener(closeMenuIfWide);  // Safari 
 window.addEventListener('pageshow',function(e){
   if(e.persisted && menuIsOpen()) setMenu(false);
 });
+</script>
+<script>
+/* Card photo carousel. Photos are read on demand from each unit page's own
+   `const photos = [...]` list, so there is no second copy here to drift out of
+   date. On phones the list is fetched as a card scrolls near the screen, so a
+   swipe works at once; photos past the first only load as they are reached. */
+(function () {
+  var lists = {};
+  function photosFor(url) {
+    if (!lists[url]) lists[url] = fetch(url).then(function (r) { return r.text(); }).then(function (h) {
+      var m = h.match(/const photos = \[([^\]]*)\]/);
+      return m ? (m[1].match(/'[^']+'/g) || []).map(function (x) { return x.slice(1, -1); }) : [];
+    }).catch(function () { return []; });
+    return lists[url];
+  }
+  var chev = function (d) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="' + d + '"/></svg>'; };
+  var touch = matchMedia('(hover: none)').matches;
+  var io = touch && 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { io.unobserve(e.target); e.target._phBuild(); } });
+  }, { rootMargin: '300px 0px' }) : null;
+
+  document.querySelectorAll('.pcard').forEach(function (card) {
+    var img = card.querySelector('.img');
+    var link = card.matches('a') ? card : card.querySelector('a.pcard-a');
+    if (!img || !link) return;
+    var url = link.getAttribute('href');
+    var cardSrc = (img.style.backgroundImage.match(/url\(["']?([^"')]+)/) || [])[1];
+    var track = null, n = 1, idx = 0, built = null;
+
+    var prev = document.createElement('button'), next = document.createElement('button'), dots = document.createElement('div');
+    prev.type = next.type = 'button';
+    prev.className = 'ph-btn ph-prev'; prev.setAttribute('aria-label', 'Previous photo'); prev.innerHTML = chev('M15 6l-6 6 6 6');
+    next.className = 'ph-btn ph-next'; next.setAttribute('aria-label', 'Next photo'); next.innerHTML = chev('M9 6l6 6-6 6');
+    dots.className = 'ph-dots';
+    prev.hidden = true;
+    img.append(prev, next, dots);
+
+    function paint() {
+      prev.hidden = idx === 0;
+      next.hidden = idx >= n - 1;
+      // at most 5 dots, a window that follows the current photo
+      var lo = Math.max(0, Math.min(idx - 2, n - 5)), hi = Math.min(n, lo + 5), h = '';
+      for (var k = lo; k < hi; k++) h += '<span' + (k === idx ? ' class="on"' : '') + '></span>';
+      dots.innerHTML = n > 1 ? h : '';
+    }
+    function build() {
+      if (!built) built = photosFor(url).then(function (p) {
+        var srcs = [cardSrc].concat(p.slice(1));   // photo 1 is already on screen as the card crop
+        n = srcs.length;
+        if (n < 2) { next.hidden = true; return; }
+        track = document.createElement('div');
+        track.className = 'ph-track';
+        track.innerHTML = srcs.map(function (src, i) {
+          return '<img src="' + src + '" alt="" draggable="false"' + (i > 1 ? ' loading="lazy"' : '') + '>';
+        }).join('');
+        img.insertBefore(track, prev);
+        track.addEventListener('scroll', function () {
+          var i = Math.round(track.scrollLeft / track.clientWidth);
+          if (i !== idx) { idx = i; paint(); }
+        }, { passive: true });
+        paint();
+      });
+      return built;
+    }
+    card._phBuild = build;
+    function go(step) {
+      build().then(function () {
+        if (!track) return;
+        track.scrollTo({ left: Math.max(0, Math.min(n - 1, idx + step)) * track.clientWidth, behavior: 'smooth' });
+      });
+    }
+    function stop(e) { e.preventDefault(); e.stopPropagation(); }
+    prev.addEventListener('click', function (e) { stop(e); go(-1); });
+    next.addEventListener('click', function (e) { stop(e); go(1); });
+    if (io) io.observe(card); else card.addEventListener('mouseenter', build, { once: true });
+  });
+})();
 </script>
 <script src="units-config.js"></script>
 <script src="rates.js"></script>
