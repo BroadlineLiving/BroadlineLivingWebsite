@@ -140,3 +140,13 @@ footer a:hover{color:#3fe0d0}
   .logo .mark{width:32px;height:32px}
   .logo .name .b{font-size:15px;letter-spacing:.22em}
 }
+
+/* Broadline logo, bottom-left of every unit photo (added by photo-logo.js) */
+.has-ph-logo{position:relative}
+.ph-logo{position:absolute;left:0;bottom:0;z-index:2;pointer-events:none;display:flex;align-items:center;gap:.55em;padding:0 0 .8em .9em;font-size:12px;line-height:1;filter:drop-shadow(0 1px 3px rgba(0,0,0,.55))}
+.ph-logo svg{width:2.3em;height:2.3em;flex:none}
+.ph-logo .n{display:flex;flex-direction:column}
+.ph-logo .b{font-family:var(--body);font-size:1em;font-weight:500;letter-spacing:.28em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ph-logo .l{font-size:.53em;letter-spacing:.42em;color:#fff;margin-top:.25em}
+.ph-logo.lb{z-index:2}
+@media(max-width:600px){.ph-logo{font-size:10px}}
