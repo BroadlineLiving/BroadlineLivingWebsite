@@ -144,6 +144,13 @@ const BROADLINE_UNITS = {
     rooms: 2,                    // 1BR
     applicationPropertyId: "cdf4538f-645b-411e-ae13-19bbf73603e6"
   },
+  "sheridan-9e": {
+    name: "The Shenandoah",
+    unitLabel: "Unit 9E",
+    ruPropertyId: "6533993",
+    rooms: 1,                    // studio
+    applicationPropertyId: "22238ba0-d18f-4d68-8f25-376bb97506de"
+  },
   "sheridan-10f": {
     name: "The Shenandoah",
     unitLabel: "Unit 10F",
