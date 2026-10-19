@@ -56,6 +56,23 @@
   .listings{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 
   .pcard{background:var(--surface);border:1px solid var(--line);border-radius:4px;overflow:hidden;transition:transform .25s,border-color .25s,box-shadow .25s;cursor:pointer;display:flex;flex-direction:column;text-decoration:none;color:inherit;position:relative}
+  /* Off-screen cards are skipped entirely until they near the viewport.
+     This page carries 28 cards and ~2.4 MB of photography, and the card
+     image is a CSS background, which cannot be lazy-loaded -- so without
+     this the browser does layout and paint work for every card on the page
+     at once, and scrolling flickers white where a card has not painted yet.
+
+     contain-intrinsic-size reserves the right height so the scrollbar does
+     not jump. The two sizes are real measurements: a bookable unit card
+     (div.pcard, has the footer with the availability badge and the booking
+     button) is 493px; a long-lease card (a.pcard, no footer) is 394px. The
+     auto keyword means each card remembers its true height once it has been
+     rendered, so an estimate that is slightly off self-corrects.
+
+     Safe against the rules above: .pcard is already overflow:hidden, so the
+     paint containment this implies clips nothing that was visible before. */
+  .pcard{content-visibility:auto;contain-intrinsic-size:auto 493px}
+  a.pcard{contain-intrinsic-size:auto 394px}
   .pcard::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);opacity:0;transition:opacity .25s;z-index:4}
   .pcard:hover::before{opacity:1}
   .pcard:hover{transform:translateY(-3px);border-color:transparent;box-shadow:0 14px 32px rgba(16,32,46,.10)}
