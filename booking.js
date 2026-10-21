@@ -211,6 +211,7 @@
     var direct = this.unit.directLet;
     return window.BroadlineRates.quote(this.rates, moveIn, moveOut, this.unit.rooms, {
       availableDate: this.earliest || null,
+      limitDays: this.bookWindowDays(),   // price only where the guest can also apply
       gapRate: direct && direct.gapRate != null ? direct.gapRate : null,
       noTax: !!(direct && direct.noOccupancyTax)
     });

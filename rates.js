@@ -280,12 +280,20 @@
   var GAP_RATE_SOFT    = 0.50;
   var GAP_RATE_HARD    = 0.85;
 
-  /* We will quote any gap up to this. Past it the charge is most of a month's
-     rent and the number stops being a price and starts being a negotiation —
-     the UI hands those to the inquiry form. The old limit was 5 days, which
-     also meant the site refused to price perfectly ordinary late starts. The
-     quote tool has no such limit: an operator can see any number. */
-  var GAP_LIMIT_DAYS = 30;
+  /* How far past a home's opening date we will show a price. Past it the UI
+     hands the guest to the inquiry form instead of a number.
+
+     It is the SAME window as instant apply (BOOK_WINDOW_DAYS in booking.js):
+     a guest sees a price exactly when they can act on it, so "can I get a
+     price" and "can I apply" are one question. booking.js passes each home's
+     own apply window as opts.limitDays, so a home that widens its window
+     (the Union City direct let takes 10) widens its price window with it;
+     this default covers any caller that does not pass one.
+
+     This was raised to 30 on 1 Oct 2026, which let a price show for dates a
+     guest could not book, and put it back to 5 on 21 Oct 2026. The quote tool
+     in the Revenue Engine has no such limit: an operator can see any number. */
+  var GAP_LIMIT_DAYS = 5;
 
   /* ---- Payment options ----------------------------------------------------
      Pay the whole stay at signing, or pay monthly for 5% more on the rate.
@@ -337,11 +345,12 @@
        quote. Checked before pricing anything so no number is ever computed
        for a range we won't stand behind. */
     var avail = opts.availableDate || null;
-    if (avail && nightsBetween(avail, moveIn) > GAP_LIMIT_DAYS) {
+    var limit = (opts.limitDays != null) ? opts.limitDays : GAP_LIMIT_DAYS;
+    if (avail && nightsBetween(avail, moveIn) > limit) {
       return {
         ok: false, reason: 'gap-too-large',
         gapDays: nightsBetween(avail, moveIn),
-        limitDays: GAP_LIMIT_DAYS,
+        limitDays: limit,
         availableDate: avail
       };
     }

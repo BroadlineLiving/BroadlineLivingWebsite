@@ -207,6 +207,21 @@ booking sight-unseen should have.
 
 Ducted vs through-wall. Not loose wording. Do not unify them.
 
+### A price shows only where the guest can also apply
+
+The booking widget shows a price for a move-in up to **5 days after the home
+opens**, and no further. That is the same window as instant apply
+(`BOOK_WINDOW_DAYS` in `booking.js`): `quoteFor()` passes each home's apply
+window to the quote as `limitDays`, so the two cannot drift apart. Past it the
+guest is told the latest date that has a price and is offered Inquire. A home
+can widen its window in `units-config.js` (`directLet.bookWindowDays`, 10 on
+Union City) and its price window widens with it.
+
+The price window was raised to 30 days once, on 1 Oct 2026, which showed
+guests rates for dates they could not book. Do not widen it without the owner
+asking. The Revenue Engine's Quote tab has no limit; that is where an operator
+prices anything further out.
+
 ---
 
 ## 8. Traps
