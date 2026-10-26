@@ -151,6 +151,15 @@ const BROADLINE_UNITS = {
     rooms: 1,                    // studio
     applicationPropertyId: "22238ba0-d18f-4d68-8f25-376bb97506de"
   },
+  "east-77th-2c": {
+    name: "324 East 77th Street",
+    unitLabel: "Unit 2C",
+    ruPropertyId: "6613993",
+    rooms: 2,                    // 1BR
+    /* Not yet created in the rental-application app; Apply falls back to the
+       inquiry form until it is. */
+    applicationPropertyId: null
+  },
   "battery-117": {
     name: "River Watch",
     unitLabel: "Unit 117",
