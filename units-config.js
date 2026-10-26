@@ -151,6 +151,15 @@ const BROADLINE_UNITS = {
     rooms: 1,                    // studio
     applicationPropertyId: "22238ba0-d18f-4d68-8f25-376bb97506de"
   },
+  "battery-117": {
+    name: "River Watch",
+    unitLabel: "Unit 117",
+    ruPropertyId: "6632867",
+    rooms: 1,                    // alcove studio
+    /* Not yet created in the rental-application app; Apply falls back to the
+       inquiry form until it is. */
+    applicationPropertyId: null
+  },
   "pacific-504": {
     name: "Pacific House",
     unitLabel: "Unit 504",
