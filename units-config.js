@@ -151,6 +151,15 @@ const BROADLINE_UNITS = {
     rooms: 1,                    // studio
     applicationPropertyId: "22238ba0-d18f-4d68-8f25-376bb97506de"
   },
+  "pacific-504": {
+    name: "Pacific House",
+    unitLabel: "Unit 504",
+    ruPropertyId: "6667272",
+    rooms: 2,                    // 1BR
+    /* Not yet created in the rental-application app. booking.js falls back to
+       the inquiry form, so the page works without it. */
+    applicationPropertyId: null
+  },
   "sheridan-10f": {
     name: "The Shenandoah",
     unitLabel: "Unit 10F",
