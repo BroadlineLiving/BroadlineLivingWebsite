@@ -250,7 +250,11 @@
   function losDiscountPct(months) {
     var m = Math.max(1, months);
     if (m >= 12) return LOS_DISCOUNT[12];
-    if (m <= 1) return LOS_DISCOUNT[1];
+    /* No discount at all under 3 months (90 nights). The 1-to-3-month taper
+       was removed on 26 Oct 2026: a 60-night stay used to get ~2.5% off. From
+       3 months up the curve is unchanged, so a stay steps from 0% to the
+       3-month tier at 90 nights. */
+    if (m < 3) return LOS_DISCOUNT[1];
     var anchors = [[1, LOS_DISCOUNT[1]], [3, LOS_DISCOUNT[3]], [6, LOS_DISCOUNT[6]], [12, LOS_DISCOUNT[12]]];
     for (var i = 0; i < anchors.length - 1; i++) {
       var m1 = anchors[i][0], d1 = anchors[i][1];
