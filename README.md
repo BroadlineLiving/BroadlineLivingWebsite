@@ -250,11 +250,19 @@ straight to `new.rentalsunited.com`. Today: 21 requests, ~430 ms median. Card
 sorting waits on all of them. At ~100 units this is the first thing to break —
 cache the busy ranges server-side before then.
 
-### Card images all load upfront
+### Card images load as they scroll in
 
-They are CSS `background-image`, so **none can be lazy-loaded** without
-converting to `<img loading="lazy">`. 24 cards ≈ 2.4 MB on `availability.html`.
-At 100 units that is ~10 MB.
+On `availability.html` each card's photo is in `data-bg`, not an inline
+`background-image`, and a small IntersectionObserver script sets it when the
+card comes within 800px of the screen (a desktop opens with ~8 of 32 loaded,
+a phone with 2). **A new card must use `<div class="img" data-bg="...">`**, or
+its photo never appears. The card carousel reads the same attribute.
+
+Don't bring back `content-visibility:auto` on `.pcard`: it was tried on 22 Oct
+2026 for the scroll flicker, but Safari's support for it is recent and it was
+still glitching on phones. The carousel strip also stays hidden until its first
+photo has decoded, because its slides have a grey placeholder that otherwise
+covered the card photo for a moment on every card a phone scrolled past.
 
 ### The repo is image-heavy
 
