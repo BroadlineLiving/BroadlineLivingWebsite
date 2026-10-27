@@ -97,6 +97,22 @@
      lookup failed" — the caller must not treat those the same. */
   var _cache = {};
 
+  /* Direct price is the published rate plus 2%. published_rates.nightly is
+     what is typed on the Publish tab and what Rentals United grosses up for
+     Airbnb's host fee; Airbnb is untouched by this. The website (and the
+     engine's Quote tab, which must match it) charges 2% more than that rate.
+
+     Applied here, at the single point a published rate enters the site, so
+     everything downstream builds on the higher figure: the length-of-stay
+     discount, the vacancy-gap charge, NYC tax, and the 5% pay-monthly uplift,
+     which therefore stacks on top (published x 1.02 x 1.05). It is never
+     shown to guests as a separate line; they just see the price.
+
+     Direct lets (units-config directLet) set their own nightly and are not
+     uplifted. The engine's Quote tab holds the same constant as
+     PQ.DIRECT_UPLIFT: change both together. */
+  var DIRECT_UPLIFT = 0.02;
+
   function fetchRates(ruPropertyId) {
     if (!ruPropertyId) return Promise.resolve([]);
     if (_cache[ruPropertyId]) return Promise.resolve(_cache[ruPropertyId]);
@@ -116,7 +132,7 @@
         return {
           from: parseDate(x.date_from),
           to: parseDate(x.date_to),          // inclusive last night
-          nightly: parseFloat(x.nightly),
+          nightly: parseFloat(x.nightly) * (1 + DIRECT_UPLIFT),
           minNights: parseInt(x.min_nights, 10) || 30
         };
       }).filter(function (x) { return x.from && x.to && isFinite(x.nightly); });
@@ -509,7 +525,8 @@
       parseDate: parseDate,
       toISO: toISO,
       TAX_EXEMPT_NIGHTS: TAX_EXEMPT_NIGHTS,
-      GAP_LIMIT_DAYS: GAP_LIMIT_DAYS
+      GAP_LIMIT_DAYS: GAP_LIMIT_DAYS,
+      DIRECT_UPLIFT: DIRECT_UPLIFT
     };
   }
 })();

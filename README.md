@@ -134,7 +134,14 @@ none.
 LOS_DISCOUNT {1:0, 3:4, 6:5, 12:8}   PER_ROOM_NIGHT 2.00
 TAX_EXEMPT_NIGHTS 180                GAP_SOFT_NIGHTS 5
 GAP_RATE_SOFT 0.50                   GAP_RATE_HARD 0.85
+DIRECT_UPLIFT 0.02
 ```
+
+`DIRECT_UPLIFT` makes every price on this site 2% above the published rate.
+Airbnb gets the published rate (grossed up for its own fee by the engine), so
+this only moves the direct price. It is never shown to guests as a line item.
+The pay-monthly 5% stacks on top of it. Its twin is `PQ.DIRECT_UPLIFT` in the
+engine's Quote tab.
 
 They match today. **Change one in the engine's Config tab and this site keeps
 the old value, silently.** If you touch pricing config, check both.
