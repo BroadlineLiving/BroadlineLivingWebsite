@@ -161,7 +161,7 @@ const BROADLINE_UNITS = {
     applicationPropertyId: null
   },
   "battery-117": {
-    name: "River Watch",
+    name: "Riverwatch",
     unitLabel: "Unit 117",
     ruPropertyId: "6632867",
     rooms: 1,                    // alcove studio
