@@ -303,6 +303,10 @@
       if (moveIn < todayMid()) return;
       var n = nightsBetween(moveIn, moveOut);
       if (n < MIN_NIGHTS) return;
+      /* Never suggest a shorter stay than the guest picked. A shorter term is
+         not what they asked for, and quoting one invites them to book less
+         time in the home. Same length (the earlier-start card) or longer only. */
+      if (n < curNights) return;
       if (sameDay(moveIn, self.moveIn) && sameDay(moveOut, self.moveOut)) return;
       if (!self.rangeIsFree(moveIn, moveOut)) return;
       var q = self.quoteFor(moveIn, moveOut);
@@ -348,16 +352,16 @@
        Previously the ONLY long options came from peak-end dates longer than
        the current stay, so a guest who already picked a long stay — or who
        landed on the longest suggestion — saw nothing at all. These durations
-       are always tried, in both directions, so tweaking dates never empties
-       the list.
+       are always tried (longer ones only — see consider()), so tweaking dates
+       rarely empties the list.
 
        183 nights is deliberately in the set: that is where occupancy tax
        stops applying, which is usually the single biggest saving available
        and was previously reachable only by accident. */
     var DURATIONS = [90, 120, 183, 274, 365];
     DURATIONS.forEach(function (n) {
-      if (Math.abs(n - curNights) < 5) return;          // materially different only
-      consider(self.moveIn, addDays(self.moveIn, n), n > curNights ? 'long' : 'short');
+      if (n - curNights < 5) return;                    // materially longer only
+      consider(self.moveIn, addDays(self.moveIn, n), 'long');
     });
 
     /* 3. End dates landing in May/June/July, when the home re-lets best. */
@@ -556,7 +560,7 @@
     }
     if (q && q.ok && !recs.length) {
       h += '<div class="bk-msg info">These dates are the best value we can offer for this home — ' +
-           'no other length or start date comes out cheaper.</div>';
+           'no longer stay or earlier start comes out cheaper.</div>';
     }
     if (q && q.ok && recs.length) {
       h += '<div class="bk-recs"><div class="bk-recs-t">Stay recommendations</div><div class="bk-recs-scroll">';
@@ -567,8 +571,7 @@
         var LABELS = {
           nogap: 'Move in when it opens',
           long: 'Stay and save',
-          mid: 'Stay and save',
-          short: 'Shorter stay'
+          mid: 'Stay and save'
         };
         /* Two savings, shown separately. The rate stays rent-only so it lines
            up with every other rate on the site; the tax saving is its own
