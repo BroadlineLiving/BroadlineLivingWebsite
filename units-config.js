@@ -165,18 +165,14 @@ const BROADLINE_UNITS = {
     unitLabel: "Unit 117",
     ruPropertyId: "6632867",
     rooms: 1,                    // alcove studio
-    /* Not yet created in the rental-application app; Apply falls back to the
-       inquiry form until it is. */
-    applicationPropertyId: null
+    applicationPropertyId: "046ac80b-cb07-403a-bad8-40b033ed1e4d"
   },
   "pacific-504": {
     name: "Pacific House",
     unitLabel: "Unit 504",
     ruPropertyId: "6667272",
     rooms: 2,                    // 1BR
-    /* Not yet created in the rental-application app. booking.js falls back to
-       the inquiry form, so the page works without it. */
-    applicationPropertyId: null
+    applicationPropertyId: "43bcbc65-9349-42cc-bdf7-c3597fd38a1c"
   },
   "sheridan-10f": {
     name: "The Shenandoah",
