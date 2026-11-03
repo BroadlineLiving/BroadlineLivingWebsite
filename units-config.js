@@ -172,9 +172,7 @@ const BROADLINE_UNITS = {
     unitLabel: "Unit 6B",
     ruPropertyId: "6715561",
     rooms: 2,                    // 1BR
-    /* Not yet created in the rental-application app; Apply falls back to the
-       inquiry form until it is. */
-    applicationPropertyId: null
+    applicationPropertyId: "563756a6-e3ce-4364-a5cf-4fc1d2add9d6"
   },
   "knox-7b": {
     name: "The Knox",
