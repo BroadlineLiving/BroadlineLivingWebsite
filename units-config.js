@@ -167,6 +167,24 @@ const BROADLINE_UNITS = {
     rooms: 1,                    // alcove studio
     applicationPropertyId: "046ac80b-cb07-403a-bad8-40b033ed1e4d"
   },
+  "knox-6b": {
+    name: "The Knox",
+    unitLabel: "Unit 6B",
+    ruPropertyId: "6715561",
+    rooms: 2,                    // 1BR
+    /* Not yet created in the rental-application app; Apply falls back to the
+       inquiry form until it is. */
+    applicationPropertyId: null
+  },
+  "knox-7b": {
+    name: "The Knox",
+    unitLabel: "Unit 7B",
+    ruPropertyId: "6740065",
+    rooms: 2,                    // 1BR
+    /* Not yet created in the rental-application app; Apply falls back to the
+       inquiry form until it is. */
+    applicationPropertyId: null
+  },
   "pacific-504": {
     name: "Pacific House",
     unitLabel: "Unit 504",
