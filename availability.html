@@ -466,10 +466,12 @@
     const first = new Date(dsView.getFullYear(), dsView.getMonth(), 1);
     const days = new Date(dsView.getFullYear(), dsView.getMonth()+1, 0).getDate();
     let h = '';
+    // Today greys out too once same-day move-ins close at 3pm (availability.js).
+    const firstDay = window.BroadlineAvailability ? window.BroadlineAvailability.firstMoveInDay() : dsToday;
     for (let i = 0; i < first.getDay(); i++) h += '<span></span>';
     for (let d = 1; d <= days; d++) {
       const date = new Date(dsView.getFullYear(), dsView.getMonth(), d);
-      const past = date < dsToday;
+      const past = date < firstDay;
       h += '<button type="button" class="ds-day' + (dsSame(date, dsIn) ? ' sel' : '') + '"' +
            (past ? ' disabled' : ' data-d="' + dsISO(date) + '"') + '>' + d + '</button>';
     }

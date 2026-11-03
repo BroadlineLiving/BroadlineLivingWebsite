@@ -30,6 +30,10 @@
   var PEAK_END_MONTHS = [5, 6, 7];
 
   function todayMid() { var t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); }
+  /* Today, or tomorrow once same-day move-ins close at 3pm New York time.
+     The rule lives in availability.js so the badge, the calendar and the
+     quotes all start from the same day. */
+  function firstMoveIn() { return window.BroadlineAvailability.firstMoveInDay(); }
   function addDays(d, n) { var r = new Date(d); r.setDate(r.getDate() + n); return r; }
   function addMonths(d, n) { var r = new Date(d); r.setMonth(r.getMonth() + n); return r; }
   function nightsBetween(a, b) { return Math.round((b - a) / 86400000); }
@@ -141,7 +145,7 @@
      used to leave every move-out day disabled with no explanation — the
      widget looked frozen. */
   BookingWidget.prototype.canBeMoveIn = function (d) {
-    if (d < todayMid()) return false;
+    if (d < firstMoveIn()) return false;
     if (this.isBusy(d)) return false;
     return this.rangeIsFree(d, addDays(d, MIN_NIGHTS));
   };
@@ -160,6 +164,7 @@
       }
     } else {
       if (d < todayMid()) { this.dayHint = 'That date has already passed.'; }
+      else if (d < firstMoveIn()) { this.dayHint = 'Same-day move-ins close at 3pm. The earliest move-in is tomorrow.'; }
       else if (this.isBusy(d)) { this.dayHint = 'That date is already booked.'; }
       else if (!this.canBeMoveIn(d)) {
         /* Free day, but the run of free nights after it is shorter than the
@@ -300,7 +305,7 @@
 
     function consider(moveIn, moveOut, flavor) {
       if (!moveIn || !moveOut) return;
-      if (moveIn < todayMid()) return;
+      if (moveIn < firstMoveIn()) return;
       var n = nightsBetween(moveIn, moveOut);
       if (n < MIN_NIGHTS) return;
       /* Never suggest a shorter stay than the guest picked. A shorter term is

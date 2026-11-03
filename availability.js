@@ -40,6 +40,24 @@ function todayMidnight() {
   return new Date(t.getFullYear(), t.getMonth(), t.getDate());
 }
 
+/* The first day a stay can start. Same-day move-ins close at 3pm New York
+   time: past that the home can't be readied and handed over today, so an
+   open home starts tomorrow. New York's clock, not the visitor's, because
+   that is where the keys are — a guest browsing from London at 9pm their
+   time is still before 3pm here. Returned as local midnight, like every
+   other date on the site. */
+const SAME_DAY_CUTOFF_HOUR = 15;
+function firstMoveInDay(now = new Date()) {
+  const p = {};
+  new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York', year: 'numeric', month: 'numeric', day: 'numeric',
+    hour: 'numeric', hourCycle: 'h23'
+  }).formatToParts(now).forEach(x => { p[x.type] = x.value; });
+  const d = new Date(+p.year, +p.month - 1, +p.day);
+  if (+p.hour >= SAME_DAY_CUTOFF_HOUR) d.setDate(d.getDate() + 1);
+  return d;
+}
+
 /* Fetches and parses a unit's live busy ranges. Returns [] on any
    fetch failure so a feed hiccup shows "fully open" rather than
    crashing the calendar — caller should still treat that cautiously. */
@@ -80,12 +98,13 @@ function isDateBusy(date, busyRanges) {
   return busyRanges.some(r => t >= dateFromISO(r.start).getTime() && t < dateFromISO(r.end).getTime());
 }
 
-/* Earliest date, starting from today, that begins a continuous open
+/* Earliest date, starting from the first move-in day (today, or tomorrow
+   once it's past 3pm in New York), that begins a continuous open
    stretch of at least `minNights` (default 30, matching the 1-month
    minimum stay). Scans up to 3 years out as a sane bound. */
 function earliestAvailable(busyRanges, minNights = 30) {
   if (!busyRanges) return null;
-  let cursor = todayMidnight();
+  let cursor = firstMoveInDay();
   const horizon = new Date(cursor.getFullYear() + 3, cursor.getMonth(), cursor.getDate());
   while (cursor < horizon) {
     if (!isDateBusy(cursor, busyRanges)) {
@@ -110,6 +129,7 @@ if (typeof window !== 'undefined') {
     directBusyRanges,
     isDateBusy,
     earliestAvailable,
+    firstMoveInDay,
     dateFromISO
   };
 }
