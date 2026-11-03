@@ -164,7 +164,6 @@
       }
     } else {
       if (d < todayMid()) { this.dayHint = 'That date has already passed.'; }
-      else if (d < firstMoveIn()) { this.dayHint = 'Same-day move-ins close at 3pm. The earliest move-in is tomorrow.'; }
       else if (this.isBusy(d)) { this.dayHint = 'That date is already booked.'; }
       else if (!this.canBeMoveIn(d)) {
         /* Free day, but the run of free nights after it is shorter than the
@@ -873,7 +872,7 @@
       var d = new Date(vm.getFullYear(), vm.getMonth(), day);
       var cls = 'bk-day', disabled = false;
 
-      if (d < today) { cls += ' past'; disabled = true; }
+      if (d < firstMoveIn()) { cls += ' past'; disabled = true; }
       else if (this.picking === 'out' && this.moveIn) {
         if (!this.canBeMoveOut(d) && !sameDay(d, this.moveIn)) { cls += ' disabled'; disabled = true; }
       } else if (!this.canBeMoveIn(d)) { cls += ' disabled'; disabled = true; }
