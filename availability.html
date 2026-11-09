@@ -604,21 +604,27 @@ window.addEventListener('pageshow',function(e){
     var url = link.getAttribute('href');
     var cardSrc = img.getAttribute('data-bg') || (img.style.backgroundImage.match(/url\(["']?([^"')]+)/) || [])[1];
     var track = null, n = 1, idx = 0, built = null;
-    // Desktop loops like a snake: a copy of the last photo sits before the
-    // first and a copy of the first after the last, and when the track comes
-    // to rest on a copy it jumps, unseen, to the real one. Phones stop at the ends.
-    var off = touch ? 0 : 1, settle = null;
+    // Loops like a snake, on a phone as well as on a desktop: a copy of the last
+    // photo sits before the first and a copy of the first after the last, and when
+    // the track comes to rest on a copy it jumps, unseen, to the real one. So the
+    // photos never dead-end, whether they are swiped or clicked.
+    var off = 1, settle = null;
+    // The track rests on a copy of the first or last photo at each end; move it to the real one,
+    // which looks like nothing because the copy shows the same photo.
+    function offCopy() {
+      if (!track || !track.clientWidth) return;
+      var p = Math.round(track.scrollLeft / track.clientWidth);
+      if (p === 0 || p === n + 1) { clearTimeout(settle); track.scrollLeft = (p === 0 ? n : 1) * track.clientWidth; }
+    }
 
     var prev = document.createElement('button'), next = document.createElement('button'), dots = document.createElement('div');
     prev.type = next.type = 'button';
     prev.className = 'ph-btn ph-prev'; prev.setAttribute('aria-label', 'Previous photo'); prev.innerHTML = chev('M15 6l-6 6 6 6');
     next.className = 'ph-btn ph-next'; next.setAttribute('aria-label', 'Next photo'); next.innerHTML = chev('M9 6l6 6-6 6');
     dots.className = 'ph-dots';
-    prev.hidden = touch;
     img.append(prev, next, dots);
 
     function paint() {
-      if (touch) { prev.hidden = idx === 0; next.hidden = idx >= n - 1; }
       // at most 5 dots, a window that follows the current photo
       var lo = Math.max(0, Math.min(idx - 2, n - 5)), hi = Math.min(n, lo + 5), h = '';
       for (var k = lo; k < hi; k++) h += '<span' + (k === idx ? ' class="on"' : '') + '></span>';
@@ -641,22 +647,26 @@ window.addEventListener('pageshow',function(e){
            each card scrolls in. */
         track.style.visibility = 'hidden';
         img.insertBefore(track, prev);
-        track.scrollLeft = off * track.clientWidth;
-        var first = track.children[off], reveal = function () { track.style.visibility = ''; };
+        /* A card still hidden behind a filter has no width yet, and scrollLeft 0 would open it
+           on the copy of the LAST photo. Set the opening photo again when it has one. */
+        var open = function () { if (track.clientWidth) track.scrollLeft = off * track.clientWidth; };
+        open();
+        var first = track.children[off], reveal = function () { open(); track.style.visibility = ''; };
         if (first.decode) first.decode().then(reveal, reveal);
         else if (first.complete) reveal();
         else { first.onload = first.onerror = reveal; }
         track.addEventListener('scroll', function () {
           var pos = Math.round(track.scrollLeft / track.clientWidth), i = ((pos - off) % n + n) % n;
           if (i !== idx) { idx = i; paint(); }
-          if (off) {
-            clearTimeout(settle);
-            settle = setTimeout(function () {   // at rest on a copy → jump to the real photo
-              var p = Math.round(track.scrollLeft / track.clientWidth);
-              if (p === 0 || p === n + 1) track.scrollLeft = (p === 0 ? n : 1) * track.clientWidth;
-            }, 120);
-          }
+          clearTimeout(settle);
+          settle = setTimeout(offCopy, 120);   // at rest on a copy → jump to the real photo
         }, { passive: true });
+        /* The timer is the usual way off a copy, but a phone that was scrolled in the background
+           may never deliver that last scroll event, which would leave the swipe dead-ended on the
+           copy. So take the jump at the end of the scroll where the browser says so, and again the
+           moment the next finger lands. Each one is the same correction, and a no-op once made. */
+        if ('onscrollend' in track) track.addEventListener('scrollend', offCopy);
+        track.addEventListener('touchstart', offCopy, { passive: true });
         paint();
       });
       return built;
@@ -665,11 +675,8 @@ window.addEventListener('pageshow',function(e){
     function go(step) {
       build().then(function () {
         if (!track) return;
-        if (off) {   // clicked before the jump off a copy happened: do it now
-          var p = Math.round(track.scrollLeft / track.clientWidth);
-          if (p === 0 || p === n + 1) { clearTimeout(settle); track.scrollLeft = (p === 0 ? n : 1) * track.clientWidth; }
-        }
-        var to = off ? idx + off + step : Math.max(0, Math.min(n - 1, idx + step));
+        offCopy();   // clicked before the jump off a copy happened: do it now
+        var to = idx + off + step;
         track.scrollTo({ left: to * track.clientWidth, behavior: 'smooth' });
       });
     }
