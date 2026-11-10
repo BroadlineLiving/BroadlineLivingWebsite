@@ -237,6 +237,17 @@ const BROADLINE_UNITS = {
     rooms: 2,                    // 1BR
     applicationPropertyId: "5c6021c0-80db-4e8d-b6a2-f2fd8901dcd9"
   },
+  /* 223 Mott Street, Unit 7 — not yet on Rentals United, so there is no live
+     calendar and no published rates. Inquiry only until the RU PropertyID and
+     the rental-application record exist. */
+  "mott-7": {
+    name: "223 Mott Street",
+    unitLabel: "Unit 7",
+    ruPropertyId: null,
+    rooms: 2,                    // 1BR
+    inquiryOnly: true,
+    applicationPropertyId: null
+  },
   "park-row-8e": {
     name: "15 Park Row",
     unitLabel: "Unit 8E",
