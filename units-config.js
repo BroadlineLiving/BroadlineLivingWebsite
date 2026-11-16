@@ -278,28 +278,6 @@ const BROADLINE_UNITS = {
     ruPropertyId: "5676646",
     rooms: 2,                    // 1BR
     applicationPropertyId: "45b02598-f048-40ba-a62c-24411f0d9dc7"
-  },
-  /* 314 28th Street, Apt 2 — Union City, NJ. Let directly for the owner, not
-     through Rentals United: no iCal feed, no published rates, no Airbnb
-     listing of ours. Priced from a flat nightly below, with the standard
-     length-of-stay discount still applied on top. New Jersey, so the NYC
-     occupancy tax does not apply and no tax line is shown. */
-  "union-city-2": {
-    name: "314 28th Street",
-    unitLabel: "Unit 2",
-    ruPropertyId: null,
-    rooms: 4,                    // 3BR — unused here, there is no room tax
-    applicationPropertyId: "9d36e76c-ca5d-4e69-877a-3f70de96c8c4",
-    directLet: {
-      nightly: 283.3333,
-      minNights: 30,
-      availableFrom: "2026-12-07",
-      coverThroughMonths: 24,
-      noOccupancyTax: true,
-      gapRate: 0.25,
-      bookWindowDays: 10,
-      blocked: []
-    }
   }
 };
 

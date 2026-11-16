@@ -103,7 +103,7 @@ One entry per bookable unit. 22 entries today.
 tax is wrong. Studio 1, 1BR 2, 2BR 3, 3BR 4.
 
 Optional: `inquiryOnly` (never show a calendar), `directLet` (not on Rentals
-United — see the header comment in the file; `union-city-2` is the only one).
+United — see the header comment in the file; none in use since Union City was taken down, 16 Nov 2026).
 
 **Six unit pages have no config entry** — `morningside-108`, `morningside-607`,
 `william-3b/4a/5b/6a`. These are long-lease homes: no live calendar, no
