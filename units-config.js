@@ -265,6 +265,34 @@ const BROADLINE_UNITS = {
     rooms: 2,                    // 1BR
     applicationPropertyId: "aeb0385f-589c-4085-b328-bec433564e13"
   },
+  "park-row-5c": {
+    name: "15 Park Row",
+    unitLabel: "Unit 5C",
+    ruPropertyId: "6834092",
+    rooms: 2,                    // 1BR
+    applicationPropertyId: "cb69ad10-ca92-4671-bde5-6c8f941b8db0"
+  },
+  "park-row-14g": {
+    name: "15 Park Row",
+    unitLabel: "Unit 14G",
+    ruPropertyId: "6834227",
+    rooms: 1,                    // studio
+    applicationPropertyId: "54eaa5e3-de58-429c-9206-6134202a1cbc"
+  },
+  "park-ave-7o": {
+    name: "Monterey at Park",
+    unitLabel: "Unit 7O",
+    ruPropertyId: "6876305",
+    rooms: 1,                    // studio
+    applicationPropertyId: "e0698c2c-b4f9-4a8e-b4bd-d90bd9cab5bd"
+  },
+  "park-ave-11j": {
+    name: "Monterey at Park",
+    unitLabel: "Unit 11J",
+    ruPropertyId: "6877864",
+    rooms: 1,                    // studio
+    applicationPropertyId: "bfa8b33d-d05a-4bdc-8d72-e668d9986339"
+  },
   "lawrence-2404": {
     name: "Lawrence Tower",
     unitLabel: "Unit 2404",
