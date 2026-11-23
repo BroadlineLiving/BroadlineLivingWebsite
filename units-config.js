@@ -293,6 +293,13 @@ const BROADLINE_UNITS = {
     rooms: 1,                    // studio
     applicationPropertyId: "bfa8b33d-d05a-4bdc-8d72-e668d9986339"
   },
+  "park-ave-10a": {
+    name: "Monterey at Park",
+    unitLabel: "Unit 10A",
+    ruPropertyId: "6922364",
+    rooms: 1,                    // studio
+    applicationPropertyId: "8c8b4115-4a52-4beb-9556-f11b5289c739"
+  },
   "lawrence-2404": {
     name: "Lawrence Tower",
     unitLabel: "Unit 2404",
