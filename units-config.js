@@ -300,6 +300,20 @@ const BROADLINE_UNITS = {
     rooms: 1,                    // studio
     applicationPropertyId: "8c8b4115-4a52-4beb-9556-f11b5289c739"
   },
+  "tribeca-1622": {
+    name: "Tribeca House",
+    unitLabel: "Unit 1622",
+    ruPropertyId: "6950063",
+    rooms: 1,                    // studio
+    applicationPropertyId: "3f1a6364-9646-466e-a82b-551d050d249a"
+  },
+  "spring-6": {
+    name: "51 Spring Street",
+    unitLabel: "Unit 6",
+    ruPropertyId: "6951277",
+    rooms: 2,                    // 1BR
+    applicationPropertyId: "2a48a86c-6188-499f-9924-602af4557136"
+  },
   "lawrence-2404": {
     name: "Lawrence Tower",
     unitLabel: "Unit 2404",
