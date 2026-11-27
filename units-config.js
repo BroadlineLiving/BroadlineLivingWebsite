@@ -314,6 +314,13 @@ const BROADLINE_UNITS = {
     rooms: 2,                    // 1BR
     applicationPropertyId: "2a48a86c-6188-499f-9924-602af4557136"
   },
+  "hollingsworth-518": {
+    name: "Hollingsworth",
+    unitLabel: "Unit 518",
+    ruPropertyId: "6954975",
+    rooms: 2,                    // 1BR
+    applicationPropertyId: null  // not in the rental-application app yet
+  },
   "lawrence-2404": {
     name: "Lawrence Tower",
     unitLabel: "Unit 2404",
